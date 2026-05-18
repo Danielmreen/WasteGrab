@@ -1,65 +1,142 @@
-<section class="p-6 md:p-8 gap-3 grid">
+<section class="p-6 md:p-8 gap-3 grid"> 
   <app-header mode="route" />
 
   <div class="max-w-3xl mx-auto bg-white p-4 rounded shadow">
     <h2 class="text-lg font-semibold mb-3">Request New Pickup</h2>
 
+    <!-- Upload -->
     <div class="mb-4">
       <label class="block mb-2 font-medium">Upload Waste Images</label>
+
       <input #fileInput type="file" (change)="onFilesSelected($event)" multiple accept="image/*" class="hidden" />
+
       <div class="flex gap-2">
-        <button type="button" class="btn btn-secondary" (click)="fileInput.click()">Upload Images</button>
-        <button type="button" class="btn btn-primary" (click)="analyzeImagesMock()" [disabled]="isAnalyzing() || !images().length">{{ isAnalyzing() ? 'Analyzing...' : 'Analyze Images' }}</button>
-        <button type="button" class="btn" (click)="clearImages()" [disabled]="!images().length">Clear</button>
+
+        <!-- Upload -->
+        <button type="button" class="w-30 bg-[#2E7D32] text-white py-1 rounded-xl hover:bg-[#256428]" (click)="fileInput.click()" [disabled]="isAnalyzing()">
+          Upload Images
+        </button>
+
+        <!-- Analyze -->
+        <button type="button" class="w-30 bg-[#2E7D32] text-white py-1 rounded-xl hover:bg-[#256428]" (click)="analyzeImagesMock()" [disabled]="isAnalyzing() || !images().length">
+          {{ isAnalyzing() ? '♻️ Analyzing...' : 'Analyze Images' }}
+        </button>
+
+        <!-- Clear -->
+        <button type="button" class="w-30 bg-[#2E7D32] text-white py-1 rounded-xl hover:bg-[#256428]" (click)="clearImages()" [disabled]="!images().length">
+          Clear
+        </button>
+
       </div>
+
+      <!-- Preview -->
       <div class="mt-3 flex gap-2 flex-wrap">
-        <img *ngFor="let src of previews()" [src]="src" class="w-24 h-24 object-cover rounded border" />
+        <img *ngFor="let src of previews()" [src]="src" class="w-24 h-24 object-cover rounded border shadow-sm"/>
       </div>
     </div>
 
+    <!-- AI Suggestions -->
     <div *ngIf="aiSuggestions().length" class="mb-4">
       <label class="block mb-2 font-medium">AI Suggestions</label>
+
       <ul class="space-y-2">
-        <li *ngFor="let s of aiSuggestions()" class="flex items-center justify-between p-2 border rounded">
+
+        <li *ngFor="let s of aiSuggestions()" class="flex items-center justify-between p-3 border rounded">
+
           <div>
-            <div class="font-semibold">{{ s.category }}</div>
-            <div class="text-sm text-slate-500">Estimated quantity: {{ s.estimatedQuantity }}</div>
+
+            <!-- Category -->
+            <div class="flex items-center gap-2">
+              <div class="font-semibold capitalize">
+                {{ s.category }}
+              </div>
+
+              <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                AI
+              </span>
+            </div>
+
+            <!-- 🔥 NEW: Weight -->
+            <div class="text-sm text-slate-500">
+              Estimated Weight:
+              <strong>{{ s.estimatedQuantity }} kg</strong>
+            </div>
+
           </div>
-          <div>
-            <button class="btn btn-secondary" (click)="applySuggestion(s)">Autofill</button>
-          </div>
+
+          <button
+            class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+            (click)="applySuggestion(s)"
+          >
+            Autofill
+          </button>
+
         </li>
+
       </ul>
     </div>
 
+    <!-- No suggestion -->
+    <div *ngIf="!aiSuggestions().length && !isAnalyzing() && images().length"
+         class="text-sm text-gray-500 mb-4">
+      No suggestions available. Try analyzing again.
+    </div>
+
+    <!-- Form -->
     <form [formGroup]="form" (ngSubmit)="submit()" class="grid gap-3">
+
       <div>
         <label class="block mb-1 font-medium">Waste Category</label>
-        <input class="w-full border rounded p-2" formControlName="wasteCategory" placeholder="e.g. Plastic Bottles" />
+        <input class="w-full border rounded p-2"
+          formControlName="wasteCategory"
+          placeholder="e.g. Plastic Bottles" />
       </div>
 
       <div>
         <label class="block mb-1 font-medium">Description / Notes</label>
-        <textarea class="w-full border rounded p-2" formControlName="description" rows="3" placeholder="Optional details"></textarea>
+        <textarea
+          class="w-full border rounded p-2"
+          formControlName="description"
+          rows="3"
+          placeholder="Optional details">
+        </textarea>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
+
+        <!-- 🔥 UPDATED: Quantity now = weight -->
         <div>
-          <label class="block mb-1 font-medium">Estimated Quantity</label>
-          <input type="number" min="1" class="w-full border rounded p-2" formControlName="estimatedQuantity" />
+          <label class="block mb-1 font-medium">
+            Estimated Weight (kg)
+          </label>
+          <input
+            type="number"
+            min="1"
+            class="w-full border rounded p-2"
+            formControlName="estimatedQuantity"
+          />
         </div>
 
         <div>
           <label class="block mb-1 font-medium">Pickup Location</label>
-          <select class="w-full border rounded p-2" formControlName="location">
-            <option *ngFor="let a of addresses" [value]="a.id">{{ a.label }}</option>
+          <select
+            class="w-full border rounded p-2"
+            formControlName="location">
+            <option *ngFor="let a of addresses" [value]="a.id">
+              {{ a.label }}
+            </option>
           </select>
         </div>
+
       </div>
 
       <div class="mt-3 flex justify-end gap-2">
-        <button type="submit" class="btn btn-primary">Request Pickup</button>
+        <button type="submit" class="btn btn-primary">
+          Request Pickup
+        </button>
       </div>
+
     </form>
+
   </div>
 </section>

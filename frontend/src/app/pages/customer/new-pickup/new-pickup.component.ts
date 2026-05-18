@@ -2,6 +2,8 @@ import { AppHeaderComponent } from '@/components/header/header.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 type NewPickupForm = FormGroup<{
   wasteCategory: FormControl<string>;
@@ -17,6 +19,12 @@ type NewPickupForm = FormGroup<{
   imports: [CommonModule, ReactiveFormsModule, AppHeaderComponent],
 })
 export class CustomerNewPickupPage {
+<<<<<<< HEAD
+=======
+
+  constructor(private http:HttpClient){}
+
+>>>>>>> Harith-branch
   protected readonly images = signal<File[]>([]);
   protected readonly previews = signal<string[]>([]);
   protected readonly isAnalyzing = signal(false);
@@ -52,24 +60,73 @@ export class CustomerNewPickupPage {
     this.aiSuggestions.set([]);
   }
 
-  protected analyzeImagesMock(): void {
-    const imgs = this.images();
-    if (!imgs.length) return;
-    this.isAnalyzing.set(true);
-    this.aiSuggestions.set([]);
+  // protected analyzeImagesMock(): void {
+  //   const imgs = this.images();
+  //   if (!imgs.length) return;
+  //   this.isAnalyzing.set(true);
+  //   this.aiSuggestions.set([]);
 
-    // Mock AI analysis — produce simple heuristic suggestions
-    setTimeout(() => {
-      const suggestions: Array<{category: string; estimatedQuantity: number}> = [];
-      // simple heuristic: count images and randomize categories
-      const cats = ['Plastic Bottles', 'Mixed Recyclables', 'Organic Waste', 'Paper/Cardboard', 'Metal Cans'];
-      const main = cats[Math.floor(Math.random() * cats.length)];
-      const qty = Math.max(1, Math.round(imgs.length * (1 + Math.random())));
-      suggestions.push({ category: main, estimatedQuantity: qty });
-      this.aiSuggestions.set(suggestions);
-      this.isAnalyzing.set(false);
-    }, 900);
-  }
+  //   // Mock AI analysis — produce simple heuristic suggestions
+  //   setTimeout(() => {
+  //     const suggestions: Array<{category: string; estimatedQuantity: number}> = [];
+  //     // simple heuristic: count images and randomize categories
+  //     const cats = ['Plastic Bottles', 'Mixed Recyclables', 'Organic Waste', 'Paper/Cardboard', 'Metal Cans'];
+  //     const main = cats[Math.floor(Math.random() * cats.length)];
+  //     const qty = Math.max(1, Math.round(imgs.length * (1 + Math.random())));
+  //     suggestions.push({ category: main, estimatedQuantity: qty });
+  //     this.aiSuggestions.set(suggestions);
+  //     this.isAnalyzing.set(false);
+  //   }, 900);
+  // }
+  
+      protected async analyzeImagesMock(): Promise<void> {
+
+      const imgs = this.images();
+      if (!imgs.length) return;
+
+      this.isAnalyzing.set(true);
+      this.aiSuggestions.set([]);
+
+      try {
+
+        // For now: analyze only first image
+        const formData = new FormData();
+        formData.append('image', imgs[0]);
+
+        const response: any = await firstValueFrom(
+          this.http.post(
+            'http://localhost:3000/api/roboflow-ai/analyze-image',
+            formData
+          )
+        );
+
+        const result = response.result;
+
+        if (!result) {
+          console.error('No AI result returned');
+          return;
+        }
+
+        // Convert backend result → suggestion format
+        const suggestions = [
+          {
+            category: result.detectedWaste.join(', ') || 'Mixed Recyclables',
+            estimatedQuantity: Math.ceil(result.estimatedWeight) || 1
+          }
+        ];
+
+        this.aiSuggestions.set(suggestions);
+
+      } catch (err) {
+
+        console.error('AI analysis failed:', err);
+
+      } finally {
+
+        this.isAnalyzing.set(false);
+
+      }
+    }
 
   protected applySuggestion(s: {category: string; estimatedQuantity: number}): void {
     this.form.get('wasteCategory')?.setValue(s.category);
