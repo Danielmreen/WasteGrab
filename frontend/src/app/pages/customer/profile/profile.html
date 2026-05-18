@@ -1,0 +1,262 @@
+<section class="p-6 md:p-8 gap-3 grid">
+  <app-header mode="route" />
+
+  @if (authService.currentUser(); as user) {
+    <div class="bg-white rounded-lg shadow p-6 space-y-6">
+      <!-- Avatar -->
+      <div class="flex items-center gap-4">
+        <z-avatar
+          [zFallback]="user.name.slice(0, 2).toUpperCase()"
+          [zAlt]="user.name + ' avatar'"
+          zSize="lg"
+          class="ring-2 ring-slate-200 shadow-sm"
+        />
+        <div>
+          <p class="text-sm text-slate-500">Profile Picture</p>
+          <p class="font-medium text-slate-900">{{ user.name }}</p>
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div class="space-y-4 border-t pt-6">
+        <div class="grid gap-2">
+          <label class="text-sm font-medium text-slate-700">Full Name</label>
+          <p class="text-slate-900">{{ user.name }}</p>
+        </div>
+
+        <div class="grid gap-2">
+          <label class="text-sm font-medium text-slate-700">Email</label>
+          <p class="text-slate-900">{{ user.email }}</p>
+        </div>
+
+        <div class="grid gap-2">
+          <label class="text-sm font-medium text-slate-700">Member Since</label>
+          <p class="text-slate-900">{{ user.createdAt | date: 'MMM dd, yyyy' }}</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="border-t pt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex gap-3 flex-row lg:flex-1 lg:max-w-md">
+          <button z-button zType="outline" class="flex-1" (click)="editProfile()">
+            Edit Profile
+          </button>
+          <button z-button zType="outline" class="flex-1" (click)="changePassword()">
+            Change Password
+          </button>
+        </div>
+        <button
+          z-button
+          zType="destructive"
+          class="w-full lg:w-auto lg:min-w-32"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+
+    @if (user.role === 'CUSTOMER') {
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <!-- Saved Address -->
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div class="space-y-1">
+            <h2 class="text-lg font-semibold text-slate-900">Saved Address</h2>
+            <p class="text-sm text-slate-500">
+              Manage pickup locations, switch the default address, and keep delivery notes up to
+              date.
+            </p>
+
+            @if (defaultAddress(); as address) {
+              <p class="text-sm font-medium text-slate-700">
+                Default address: {{ address.label }} · {{ address.city }}
+              </p>
+            }
+          </div>
+
+          <button z-button type="button" (click)="openAddAddress()">Add Address</button>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table z-table class="min-w-225 bg-white">
+            <caption z-table-caption class="sr-only">
+              Saved user address
+            </caption>
+
+            <thead z-table-header>
+              <tr z-table-row>
+                <th z-table-head>Label</th>
+                <th z-table-head>Address</th>
+                <th z-table-head class="text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody z-table-body>
+              @for (address of address(); track address.id) {
+                <tr z-table-row>
+                  <td z-table-cell>
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <p class="font-medium text-slate-900">{{ address.label }}</p>
+                        @if (address.isDefault) {
+                          <z-badge zType="secondary" zShape="pill">Default</z-badge>
+                        }
+                      </div>
+                    </div>
+                  </td>
+
+                  <td z-table-cell>
+                    <div class="space-y-1">
+                      <p class="text-slate-900">{{ address.street }}</p>
+                      <p class="text-sm text-slate-500">
+                        {{ address.city }}, {{ address.state }} {{ address.postalCode }}
+                      </p>
+                      @if (address.notes) {
+                        <p class="text-sm text-slate-500">{{ address.notes }}</p>
+                      }
+                    </div>
+                  </td>
+
+                  <td z-table-cell>
+                    <div class="flex flex-wrap justify-end gap-2">
+                      @if (!address.isDefault) {
+                        <button
+                          z-button
+                          zType="ghost"
+                          zSize="sm"
+                          type="button"
+                          (click)="setDefaultAddress(address.id)"
+                        >
+                          Set Default
+                        </button>
+                      }
+
+                      <button
+                        z-button
+                        zType="outline"
+                        zSize="sm"
+                        type="button"
+                        (click)="openEditAddress(address)"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr z-table-row>
+                  <td z-table-cell colspan="3" class="py-10 text-center">
+                    <p class="font-medium text-slate-900">No saved address yet.</p>
+                    <p class="mt-1 text-sm text-slate-500">
+                      Add your first pickup location to get started.
+                    </p>
+                    <div class="mt-4">
+                      <button z-button zType="default" type="button" (click)="openAddAddress()">
+                        Add Address
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="bg-white rounded-lg shadow p-6 space-y-6">
+      <p class="text-center text-slate-900">Something went wrong.</p>
+    </div>
+  }
+</section>
+
+<!-- Profile Modal Component -->
+<app-profile-modal />
+
+@if (addressModalMode() !== null) {
+  <z-modal
+    [isOpen]="addressModalMode() !== null"
+    [title]="addressModalMode() === 'edit' ? 'Edit Address' : 'Add Address'"
+    description="Add the details needed for pickup requests"
+    okText="Save Address"
+    cancelText="Cancel"
+    [isSubmitting]="false"
+    size="lg"
+    (ok)="saveAddress()"
+    (cancel)="closeAddressModal()"
+  >
+    <form [formGroup]="addressForm" class="grid gap-4 sm:grid-cols-2">
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="true">Address Label</z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="text"
+            formControlName="label"
+            placeholder="Home, Office, Warehouse"
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="true">Street Address</z-form-label>
+        <z-form-control>
+          <textarea
+            z-input
+            rows="3"
+            formControlName="street"
+            placeholder="Street, number, building, unit"
+            class="w-full"
+          ></textarea>
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field>
+        <z-form-label [zRequired]="true">City</z-form-label>
+        <z-form-control>
+          <input z-input type="text" formControlName="city" placeholder="Jakarta" class="w-full" />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field>
+        <z-form-label [zRequired]="true">State / Province</z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="text"
+            formControlName="state"
+            placeholder="DKI Jakarta"
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field>
+        <z-form-label [zRequired]="true">Postal Code</z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="text"
+            formControlName="postalCode"
+            placeholder="12190"
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field>
+        <z-form-label>Delivery Notes</z-form-label>
+        <z-form-control>
+          <textarea
+            z-input
+            rows="3"
+            formControlName="notes"
+            placeholder="Gate code, preferred delivery time, landmarks"
+            class="w-full"
+          ></textarea>
+        </z-form-control>
+      </z-form-field>
+    </form>
+  </z-modal>
+}

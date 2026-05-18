@@ -1,0 +1,104 @@
+<section class="p-6 md:p-8 gap-3 grid">
+  <app-header mode="route">
+    <button z-button zType="default" [routerLink]="newPickupPath" rightSide class="gap-1">
+      <ng-icon name="lucidePlus" class="size-4!" />
+      New Pickup
+    </button>
+  </app-header>
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    @for (stat of dashboardStats; track stat.label) {
+      <div class="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
+            <p class="text-2xl font-bold">{{ stat.value }}</p>
+          </div>
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-lg"
+            [class]="stat.accentClass"
+          >
+            <ng-icon [name]="stat.icon" class="size-5!" />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="rounded-2xl border border-border bg-card shadow-sm">
+    <div class="flex items-center justify-between border-b border-border px-4 py-4 lg:px-6">
+      <h3 class="text-lg font-semibold">Recent Pickups</h3>
+      <a z-button zType="ghost" zSize="sm" [routerLink]="pickupsPath" class="gap-1">
+        View All <ng-icon name="lucideChevronRight" class="size-4!" />
+      </a>
+    </div>
+
+    <div class="max-h-112 space-y-4 overflow-y-auto p-4 pr-2 lg:p-6">
+      @for (pickup of recentPickups; track pickup.id) {
+        <a
+          [routerLink]="[...pickupsPath, pickup.id]"
+          class="block rounded-xl border border-border p-4 transition-colors hover:bg-muted/50"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                @if (pickup.status === 'completed') {
+                  <ng-icon name="lucideCheckCircle2" class="size-5! text-muted-foreground" />
+                } @else if (pickup.status === 'in_progress') {
+                  <ng-icon name="lucideTruck" class="size-5! text-muted-foreground" />
+                } @else if (pickup.status === 'cancelled') {
+                  <ng-icon name="lucideAlertTriangle" class="size-5! text-muted-foreground" />
+                } @else {
+                  <ng-icon name="lucideClock3" class="size-5! text-muted-foreground" />
+                }
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="font-medium">{{ pickup.id }}</p>
+                  @if (pickup.status === 'completed') {
+                    <span
+                      class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+                    >
+                      Completed
+                    </span>
+                  } @else if (pickup.status === 'in_progress') {
+                    <span
+                      class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800"
+                    >
+                      In Progress
+                    </span>
+                  } @else if (pickup.status === 'assigned') {
+                    <span
+                      class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                    >
+                      Assigned
+                    </span>
+                  } @else if (pickup.status === 'cancelled') {
+                    <span
+                      class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
+                    >
+                      Cancelled
+                    </span>
+                  } @else {
+                    <span
+                      class="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800"
+                    >
+                      Pending
+                    </span>
+                  }
+                </div>
+                <p class="text-sm text-muted-foreground">
+                  {{ pickup.wasteTypes.join(', ') }} • {{ pickup.weight }}
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-medium text-primary">+{{ pickup.points }} pts</p>
+              <p class="text-sm text-muted-foreground">{{ pickup.date }}</p>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+</section>

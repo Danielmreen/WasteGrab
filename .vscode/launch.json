@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Debug Express API",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/src/server.ts",
+      "runtimeArgs": ["--import", "tsx", "--watch"],
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "restart": true,
+      "env": {
+        "PORT": "3000"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Frontend: Open Angular App",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "preLaunchTask": "Start Frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch Full Stack",
+      "configurations": [
+        "Backend: Debug Express API",
+        "Frontend: Open Angular App"
+      ],
+      "preLaunchTask": "Install All Packages",
+      "stopAll": true
+    }
+  ]
+}

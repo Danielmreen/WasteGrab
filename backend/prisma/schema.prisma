@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum UserRole {
+  CUSTOMER
+  COLLECTOR
+  ADMIN
+}
+
+enum PickupStatus {
+  PENDING
+  ACCEPTED
+  ARRIVED
+  VERIFIED
+  COMPLETED
+  CANCELLED
+}
+
+enum ImageType {
+  USER_UPLOAD
+  COLLECTOR_PROOF
+}
+
+enum TransactionType {
+  PAYMENT
+  POINTS_REDEEMED
+}
+
+enum TransactionStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+model User {
+  id                String    @id @default(uuid())
+  name              String    @db.VarChar(255)
+  email             String    @unique @db.VarChar(255)
+  passwordHash      String    @db.VarChar(255)
+  phone             String?   @db.VarChar(20)
+  role              UserRole  @default(CUSTOMER)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  address         Address[]
+
+  pickupRequestsAsUser     PickupRequest[] @relation("UserRequests")
+  pickupRequestsAsCollector PickupRequest[] @relation("CollectorRequests")
+  transactions            Transaction[]
+  locationAssignments     LocationCollector[]
+
+  @@map("users")
+}
+
+model WasteCategory {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(100)
+  pricePerKg   Decimal  @db.Decimal(10, 2)
+  pointsPerKg  Int      @default(1)
+  isBanned     Boolean  @default(false)
+  description  String?  @db.Text
+  pickupItems  PickupItem[]
+
+  @@map("waste_categories")
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  label      String   @db.VarChar(100)
+  street     String   @db.Text
+  city       String   @db.VarChar(100)
+  state      String   @db.VarChar(100)
+  postalCode String   @db.VarChar(20)
+  notes      String?  @db.Text
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("address")
+}
+
+model PickupRequest {
+  id                String       @id @default(uuid())
+  userId            String       @map("user_id")
+  collectorId        String?      @map("collector_id")
+  addressText       String       @db.Text @map("address_text")
+  status            PickupStatus @default(PENDING)
+  
+  aiClassificationLabel String?  @db.VarChar(100) @map("ai_classification_label")
+  aiConfidence          Decimal? @db.Decimal(5, 2) @map("ai_confidence")
+  
+  estimatedPrice    Decimal? @db.Decimal(10, 2) @map("estimated_price")
+  finalPrice        Decimal? @db.Decimal(10, 2) @map("final_price")
+  
+  createdAt         DateTime     @default(now()) @map("created_at")
+  completedAt       DateTime?    @map("completed_at")
+
+  user              User         @relation("UserRequests", fields: [userId], references: [id])
+  collector         User?        @relation("CollectorRequests", fields: [collectorId], references: [id])
+  items             PickupItem[]
+  images            PickupImage[]
+  transactions      Transaction[]
+
+  @@map("pickup_requests")
+}
+
+model PickupItem {
+  id               String        @id @default(uuid())
+  pickupRequestId  String        @map("pickup_request_id")
+  categoryId       String        @map("category_id")
+  estimatedWeight  Decimal?      @db.Decimal(10, 2) @map("estimated_weight")
+  actualWeight     Decimal?      @db.Decimal(10, 2) @map("actual_weight")
+
+  pickupRequest    PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+  category         WasteCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("pickup_items")
+}
+
+model PickupImage {
+  id               String        @id @default(uuid())
+  pickupRequestId  String        @map("pickup_request_id")
+  imageUrl         String        @db.Text @map("image_url")
+  imageType        ImageType     @map("image_type")
+  uploadedAt       DateTime      @default(now()) @map("uploaded_at")
+
+  pickupRequest    PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+
+  @@map("pickup_images")
+}
+
+model Transaction {
+  id               String            @id @default(uuid())
+  pickupRequestId  String            @map("pickup_request_id")
+  userId           String            @map("user_id")
+  amount           Decimal           @db.Decimal(10, 2)
+  type             TransactionType   @map("type")
+  status           TransactionStatus @default(SUCCESS)
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  pickupRequest    PickupRequest     @relation(fields: [pickupRequestId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+}
+
+model Todo {
+  id        String   @id @default(uuid())
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("todos")
+}
+
+// Locations that admins can create. Each location can have multiple collectors assigned.
+model Location {
+  id         String   @id @default(uuid())
+  name       String   @db.VarChar(255)
+  address    String?  @db.Text
+  city       String?  @db.VarChar(100)
+  state      String?  @db.VarChar(100)
+  postalCode String?  @db.VarChar(20)
+  latitude   Decimal? @db.Decimal(10, 7)
+  longitude  Decimal? @db.Decimal(10, 7)
+  createdAt  DateTime @default(now()) @map("created_at")
+  createdBy  String?  @map("created_by")
+
+  // Relations
+  collectors LocationCollector[]
+
+  @@map("locations")
+}
+
+// Join table linking locations to collector users (many-to-many).
+model LocationCollector {
+  id          String   @id @default(uuid())
+  locationId  String   @map("location_id")
+  collectorId String   @map("collector_id")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  collector   User     @relation(fields: [collectorId], references: [id])
+
+  @@unique([locationId, collectorId])
+  @@map("location_collectors")
+}

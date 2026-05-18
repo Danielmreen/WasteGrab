@@ -1,0 +1,92 @@
+<z-card class="mx-auto w-full max-w-4xl border-slate-200/70 bg-white/90 shadow-sm backdrop-blur-xl">
+  <div class="flex flex-col gap-6 p-6 sm:p-8">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div class="space-y-2">
+        <p class="text-xs font-extrabold uppercase tracking-[0.35em] text-slate-500">WasteGrab Tasks</p>
+        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Todo list</h1>
+        <p class="max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
+          Keep track of your tasks in the same shared app layout.
+        </p>
+      </div>
+
+      <button z-button zType="outline" type="button" (click)="loadTodos()" [zDisabled]="isLoading()">
+        Refresh
+      </button>
+    </div>
+
+    <form class="grid gap-4 sm:grid-cols-[1fr_auto]" (ngSubmit)="addTodo()">
+      <label class="grid gap-2 text-sm font-medium text-slate-700">
+        <span class="sr-only">Todo title</span>
+        <input
+          z-input
+          id="todo-title"
+          name="title"
+          type="text"
+          placeholder="Add a task"
+          autocomplete="off"
+          [ngModel]="newTitle()"
+          (ngModelChange)="newTitle.set($event)"
+          [disabled]="isSaving()"
+        />
+      </label>
+
+      <button z-button zType="default" type="submit" [zDisabled]="isSaving()">
+        Add
+      </button>
+    </form>
+
+    <div class="flex flex-wrap gap-2">
+      <z-badge zType="secondary">{{ remainingCount() }} left</z-badge>
+      <z-badge zType="outline">{{ completedCount() }} done</z-badge>
+      <z-badge zType="outline">{{ todos().length }} total</z-badge>
+    </div>
+
+    @if (error()) {
+      <z-badge zType="destructive" class="w-fit">{{ error() }}</z-badge>
+    }
+
+    @if (isLoading()) {
+      <div class="grid place-items-center py-8 text-slate-500">
+        Loading...
+      </div>
+    } @else if (todos().length === 0) {
+      <div class="grid place-items-center py-8 text-slate-500">
+        No tasks yet. Add one to get started!
+      </div>
+    } @else {
+      <div class="grid gap-3">
+        @for (todo of todos(); track todo.id) {
+          <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:bg-slate-50">
+            <button
+              type="button"
+              (click)="toggleTodo(todo)"
+              [disabled]="busyTodoId() === todo.id"
+              class="grid size-5 shrink-0 place-items-center rounded-full border transition"
+              [class.border-green-500]="todo.completed"
+              [class.bg-green-500]="todo.completed"
+              [class.border-slate-300]="!todo.completed"
+              [class.cursor-not-allowed]="busyTodoId() === todo.id"
+            >
+              @if (todo.completed) {
+                <span class="text-[10px] font-bold text-white">✓</span>
+              }
+            </button>
+
+            <span
+              class="flex-1 text-sm transition"
+              [class.line-through]="todo.completed"
+              [class.text-slate-500]="todo.completed"
+              [class.text-slate-900]="!todo.completed"
+            >
+              {{ todo.title }}
+            </span>
+
+            <button z-button zType="ghost" type="button" (click)="deleteTodo(todo)" [zDisabled]="busyTodoId() === todo.id">
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</z-card>

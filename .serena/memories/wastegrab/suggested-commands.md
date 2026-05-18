@@ -1,0 +1,5 @@
+- Frontend build: cd frontend && npm run build
+- Frontend dev server: cd frontend && npm start
+- Backend build: cd backend && npm run build
+- Backend dev server: cd backend && npm run dev
+- Install dependencies: cd frontend && npm install, cd backend && npm install

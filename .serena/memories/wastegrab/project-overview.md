@@ -1,0 +1,4 @@
+- WasteGrab is a monorepo with an Angular 21 frontend and an Express 5 + TypeScript backend.
+- Backend uses Prisma 7 with MySQL/MariaDB for auth, todos, and waste-management data.
+- Frontend uses standalone Angular components, a shared AppLayout route shell, and a dedicated navbar component.
+- Source roots: backend/src and frontend/src/app.

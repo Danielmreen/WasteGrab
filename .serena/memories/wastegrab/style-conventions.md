@@ -1,0 +1,5 @@
+- TypeScript ESM modules with explicit .js import extensions in backend source.
+- Prefer small, explicit route handlers and helper functions.
+- Prisma is the persistence layer; generated client lives under src/generated/prisma.
+- Angular frontend uses standalone components, route nesting, and inline utility classes for page shells.
+- Shared shell UI should use Zard components instead of custom CSS when possible.

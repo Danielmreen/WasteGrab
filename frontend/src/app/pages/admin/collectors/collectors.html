@@ -1,0 +1,154 @@
+<section class="p-6 md:p-8 gap-3 grid">
+  <app-header mode="route" />
+
+  <div class="bg-white rounded-lg shadow p-6 space-y-6">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-1">
+        <h2 class="text-lg font-semibold text-slate-900">Location Management</h2>
+        <p class="text-sm text-slate-500">Create service locations and assign collectors to each area</p>
+      </div>
+
+      <button z-button type="button" (click)="openAdd()">New Location</button>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+      <table z-table class="min-w-225 bg-white">
+        <caption z-table-caption class="sr-only">
+          Location collectors management table
+        </caption>
+
+        <thead z-table-header>
+          <tr z-table-row>
+            <th z-table-head>Name</th>
+            <th z-table-head>City</th>
+            <th z-table-head>Collectors</th>
+            <th z-table-head class="text-right">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody z-table-body>
+          @for (loc of locations(); track loc.id) {
+            <tr z-table-row>
+              <td z-table-cell>
+                <p class="font-medium text-slate-900">{{ loc.name }}</p>
+                <p class="text-xs text-slate-500">{{ loc.address || 'No address provided' }}</p>
+              </td>
+
+              <td z-table-cell>
+                <p class="text-slate-900">{{ loc.city || '—' }}</p>
+                <p class="text-xs text-slate-500">{{ loc.state || '' }}</p>
+              </td>
+
+              <td z-table-cell>
+                <div class="flex flex-col gap-2">
+                  @if ((loc.collectors ?? []).length > 0) {
+                    @for (assignment of loc.collectors ?? []; track assignment.id) {
+                      <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2">
+                        <div>
+                          <p class="font-medium text-slate-900">{{ assignment.collector.name }}</p>
+                          <p class="text-xs text-slate-500">{{ assignment.collector.email }}</p>
+                        </div>
+
+                        <button
+                          z-button
+                          zType="destructive"
+                          zSize="sm"
+                          type="button"
+                          (click)="unassign(loc, assignment)"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-sm text-slate-500">No collectors assigned.</p>
+                  }
+                </div>
+              </td>
+
+              <td z-table-cell>
+                <div class="flex justify-end gap-2">
+                  <button z-button zType="outline" zSize="sm" type="button" (click)="openEdit(loc)">Edit</button>
+                  <button z-button zType="destructive" zSize="sm" type="button" (click)="deleteLocation(loc)">Delete</button>
+                  <button z-button zType="outline" zSize="sm" type="button" (click)="openAssign(loc)">Assign Collector</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr z-table-row>
+              <td z-table-cell colspan="4" class="py-10 text-center">
+                <p class="font-medium text-slate-900">No locations found.</p>
+                <p class="mt-1 text-sm text-slate-500">Create a location to start assigning collectors.</p>
+                <div class="mt-4">
+                  <button z-button zType="default" type="button" (click)="openAdd()">New Location</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (modalMode() === 'add' || modalMode() === 'edit') {
+    <z-modal
+      [isOpen]="true"
+      [title]="modalMode() === 'edit' ? 'Edit Location' : 'Create Location'"
+      [description]="modalMode() === 'edit' ? 'Update the selected location' : 'Create a service area for collectors'"
+      [okText]="modalMode() === 'edit' ? 'Save Changes' : 'Create Location'"
+      cancelText="Cancel"
+      size="lg"
+      (ok)="modalMode() === 'edit' ? saveEdit() : saveCreate()"
+      (cancel)="closeModal()"
+    >
+      <form [formGroup]="createForm" class="grid gap-4 sm:grid-cols-2">
+        <z-form-field class="sm:col-span-2">
+          <z-form-label [zRequired]="true">Location Name</z-form-label>
+          <z-form-control>
+            <input z-input type="text" formControlName="name" placeholder="Central Market" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="sm:col-span-2">
+          <z-form-label>Address</z-form-label>
+          <z-form-control>
+            <input z-input type="text" formControlName="address" placeholder="123 Main St" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>City</z-form-label>
+          <z-form-control>
+            <input z-input type="text" formControlName="city" placeholder="Kuala Lumpur" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+      </form>
+    </z-modal>
+  }
+
+  @if (modalMode() === 'assign') {
+    <z-modal
+      [isOpen]="true"
+      title="Assign Collector"
+      description="Assign a collector user to this location"
+      okText="Assign Collector"
+      cancelText="Cancel"
+      size="lg"
+      (ok)="saveAssign()"
+      (cancel)="closeModal()"
+    >
+      <form [formGroup]="assignForm" class="grid gap-4">
+        <z-form-field>
+          <z-form-label [zRequired]="true">Collector</z-form-label>
+          <z-form-control>
+            <z-select formControlName="collectorId" class="w-full">
+              @for (c of availableCollectors(); track c.id) {
+                <z-select-item [zValue]="c.id">{{ c.name }} ({{ c.email }})</z-select-item>
+              }
+            </z-select>
+          </z-form-control>
+        </z-form-field>
+      </form>
+    </z-modal>
+  }
+</section>

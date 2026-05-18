@@ -1,0 +1,179 @@
+<section class="p-6 md:p-8 gap-3 grid">
+  <app-header mode="route" />
+
+  <div class="bg-white rounded-lg shadow p-6 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-1">
+        <h2 class="text-lg font-semibold text-slate-900">User Management</h2>
+        <p class="text-sm text-slate-500">Manage user accounts, roles, and permissions</p>
+      </div>
+
+      <button z-button type="button" (click)="openAddUser()">Add User</button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+      <table z-table class="min-w-225 bg-white">
+        <caption z-table-caption class="sr-only">
+          Users management table
+        </caption>
+
+        <thead z-table-header>
+          <tr z-table-row>
+            <th z-table-head>Name</th>
+            <th z-table-head>Email</th>
+            <th z-table-head>Role</th>
+            <th z-table-head>Phone</th>
+            <th z-table-head>Joined</th>
+            <th z-table-head class="text-right">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody z-table-body>
+          @for (user of users(); track user.id) {
+            <tr z-table-row>
+              <td z-table-cell>
+                <p class="font-medium text-slate-900">{{ user.name }}</p>
+              </td>
+
+              <td z-table-cell>
+                <p class="text-slate-900">{{ user.email }}</p>
+              </td>
+
+              <td z-table-cell>
+                <z-badge [zType]="user.role | roleBadgeType" zShape="pill">
+                  {{ user.role | displayRole }}
+                </z-badge>
+              </td>
+
+              <td z-table-cell>
+                <p class="text-slate-900">{{ user.phone || '—' }}</p>
+              </td>
+
+              <td z-table-cell>
+                <p class="text-slate-900">{{ user.createdAt | date: 'MMM dd, yyyy' }}</p>
+              </td>
+
+              <td z-table-cell>
+                <div class="flex flex-wrap justify-end gap-2">
+                  <button
+                    z-button
+                    zType="outline"
+                    zSize="sm"
+                    type="button"
+                    (click)="openEditUser(user)"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    z-button
+                    zType="destructive"
+                    zSize="sm"
+                    type="button"
+                    (click)="deleteUser(user)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr z-table-row>
+              <td z-table-cell colspan="6" class="py-10 text-center">
+                <p class="font-medium text-slate-900">No users found.</p>
+                <p class="mt-1 text-sm text-slate-500">Get started by adding your first user.</p>
+                <div class="mt-4">
+                  <button z-button zType="default" type="button" (click)="openAddUser()">
+                    Add User
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- User Modal -->
+@if (userModalMode() !== null) {
+  <z-modal
+    [isOpen]="userModalMode() !== null"
+    [title]="userModalMode() === 'edit' ? 'Edit User' : 'Add User'"
+    description="Manage user account information"
+    okText="Save User"
+    cancelText="Cancel"
+    [isSubmitting]="false"
+    size="lg"
+    (ok)="saveUser()"
+    (cancel)="closeUserModal()"
+  >
+    <form [formGroup]="userForm" class="grid gap-4 sm:grid-cols-2">
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="true">Full Name</z-form-label>
+        <z-form-control>
+          <input z-input type="text" formControlName="name" placeholder="John Doe" class="w-full" />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="true">Email</z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="email"
+            formControlName="email"
+            placeholder="john@example.com"
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="userModalMode() === 'add'">
+          {{ userModalMode() === 'add' ? 'Password' : 'Password (leave blank to keep current)' }}
+        </z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="password"
+            formControlName="password"
+            [placeholder]="
+              userModalMode() === 'add' ? 'Enter password' : 'Leave blank to keep current'
+            "
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field class="sm:col-span-2">
+        <z-form-label>Phone Number</z-form-label>
+        <z-form-control>
+          <input
+            z-input
+            type="tel"
+            formControlName="phone"
+            placeholder="+62 812 3456 7890"
+            class="w-full"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field class="sm:col-span-2">
+        <z-form-label [zRequired]="true">Role</z-form-label>
+        <z-form-control>
+          <z-select formControlName="role" class="w-full">
+            @for (role of userRoles; track role) {
+              <z-select-item [zValue]="role">
+                {{ role | displayRole }}
+              </z-select-item>
+            }
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+    </form>
+  </z-modal>
+}
