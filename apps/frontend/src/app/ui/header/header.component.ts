@@ -120,7 +120,7 @@ type NotificationItem = {
           <div class="flex items-center justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-foreground">Notifications</p>
-              <p class="text-xs text-slate-500">
+              <p class="text-xs text-muted-foreground">
                 @if (notificationCount() > 0) {
                   {{ notificationCount() }} updates waiting for you
                 } @else {
@@ -131,7 +131,7 @@ type NotificationItem = {
 
             <button
               type="button"
-              class="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+              class="rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
               (click)="clearNotifications()"
             >
               Clear all
@@ -140,27 +140,27 @@ type NotificationItem = {
         </div>
 
         @if (notificationCount() > 0) {
-          <div class="max-h-72 divide-y divide-slate-100 overflow-y-auto">
+          <div class="max-h-72 divide-y divide-border overflow-y-auto">
             @for (item of notificationItems(); track item.title) {
               <button
                 z-dropdown-menu-item
                 type="button"
-                class="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                class="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted"
               >
                 <span class="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
 
                 <span class="min-w-0 flex-1">
-                  <span class="block text-sm font-medium text-slate-900">{{ item.title }}</span>
-                  <span class="mt-0.5 block text-xs leading-5 text-slate-500">{{ item.message }}</span>
-                  <span class="mt-1 block text-[11px] text-slate-400">{{ item.time }}</span>
+                  <span class="block text-sm font-medium text-foreground">{{ item.title }}</span>
+                  <span class="mt-0.5 block text-xs leading-5 text-muted-foreground">{{ item.message }}</span>
+                  <span class="mt-1 block text-[11px] text-muted-foreground">{{ item.time }}</span>
                 </span>
               </button>
             }
           </div>
         } @else {
           <div class="px-4 py-8 text-center">
-            <p class="text-sm font-medium text-slate-900">You're all caught up.</p>
-            <p class="mt-1 text-xs text-slate-500">New notifications will appear here.</p>
+            <p class="text-sm font-medium text-foreground">You're all caught up.</p>
+            <p class="mt-1 text-xs text-muted-foreground">New notifications will appear here.</p>
           </div>
         }
       </z-dropdown-menu-content>

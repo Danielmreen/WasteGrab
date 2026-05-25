@@ -1,12 +1,12 @@
 <section class="p-6 md:p-8 gap-3 grid">
   <app-header mode="route" />
 
-  <div class="bg-white rounded-lg shadow space-y-6 p-6">
+  <div class="bg-card rounded-lg shadow space-y-6 p-6">
     <!-- Notifications Setting -->
     <div class="flex items-center justify-between pb-6 border-b">
       <div>
-        <p class="font-medium text-slate-900">Push Notifications</p>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="font-medium text-foreground">Push Notifications</p>
+        <p class="text-sm text-muted-foreground mt-1">
           Receive push notifications for important updates
         </p>
       </div>
@@ -14,13 +14,13 @@
         type="button"
         (click)="toggleNotifications()"
         [class.bg-emerald-600]="notifications"
-        [class.bg-slate-300]="!notifications"
+        [class.bg-muted]="!notifications"
         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
       >
         <span
           [class.translate-x-6]="notifications"
           [class.translate-x-1]="!notifications"
-          class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+          class="inline-block h-4 w-4 transform rounded-full bg-background transition-transform"
         ></span>
       </button>
     </div>
@@ -28,8 +28,8 @@
     <!-- Email Updates Setting -->
     <div class="flex items-center justify-between pb-6 border-b">
       <div>
-        <p class="font-medium text-slate-900">Email Updates</p>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="font-medium text-foreground">Email Updates</p>
+        <p class="text-sm text-muted-foreground mt-1">
           Receive email updates about your waste impact
         </p>
       </div>
@@ -37,13 +37,13 @@
         type="button"
         (click)="toggleEmailUpdates()"
         [class.bg-emerald-600]="emailUpdates"
-        [class.bg-slate-300]="!emailUpdates"
+        [class.bg-muted]="!emailUpdates"
         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
       >
         <span
           [class.translate-x-6]="emailUpdates"
           [class.translate-x-1]="!emailUpdates"
-          class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+          class="inline-block h-4 w-4 transform rounded-full bg-background transition-transform"
         ></span>
       </button>
     </div>
@@ -51,8 +51,8 @@
     <!-- Dark Mode Setting -->
     <div class="flex items-center justify-between pb-6">
       <div>
-        <p class="font-medium text-slate-900">Dark Mode</p>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="font-medium text-foreground">Dark Mode</p>
+        <p class="text-sm text-muted-foreground mt-1">
           Use dark theme for the application
         </p>
       </div>
@@ -60,13 +60,13 @@
         type="button"
         (click)="toggleDarkMode()"
         [class.bg-emerald-600]="darkMode"
-        [class.bg-slate-300]="!darkMode"
+        [class.bg-muted]="!darkMode"
         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
       >
         <span
           [class.translate-x-6]="darkMode"
           [class.translate-x-1]="!darkMode"
-          class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+          class="inline-block h-4 w-4 transform rounded-full bg-background transition-transform"
         ></span>
       </button>
     </div>

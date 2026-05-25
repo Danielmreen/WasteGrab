@@ -1,6 +1,6 @@
 <div class="flex min-h-screen flex-col lg:flex-row">
   <!-- Left: Form Section -->
-  <div class="flex flex-1 items-center justify-center bg-white p-4 sm:p-8">
+  <div class="flex flex-1 items-center justify-center bg-card p-4 sm:p-8">
     <div class="w-full max-w-md space-y-6 sm:space-y-8">
       <!-- Header -->
       <div class="text-center">
@@ -11,7 +11,7 @@
             Create account
           }
         </h1>
-        <p class="mt-2 text-sm text-slate-600 sm:text-base">
+        <p class="mt-2 text-sm text-muted-foreground sm:text-base">
           @if (mode() === 'login') {
             Sign in to your account to continue
           } @else {
@@ -89,7 +89,7 @@
         </z-card>
 
         <!-- Toggle to Register -->
-        <p class="text-center text-sm text-slate-600">
+        <p class="text-center text-sm text-muted-foreground">
           Don't have an account?
           <button z-button zType="link" (click)="switchMode('register')" class="px-0">
             Sign up
@@ -182,7 +182,7 @@
         </z-card>
 
         <!-- Toggle to Login -->
-        <p class="text-center text-sm text-slate-600">
+        <p class="text-center text-sm text-muted-foreground">
           Already have an account?
           <button z-button zType="link" (click)="switchMode('login')" class="px-0">Sign in</button>
         </p>

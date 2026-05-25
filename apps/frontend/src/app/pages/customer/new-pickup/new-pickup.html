@@ -1,7 +1,7 @@
 <section class="p-6 md:p-8 gap-3 grid">
   <app-header mode="route" />
 
-  <div class="max-w-3xl mx-auto bg-white p-4 rounded shadow">
+  <div class="max-w-3xl mx-auto bg-card p-4 rounded shadow">
     <h2 class="text-lg font-semibold mb-3">Request New Pickup</h2>
 
     <div class="mb-4">
@@ -27,7 +27,7 @@
         <li class="flex items-center justify-between p-2 border rounded">
           <div>
             <div class="font-semibold">{{ s.category }}</div>
-            <div class="text-sm text-slate-500">Estimated quantity: {{ s.estimatedQuantity }}</div>
+            <div class="text-sm text-muted-foreground">Estimated quantity: {{ s.estimatedQuantity }}</div>
           </div>
           <div>
             <button class="btn btn-secondary" (click)="applySuggestion(s)">Autofill</button>

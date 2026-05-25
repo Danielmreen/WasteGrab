@@ -1,15 +1,15 @@
 <section class="grid min-w-0 gap-3 p-4 lg:p-8">
   <app-header mode="route" />
 
-  <div class="min-w-0 space-y-6 rounded-lg bg-white p-4 shadow lg:p-6">
+  <div class="min-w-0 space-y-6 rounded-lg bg-card p-4 shadow lg:p-6">
     <div
       class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between"
     >
       <div class="space-y-1">
-        <h2 class="text-lg font-semibold text-slate-900">
+        <h2 class="text-lg font-semibold text-foreground">
           Waste Category Management
         </h2>
-        <p class="text-sm text-slate-500">
+        <p class="text-sm text-muted-foreground">
           Manage pickup categories, AI detection, pricing, and category
           restrictions
         </p>
@@ -21,23 +21,23 @@
     <div class="grid gap-3 lg:hidden">
       @for (category of categories(); track category.id) {
       <article
-        class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+        class="rounded-lg border border-border bg-card p-3 shadow-sm"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="truncate font-medium text-slate-900">
+            <p class="truncate font-medium text-foreground">
               {{ category.name }}
             </p>
-            <p class="mt-1 text-sm text-slate-500">
+            <p class="mt-1 text-sm text-muted-foreground">
               {{ category.description || 'No description provided' }}
             </p>
           </div>
           <span
             class="shrink-0 rounded-full px-2 py-1 text-xs font-medium"
-            [class.bg-emerald-100]="category.isAiDetectable"
-            [class.text-emerald-700]="category.isAiDetectable"
-            [class.bg-slate-100]="!category.isAiDetectable"
-            [class.text-slate-600]="!category.isAiDetectable"
+            [class.bg-emerald-500/15]="category.isAiDetectable"
+            [class.text-emerald-700 dark:text-emerald-300]="category.isAiDetectable"
+            [class.bg-muted]="!category.isAiDetectable"
+            [class.text-muted-foreground]="!category.isAiDetectable"
           >
             {{ category.isAiDetectable ? 'AI' : 'No AI' }}
           </span>
@@ -45,39 +45,39 @@
 
         <dl class="mt-3 grid grid-cols-2 gap-3 text-sm">
           <div>
-            <dt class="text-xs font-medium text-slate-500">Price</dt>
-            <dd class="mt-0.5 text-slate-900">
+            <dt class="text-xs font-medium text-muted-foreground">Price</dt>
+            <dd class="mt-0.5 text-foreground">
               RM {{ category.pricePerKg }} / kg
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-medium text-slate-500">Points</dt>
-            <dd class="mt-0.5 text-slate-900">
+            <dt class="text-xs font-medium text-muted-foreground">Points</dt>
+            <dd class="mt-0.5 text-foreground">
               {{ category.pointsPerKg }} pts/kg
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-medium text-slate-500">Avg Weight</dt>
-            <dd class="mt-0.5 text-slate-900">
+            <dt class="text-xs font-medium text-muted-foreground">Avg Weight</dt>
+            <dd class="mt-0.5 text-foreground">
               {{ category.averageWeightKg }} kg/item
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-medium text-slate-500">Status</dt>
+            <dt class="text-xs font-medium text-muted-foreground">Status</dt>
             <dd class="mt-0.5 flex flex-wrap gap-1">
               @if (category.isBanned) {
               <span
-                class="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700"
+                class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-700 dark:text-rose-300"
                 >Banned</span
               >
               } @if (category.isHazardous) {
               <span
-                class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"
+                class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
                 >Hazardous</span
               >
               } @if (!category.isBanned && !category.isHazardous) {
               <span
-                class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"
                 >Active</span
               >
               }
@@ -107,9 +107,9 @@
         </div>
       </article>
       } @empty {
-      <div class="rounded-lg border border-slate-200 p-6 text-center">
-        <p class="font-medium text-slate-900">No waste categories found.</p>
-        <p class="mt-1 text-sm text-slate-500">
+      <div class="rounded-lg border border-border p-6 text-center">
+        <p class="font-medium text-foreground">No waste categories found.</p>
+        <p class="mt-1 text-sm text-muted-foreground">
           Create a category before customers request pickups.
         </p>
         <div class="mt-4">
@@ -122,9 +122,9 @@
     </div>
 
     <div
-      class="hidden max-w-full overflow-x-auto rounded-2xl border border-slate-200 lg:block"
+      class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
     >
-      <table z-table class="min-w-[68rem] bg-white">
+      <table z-table class="min-w-[68rem] bg-card">
         <caption z-table-caption class="sr-only">
           Waste category management table
         </caption>
@@ -143,15 +143,15 @@
           @for (category of categories(); track category.id) {
           <tr z-table-row>
             <td z-table-cell>
-              <p class="font-medium text-slate-900">{{ category.name }}</p>
-              <p class="text-xs text-slate-500">
+              <p class="font-medium text-foreground">{{ category.name }}</p>
+              <p class="text-xs text-muted-foreground">
                 {{ category.description || 'No description provided' }}
               </p>
             </td>
 
             <td z-table-cell>
-              <p class="text-slate-900">RM {{ category.pricePerKg }} / kg</p>
-              <p class="text-xs text-slate-500">
+              <p class="text-foreground">RM {{ category.pricePerKg }} / kg</p>
+              <p class="text-xs text-muted-foreground">
                 {{ category.pointsPerKg }} pts/kg · {{ category.averageWeightKg
                 }} kg/item
               </p>
@@ -160,10 +160,10 @@
             <td z-table-cell>
               <span
                 class="rounded-full px-2 py-1 text-xs font-medium"
-                [class.bg-emerald-100]="category.isAiDetectable"
-                [class.text-emerald-700]="category.isAiDetectable"
-                [class.bg-slate-100]="!category.isAiDetectable"
-                [class.text-slate-600]="!category.isAiDetectable"
+                [class.bg-emerald-500/15]="category.isAiDetectable"
+                [class.text-emerald-700 dark:text-emerald-300]="category.isAiDetectable"
+                [class.bg-muted]="!category.isAiDetectable"
+                [class.text-muted-foreground]="!category.isAiDetectable"
               >
                 {{ category.isAiDetectable ? 'Detectable' : 'Ignored' }}
               </span>
@@ -173,17 +173,17 @@
               <div class="flex flex-wrap gap-2">
                 @if (category.isBanned) {
                 <span
-                  class="rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700"
+                  class="rounded-full bg-rose-500/15 px-2 py-1 text-xs font-medium text-rose-700 dark:text-rose-300"
                   >Banned</span
                 >
                 } @if (category.isHazardous) {
                 <span
-                  class="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700"
+                  class="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300"
                   >Hazardous</span
                 >
                 } @if (!category.isBanned && !category.isHazardous) {
                 <span
-                  class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700"
+                  class="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300"
                   >Active</span
                 >
                 }
@@ -216,10 +216,10 @@
           } @empty {
           <tr z-table-row>
             <td z-table-cell colspan="5" class="py-10 text-center">
-              <p class="font-medium text-slate-900">
+              <p class="font-medium text-foreground">
                 No waste categories found.
               </p>
-              <p class="mt-1 text-sm text-slate-500">
+              <p class="mt-1 text-sm text-muted-foreground">
                 Create a category before customers request pickups.
               </p>
               <div class="mt-4">
@@ -307,28 +307,28 @@
         </z-form-control>
       </z-form-field>
 
-      <div class="grid gap-3 rounded border border-slate-200 p-3 sm:col-span-2">
-        <label class="flex items-center gap-2 text-sm text-slate-700">
+      <div class="grid gap-3 rounded border border-border p-3 sm:col-span-2">
+        <label class="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             formControlName="isBanned"
-            class="size-4 rounded border-slate-300"
+            class="size-4 rounded border-border"
           />
           Banned category
         </label>
-        <label class="flex items-center gap-2 text-sm text-slate-700">
+        <label class="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             formControlName="isHazardous"
-            class="size-4 rounded border-slate-300"
+            class="size-4 rounded border-border"
           />
           Hazardous category
         </label>
-        <label class="flex items-center gap-2 text-sm text-slate-700">
+        <label class="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             formControlName="isAiDetectable"
-            class="size-4 rounded border-slate-300"
+            class="size-4 rounded border-border"
           />
           Available for AI image detection
         </label>
