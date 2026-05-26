@@ -23,7 +23,7 @@ import {
   lucideUpload,
   lucideX,
 } from '@ng-icons/lucide';
-import type { Address, AnalyzeImageResponse, WasteCategory } from '@wastegrab/shared';
+import { PickupStatus, type Address, type AnalyzeImageResponse, type WasteCategory } from '@wastegrab/shared';
 import { AppHeaderComponent } from '@/ui/header/header.component';
 import { PickupRequestService } from '@/services/pickup-request.service';
 import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
@@ -121,6 +121,7 @@ export class CustomerNewPickupPage {
   protected readonly aiAutoSnapshot = signal<AiAutoSnapshot | null>(null);
   protected readonly submitError = signal('');
   protected readonly submitSuccess = signal('');
+  protected readonly hasActivePickupRequest = signal(false);
   protected readonly currentStep = signal<WizardStep>('images');
 
   protected readonly maxImages = 5;
@@ -144,6 +145,10 @@ export class CustomerNewPickupPage {
 
   protected pickupItems(): PickupItemForm[] {
     return this.form.controls.items.controls;
+  }
+
+  protected canCreateRequest(): boolean {
+    return !this.hasActivePickupRequest();
   }
 
   protected isStepActive(step: WizardStep): boolean {
@@ -521,6 +526,11 @@ export class CustomerNewPickupPage {
     this.submitSuccess.set('');
     this.submitError.set('');
 
+    if (this.hasActivePickupRequest()) {
+      this.showActivePickupDialog();
+      return;
+    }
+
     if (!this.images().length) {
       this.currentStep.set('images');
       this.submitError.set('Add at least one pickup image.');
@@ -588,7 +598,39 @@ export class CustomerNewPickupPage {
   }
 
   private async loadInitialData(): Promise<void> {
-    await Promise.all([this.loadWasteCategories(), this.loadAddresses()]);
+    await Promise.all([this.loadWasteCategories(), this.loadAddresses(), this.loadActivePickupState()]);
+  }
+
+  private async loadActivePickupState(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.pickupRequests.listPickupRequests());
+      const hasActive = response.pickupRequests.some(
+        (request) => request.status !== PickupStatus.COMPLETED && request.status !== PickupStatus.CANCELLED,
+      );
+      this.hasActivePickupRequest.set(hasActive);
+
+      if (hasActive) {
+        this.showActivePickupDialog();
+      }
+    } catch (err) {
+      console.error('Failed to check active pickup request:', err);
+    }
+  }
+
+  private showActivePickupDialog(): void {
+    this.dialogService.create({
+      zTitle: 'Active request already exists',
+      zDescription:
+        'You can only have one pickup request active at a time. Please wait until your current request is completed or cancelled.',
+      zContent:
+        '<div class="rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground">Open My Requests to track the current pickup status.</div>',
+      zOkText: 'View My Requests',
+      zCancelText: null,
+      zWidth: 'max-w-md',
+      zOnOk: () => {
+        void this.router.navigate(['/customer', 'my-requests']);
+      },
+    });
   }
 
   private async loadWasteCategories(): Promise<void> {

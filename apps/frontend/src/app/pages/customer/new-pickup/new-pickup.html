@@ -9,24 +9,30 @@
     <input type="hidden" name="ai_auto" [value]="aiAutoPayload()" />
 
     <section class="grid gap-5">
-      <nav
-        class="grid grid-cols-4 gap-2 rounded-lg border border-border bg-card p-2 shadow-sm"
-        aria-label="Pickup request steps"
-      >
+      @if (hasActivePickupRequest()) {
+        <div class="rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
+          <div class="flex items-start gap-3">
+            <ng-icon name="lucideCircleAlert" class="mt-0.5 size-5! shrink-0" />
+            <div>
+              <p class="font-semibold">You already have an active pickup request.</p>
+              <p class="mt-1 text-primary/80">Finish or cancel the current request before creating a new one.</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <nav class="grid grid-cols-4 gap-2 rounded-lg border border-border bg-card p-2 shadow-sm" aria-label="Pickup request steps">
         @for (step of steps; let index = $index; track step.id) {
-        <button
-          type="button"
-          class="flex min-h-16 flex-col items-center justify-center gap-1 rounded-md px-2 text-center text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          [class.bg-primary]="isStepActive(step.id)"
-          [class.text-primary-foreground]="isStepActive(step.id)"
-          [class.bg-primary/10]="!isStepActive(step.id) && isStepComplete(step.id)"
-          [class.text-primary]="!isStepActive(step.id) && isStepComplete(step.id)"
-          [class.text-muted-foreground]="!isStepActive(step.id) && !isStepComplete(step.id)"
-          [disabled]="isAnalyzing() || isSubmitting()"
-          (click)="goToStep(step.id)"
-        >
-          <span
-            class="flex size-7 items-center justify-center rounded-md bg-background/70"
+          <button
+            type="button"
+            class="flex min-h-16 flex-col items-center justify-center gap-1 rounded-md px-2 text-center text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            [class.bg-primary]="isStepActive(step.id)"
+            [class.text-primary-foreground]="isStepActive(step.id)"
+            [class.bg-primary/10]="!isStepActive(step.id) && isStepComplete(step.id)"
+            [class.text-primary]="!isStepActive(step.id) && isStepComplete(step.id)"
+            [class.text-muted-foreground]="!isStepActive(step.id) && !isStepComplete(step.id)"
+            [disabled]="isAnalyzing() || isSubmitting() || !canCreateRequest()"
+            (click)="goToStep(step.id)"
           >
             <ng-icon [name]="step.icon" class="size-4!" />
           </span>
@@ -127,9 +133,10 @@
               } @else {
               <button
                 type="button"
-                class="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-md bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background"
-                (click)="removeImage(index)"
-                aria-label="Remove image"
+                class="inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                (click)="clearImages()"
+                [disabled]="isAnalyzing() || !canCreateRequest()"
+                aria-label="Clear images"
               >
                 <ng-icon name="lucideX" class="size-4!" />
               </button>
@@ -166,9 +173,9 @@
 
             <button
               type="button"
-              class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-              (click)="nextStep()"
-              [disabled]="!canGoNext()"
+              class="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-4 py-8 text-center transition-colors hover:border-primary/60 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+              (click)="fileInput.click()"
+              [disabled]="images().length >= maxImages || isAnalyzing() || !canCreateRequest()"
             >
               Continue
               <ng-icon name="lucideArrowRight" class="size-4!" />
@@ -201,15 +208,40 @@
             </button>
             }
 
-            <button
-              type="button"
-              class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-xs font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-              (click)="addPickupItem()"
-              [disabled]="isAnalyzing()"
-            >
-              <ng-icon name="lucidePlus" class="size-4!" />
-              Add
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                [class.shadow-[0_0_0_4px_hsl(var(--primary)/0.14),0_10px_24px_hsl(var(--primary)/0.28)]]="images().length && !isAnalyzing()"
+                (click)="analyzeImages()"
+                [disabled]="isAnalyzing() || !images().length || !canCreateRequest()"
+                [attr.aria-label]="isAnalyzing() ? 'Analyzing images' : 'Analyze images with AI'"
+                [title]="isAnalyzing() ? 'Analyzing images' : 'Analyze images with AI'"
+              >
+                @if (images().length && !isAnalyzing()) {
+                  <span class="absolute inset-0 rounded-full bg-primary/40 animate-ping"></span>
+                }
+                @if (isAnalyzing()) {
+                  <ng-icon name="lucideLoaderCircle" class="size-5! animate-spin" />
+                } @else {
+                  <ng-icon
+                    name="lucideSparkles"
+                    class="relative size-5!"
+                    [class.animate-pulse]="images().length"
+                  />
+                }
+              </button>
+
+              <button
+                type="button"
+                class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                (click)="nextStep()"
+                [disabled]="!canGoNext() || !canCreateRequest()"
+              >
+                Continue
+                <ng-icon name="lucideArrowRight" class="size-4!" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -245,32 +277,25 @@
                 >
                 <button
                   type="button"
-                  class="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  (click)="removePickupItem(index)"
-                  aria-label="Remove waste item"
+                  class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  (click)="resetToAiSuggestions()"
+                  [disabled]="isAnalyzing() || !canCreateRequest()"
                 >
                   <ng-icon name="lucideX" class="size-4!" />
                 </button>
               </div>
 
-              <div class="grid gap-3 sm:grid-cols-[1fr_11rem]">
-                <div class="grid gap-2">
-                  <label
-                    [for]="'categoryId-' + index"
-                    class="text-sm font-medium"
-                    >Category</label
-                  >
-                  <select
-                    [id]="'categoryId-' + index"
-                    formControlName="categoryId"
-                    class="h-11 rounded-md border border-input bg-background px-3 text-sm outline-none transition-shadow focus:ring-2 focus:ring-ring/30"
-                  >
-                    <option value="">Select category</option>
-                    @for (category of wasteCategories(); track category.id) {
-                    <option [value]="category.id">{{ category.name }}</option>
-                    }
-                  </select>
-                </div>
+              <button
+                type="button"
+                class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-xs font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                (click)="addPickupItem()"
+                [disabled]="isAnalyzing() || !canCreateRequest()"
+              >
+                <ng-icon name="lucidePlus" class="size-4!" />
+                Add
+              </button>
+            </div>
+          </div>
 
                 <div class="grid gap-2">
                   <label
@@ -415,22 +440,22 @@
           type="button"
           class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           (click)="previousStep()"
-          [disabled]="!canGoBack()"
+          [disabled]="!canGoBack() || !canCreateRequest()"
         >
           <ng-icon name="lucideArrowLeft" class="size-4!" />
           Back
         </button>
 
         @if (!isStepActive('confirm')) {
-        <button
-          type="button"
-          class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
-          (click)="nextStep()"
-          [disabled]="!canGoNext()"
-        >
-          Next
-          <ng-icon name="lucideArrowRight" class="size-4!" />
-        </button>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+            (click)="nextStep()"
+            [disabled]="!canGoNext() || !canCreateRequest()"
+          >
+            Next
+            <ng-icon name="lucideArrowRight" class="size-4!" />
+          </button>
         }
       </div>
     </section>
@@ -570,7 +595,7 @@
       <button
         type="submit"
         class="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
-        [disabled]="isSubmitting() || isAnalyzing() || !isStepActive('confirm')"
+        [disabled]="isSubmitting() || isAnalyzing() || !isStepActive('confirm') || !canCreateRequest()"
       >
         @if (isSubmitting()) {
         <ng-icon name="lucideLoaderCircle" class="size-4! animate-spin" />

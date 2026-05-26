@@ -34,6 +34,11 @@ export type PickupItem = {
   categoryId: string;
   estimatedWeight: string | null; // Decimal as string
   actualWeight: string | null; // Decimal as string
+  category?: {
+    id: string;
+    name: string;
+    pointsPerKg: number;
+  } | null;
 };
 
 export type PickupImage = {
@@ -63,6 +68,14 @@ export type PickupRequestWithDetails = PickupRequest & {
 };
 
 export type CreatePickupRequestResponse = {
+  pickupRequest: PickupRequestWithDetails;
+};
+
+export type ListPickupRequestsResponse = {
+  pickupRequests: PickupRequestWithDetails[];
+};
+
+export type GetPickupRequestResponse = {
   pickupRequest: PickupRequestWithDetails;
 };
 

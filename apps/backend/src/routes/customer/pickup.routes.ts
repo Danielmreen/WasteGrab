@@ -6,6 +6,8 @@ import sharp from "sharp";
 import type {
   ApiErrorResponse,
   CreatePickupRequestResponse,
+  GetPickupRequestResponse,
+  ListPickupRequestsResponse,
   PickupImage,
   PickupItem,
   PickupRequest,
@@ -44,6 +46,129 @@ const upload = multer({
   },
 });
 
+const pickupRequestInclude = {
+  items: {
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          pointsPerKg: true,
+        },
+      },
+    },
+  },
+  images: true,
+} satisfies Prisma.PickupRequestInclude;
+
+pickupRouter.get(
+  "/",
+  (async (req, res) => {
+    const user = await getCurrentUserFromRequest(req);
+
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated." } as ApiErrorResponse);
+      return;
+    }
+
+    const pickupRequests = await prisma.pickupRequest.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: pickupRequestInclude,
+    });
+
+    const payload: ListPickupRequestsResponse = {
+      pickupRequests: pickupRequests.map(toPickupRequestWithDetails),
+    };
+
+    res.json(payload);
+  }) as RequestHandler,
+);
+
+pickupRouter.get(
+  "/:pickupRequestId",
+  (async (req, res) => {
+    const user = await getCurrentUserFromRequest(req);
+
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated." } as ApiErrorResponse);
+      return;
+    }
+
+    const pickupRequest = await prisma.pickupRequest.findFirst({
+      where: {
+        id: String(req.params.pickupRequestId),
+        userId: user.id,
+      },
+      include: pickupRequestInclude,
+    });
+
+    if (!pickupRequest) {
+      res.status(404).json({ error: "Pickup request not found." } as ApiErrorResponse);
+      return;
+    }
+
+    const payload: GetPickupRequestResponse = {
+      pickupRequest: toPickupRequestWithDetails(pickupRequest),
+    };
+
+    res.json(payload);
+  }) as RequestHandler,
+);
+
+pickupRouter.patch(
+  "/:pickupRequestId/cancel",
+  (async (req, res) => {
+    const user = await getCurrentUserFromRequest(req);
+
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated." } as ApiErrorResponse);
+      return;
+    }
+
+    const existing = await prisma.pickupRequest.findFirst({
+      where: {
+        id: String(req.params.pickupRequestId),
+        userId: user.id,
+      },
+      include: pickupRequestInclude,
+    });
+
+    if (!existing) {
+      res.status(404).json({ error: "Pickup request not found." } as ApiErrorResponse);
+      return;
+    }
+
+    if (
+      existing.status === PrismaPickupStatus.COMPLETED ||
+      existing.status === PrismaPickupStatus.CANCELLED
+    ) {
+      res.status(400).json({ error: "This pickup request cannot be cancelled." } as ApiErrorResponse);
+      return;
+    }
+
+    const cancelled = await prisma.pickupRequest.update({
+      where: {
+        id: existing.id,
+      },
+      data: {
+        status: PrismaPickupStatus.CANCELLED,
+      },
+      include: pickupRequestInclude,
+    });
+
+    const payload: GetPickupRequestResponse = {
+      pickupRequest: toPickupRequestWithDetails(cancelled),
+    };
+
+    res.json(payload);
+  }) as RequestHandler,
+);
+
 pickupRouter.post(
   "/",
   upload.array("images", 5),
@@ -60,6 +185,25 @@ pickupRouter.post(
 
       if (!files.length) {
         res.status(400).json({ error: "At least one image is required." } as ApiErrorResponse);
+        return;
+      }
+
+      const activePickupRequest = await prisma.pickupRequest.findFirst({
+        where: {
+          userId: user.id,
+          status: {
+            notIn: [PrismaPickupStatus.COMPLETED, PrismaPickupStatus.CANCELLED],
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (activePickupRequest) {
+        res.status(409).json({
+          error: "You already have an active pickup request. Please wait until it is completed or cancelled before creating a new one.",
+        } as ApiErrorResponse);
         return;
       }
 
@@ -162,10 +306,7 @@ pickupRouter.post(
               create: uploadedImages,
             },
           },
-          include: {
-            items: true,
-            images: true,
-          },
+          include: pickupRequestInclude,
         });
 
         const payload: CreatePickupRequestResponse = {
@@ -318,6 +459,11 @@ function toPickupRequestWithDetails(row: {
     categoryId: string;
     estimatedWeight: unknown | null;
     actualWeight: unknown | null;
+    category?: {
+      id: string;
+      name: string;
+      pointsPerKg: number;
+    } | null;
   }>;
   images?: Array<{
     id: string;
@@ -349,6 +495,13 @@ function toPickupRequestWithDetails(row: {
     categoryId: item.categoryId,
     estimatedWeight: stringifyDecimal(item.estimatedWeight),
     actualWeight: stringifyDecimal(item.actualWeight),
+    category: item.category
+      ? {
+          id: item.category.id,
+          name: item.category.name,
+          pointsPerKg: item.category.pointsPerKg,
+        }
+      : null,
   }));
 
   const images: PickupImage[] = (row.images ?? []).map((image) => ({
