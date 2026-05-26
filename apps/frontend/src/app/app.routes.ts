@@ -1,7 +1,10 @@
-import { CanActivateFn, Route, Routes } from '@angular/router';
+import type { CanActivateFn, Route, Routes } from '@angular/router';
 import { AppLayout } from './layouts/app-layout.component';
 import { UserRole } from '@wastegrab/shared';
 import { authGuard, guestGuard } from './services/auth.guard';
+import { ROUTE_PATHS } from './app-route-paths';
+
+export { ROUTE_PATHS, routePath } from './app-route-paths';
 
 type LazyPage = NonNullable<Route['loadComponent']>;
 
@@ -35,37 +38,37 @@ interface RouteConfig {
   path: string;
   title: string;
   loadComponent?: LazyPage;
-  guards?: CanActivateFn[];
-  roles?: UserRole[];
-  children?: RouteConfig[];
+  guards?: readonly CanActivateFn[];
+  roles?: readonly UserRole[];
+  children?: readonly RouteConfig[];
 }
 
-const ROUTE_CONFIG: RouteConfig[] = [
+const ROUTE_CONFIG = [
   {
-    path: '',
+    path: ROUTE_PATHS.home,
     title: 'Home',
     loadComponent: pages.home,
   },
   {
-    path: 'auth',
+    path: ROUTE_PATHS.auth,
     title: 'Login',
     loadComponent: pages.auth,
     guards: [guestGuard],
   },
   {
-    path: 'profile',
+    path: ROUTE_PATHS.profile,
     title: 'Profile',
     loadComponent: pages.profile,
     guards: [authGuard],
   },
   {
-    path: 'settings',
+    path: ROUTE_PATHS.settings,
     title: 'Settings',
     loadComponent: pages.settings,
     guards: [authGuard],
   },
   {
-    path: 'customer',
+    path: ROUTE_PATHS.customer.base,
     title: 'Customer',
     guards: [authGuard],
     roles: [UserRole.CUSTOMER],
@@ -76,49 +79,49 @@ const ROUTE_CONFIG: RouteConfig[] = [
         loadComponent: pages.customerDashboard,
       },
       {
-        path: 'new-pickup',
+        path: ROUTE_PATHS.customer.newPickup,
         title: 'New Pickup',
         loadComponent: pages.customerNewPickup,
       },
       {
-        path: 'pickups',
+        path: ROUTE_PATHS.customer.pickups,
         title: 'My Pickups',
         loadComponent: pages.customerPickups,
       },
       {
-        path: 'pickups/:pickupId',
+        path: `${ROUTE_PATHS.customer.pickups}/${ROUTE_PATHS.customer.pickupDetail}`,
         title: 'Pickup Details',
         loadComponent: pages.customerPickupDetail,
       },
       {
-        path: 'vouchers',
+        path: ROUTE_PATHS.customer.vouchers,
         title: 'My Vouchers',
         loadComponent: pages.customerVouchers,
       },
       {
-        path: 'my-requests',
+        path: ROUTE_PATHS.customer.myRequests,
         title: 'My Requests',
         loadComponent: pages.customerPickups,
       },
       {
-        path: 'rewards',
+        path: ROUTE_PATHS.customer.rewards,
         title: 'Rewards',
         loadComponent: pages.customerVouchers,
       },
       {
-        path: 'profile',
+        path: ROUTE_PATHS.profile,
         title: 'Profile',
         loadComponent: pages.profile,
       },
       {
-        path: 'settings',
+        path: ROUTE_PATHS.settings,
         title: 'Settings',
         loadComponent: pages.settings,
       },
     ],
   },
   {
-    path: 'admin',
+    path: ROUTE_PATHS.admin.base,
     title: 'Admin',
     guards: [authGuard],
     roles: [UserRole.ADMIN],
@@ -129,34 +132,34 @@ const ROUTE_CONFIG: RouteConfig[] = [
         loadComponent: pages.adminDashboard,
       },
       {
-        path: 'locations',
+        path: ROUTE_PATHS.admin.collectors,
         title: 'Manage Collection Locations',
         loadComponent: pages.adminCollectors,
       },
       {
-        path: 'pickups',
+        path: ROUTE_PATHS.admin.pickups,
         title: 'Manage Pickups',
         loadComponent: pages.adminPickups,
       },
       {
-        path: 'users',
+        path: ROUTE_PATHS.admin.users,
         title: 'Manage Users',
         loadComponent: pages.adminUsers,
       },
       {
-        path: 'waste-categories',
+        path: ROUTE_PATHS.admin.wasteCategories,
         title: 'Manage Waste Categories',
         loadComponent: pages.adminWasteCategories,
       },
       {
-        path: 'vouchers',
+        path: ROUTE_PATHS.admin.vouchers,
         title: 'Manage Vouchers',
         loadComponent: pages.adminVouchers,
       },
     ],
   },
   {
-    path: 'collector',
+    path: ROUTE_PATHS.collector.base,
     title: 'Collector',
     guards: [authGuard],
     roles: [UserRole.COLLECTOR],
@@ -167,61 +170,43 @@ const ROUTE_CONFIG: RouteConfig[] = [
         loadComponent: pages.collectorDashboard,
       },
       {
-        path: 'earnings',
+        path: ROUTE_PATHS.collector.earnings,
         title: 'Collector Earnings',
         loadComponent: pages.collectorEarnings,
       },
       {
-        path: 'pickups',
+        path: ROUTE_PATHS.collector.pickups,
         title: 'Collector Pickups',
         loadComponent: pages.collectorPickups,
       },
     ],
   },
-];
+] satisfies readonly RouteConfig[];
 
-// Extract just the paths for template navigation
-export const ROUTE_PATHS = {
-  home: '',
-  auth: 'auth',
-  profile: 'profile',
-  settings: 'settings',
-  customer: {
-    base: 'customer',
-    newPickup: 'new-pickup',
-    pickups: 'pickups',
-    pickupDetail: ':pickupId',
-    vouchers: 'vouchers',
-    myRequests: 'my-requests',
-    rewards: 'rewards',
-  },
-  admin: {
-    base: 'admin',
-    collectors: 'locations',
-    pickups: 'pickups',
-    users: 'users',
-    wasteCategories: 'waste-categories',
-    vouchers: 'vouchers',
-  },
-  collector: {
-    base: 'collector',
-    earnings: 'earnings',
-    pickups: 'pickups',
-  },
-} as const;
+function buildRoutes(configs: readonly RouteConfig[]): Routes {
+  return configs.map((config) => {
+    const route: Route = {
+      path: config.path,
+      data: {
+        title: config.title,
+        ...(config.roles ? { roles: [...config.roles] } : {}),
+      },
+    };
 
-// Convert RouteConfig to Angular Routes
-function buildRoutes(configs: RouteConfig[]): Routes {
-  return configs.map(config => ({
-    path: config.path,
-    ...(config.loadComponent && { loadComponent: config.loadComponent }),
-    canActivate: config.guards,
-    data: {
-      title: config.title,
-      ...(config.roles && { roles: config.roles }),
-    },
-    children: config.children ? buildRoutes(config.children) : undefined,
-  }));
+    if (config.loadComponent) {
+      route.loadComponent = config.loadComponent;
+    }
+
+    if (config.guards) {
+      route.canActivate = [...config.guards];
+    }
+
+    if (config.children) {
+      route.children = buildRoutes(config.children);
+    }
+
+    return route;
+  });
 }
 
 const appRoutes = buildRoutes(ROUTE_CONFIG);

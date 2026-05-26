@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -14,11 +14,11 @@ import {
   lucideSettings,
   lucideTruck,
   lucideUsers,
-  lucideUser,
   lucideRecycle,
 } from '@ng-icons/lucide';
 
 import { UserRole, type User } from '@wastegrab/shared';
+import { ROUTE_PATHS, routePath } from '@/app-route-paths';
 import { AuthService } from '@/services/auth.service';
 import { ZardAvatarComponent } from '@/ui/zard/avatar/avatar.component';
 import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
@@ -32,6 +32,105 @@ interface NavItem {
 
 type Role = User['role'];
 
+const ROLE_NAV = {
+  [UserRole.CUSTOMER]: [
+    {
+      label: 'Dashboard',
+      route: routePath(ROUTE_PATHS.customer.base),
+      icon: 'lucideLayoutDashboard',
+      showOnMobile: true,
+    },
+    {
+      label: 'New Request',
+      route: routePath(ROUTE_PATHS.customer.base, ROUTE_PATHS.customer.newPickup),
+      icon: 'lucidePlus',
+      showOnMobile: true,
+    },
+    {
+      label: 'My Pickups',
+      route: routePath(ROUTE_PATHS.customer.base, ROUTE_PATHS.customer.pickups),
+      icon: 'lucideHistory',
+      showOnMobile: true,
+    },
+    {
+      label: 'Rewards',
+      route: routePath(ROUTE_PATHS.customer.base, ROUTE_PATHS.customer.vouchers),
+      icon: 'lucideGift',
+      showOnMobile: true,
+    },
+  ],
+  [UserRole.ADMIN]: [
+    {
+      label: 'Dashboard',
+      route: routePath(ROUTE_PATHS.admin.base),
+      icon: 'lucideLayoutDashboard',
+      showOnMobile: true,
+    },
+    {
+      label: 'Users',
+      route: routePath(ROUTE_PATHS.admin.base, ROUTE_PATHS.admin.users),
+      icon: 'lucideUsers',
+      showOnMobile: true,
+    },
+    {
+      label: 'Locations',
+      route: routePath(ROUTE_PATHS.admin.base, ROUTE_PATHS.admin.collectors),
+      icon: 'lucideTruck',
+      showOnMobile: true,
+    },
+    {
+      label: 'Categories',
+      route: routePath(ROUTE_PATHS.admin.base, ROUTE_PATHS.admin.wasteCategories),
+      icon: 'lucideRecycle',
+      showOnMobile: true,
+    },
+    {
+      label: 'Pickups',
+      route: routePath(ROUTE_PATHS.admin.base, ROUTE_PATHS.admin.pickups),
+      icon: 'lucidePackage',
+      showOnMobile: true,
+    },
+    {
+      label: 'Vouchers',
+      route: routePath(ROUTE_PATHS.admin.base, ROUTE_PATHS.admin.vouchers),
+      icon: 'lucideGift',
+      showOnMobile: false,
+    },
+  ],
+  [UserRole.COLLECTOR]: [
+    {
+      label: 'Dashboard',
+      route: routePath(ROUTE_PATHS.collector.base),
+      icon: 'lucideLayoutDashboard',
+      showOnMobile: true,
+    },
+    {
+      label: 'Pickups',
+      route: routePath(ROUTE_PATHS.collector.base, ROUTE_PATHS.collector.pickups),
+      icon: 'lucideRecycle',
+      showOnMobile: true,
+    },
+    {
+      label: 'Earnings',
+      route: routePath(ROUTE_PATHS.collector.base, ROUTE_PATHS.collector.earnings),
+      icon: 'lucideGift',
+      showOnMobile: true,
+    },
+  ],
+} satisfies Record<Role, readonly NavItem[]>;
+
+function getInitials(name?: string | null): string {
+  const initials = name
+    ?.trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+
+  return initials || 'U';
+}
+
 @Component({
   selector: 'app-navbar',
   imports: [CommonModule, RouterLink, RouterLinkActive, NgIcon, ZardAvatarComponent],
@@ -42,7 +141,6 @@ type Role = User['role'];
       lucideLayoutDashboard,
       lucidePlus,
       lucideHistory,
-      lucideUser,
       lucideUsers,
       lucideTruck,
       lucidePackage,
@@ -76,6 +174,7 @@ type Role = User['role'];
               [routerLink]="item.route"
               routerLinkActive="bg-primary text-primary-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
+              ariaCurrentWhenActive="page"
               class="group mb-2 flex items-center gap-3 rounded-xl text-sm font-medium text-foreground"
             >
               <span class="flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-colors group-hover:bg-primary/20">
@@ -92,8 +191,8 @@ type Role = User['role'];
           <a [routerLink]="profileRoute" class="block rounded-xl bg-primary/5 p-3 transition-colors hover:bg-primary/15">
             <div class="flex items-center gap-3">
               <z-avatar
-                [zFallback]="getInitials(user()?.name)"
-                [zAlt]="user()?.name + ' avatar'"
+                [zFallback]="userInitials()"
+                [zAlt]="avatarAlt()"
                 zSize="md"
                 class="ring-2 ring-primary/30"
               />
@@ -111,16 +210,19 @@ type Role = User['role'];
           <div class="flex gap-2">
             <a
               [routerLink]="settingsRoute"
-              class="flex-1 rounded-lg bg-primary/10 py-2 text-center text-xs text-foreground transition-colors hover:bg-primary/20"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary/10 py-2 text-xs text-foreground transition-colors hover:bg-primary/20"
             >
-              Settings
+              <ng-icon name="lucideSettings" class="size-3.5!" aria-hidden="true" />
+              <span>Settings</span>
             </a>
 
             <button
+              type="button"
               (click)="confirmLogout()"
-              class="flex-1 rounded-lg bg-destructive/10 py-2 text-xs text-destructive transition-colors hover:bg-destructive/20"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/10 py-2 text-xs text-destructive transition-colors hover:bg-destructive/20"
             >
-              Logout
+              <ng-icon name="lucideLogOut" class="size-3.5!" aria-hidden="true" />
+              <span>Logout</span>
             </button>
           </div>
 
@@ -138,6 +240,7 @@ type Role = User['role'];
               [routerLink]="item.route"
               routerLinkActive="bg-primary text-primary-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
+              ariaCurrentWhenActive="page"
               class="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl text-foreground hover:bg-primary/20"
             >
               <ng-icon [name]="item.icon" class="size-5!" />
@@ -150,11 +253,13 @@ type Role = User['role'];
         <a
           [routerLink]="profileRoute"
           routerLinkActive="bg-primary text-primary-foreground"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
           class="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl text-foreground hover:bg-primary/20"
         >
           <z-avatar
-            [zFallback]="getInitials(user()?.name)"
-            [zAlt]="user()?.name + ' avatar'"
+            [zFallback]="userInitials()"
+            [zAlt]="avatarAlt()"
             zSize="sm"
             class="ring-2 ring-primary/30"
           />
@@ -169,48 +274,21 @@ type Role = User['role'];
 export class AppNavbarComponent {
   protected readonly authService = inject(AuthService);
   private readonly dialogService = inject(ZardDialogService);
+  private readonly router = inject(Router);
 
   protected readonly user = computed(() => this.authService.currentUser());
+  protected readonly userInitials = computed(() => getInitials(this.user()?.name));
+  protected readonly avatarAlt = computed(() => `${this.user()?.name?.trim() || 'User'} avatar`);
 
-  protected readonly roleNav: Record<Role, NavItem[]> = {
-    [UserRole.CUSTOMER]: [
-      { label: 'Dashboard', route: '/customer', icon: 'lucideLayoutDashboard', showOnMobile: true },
-      { label: 'New Request', route: '/customer/new-pickup', icon: 'lucidePlus', showOnMobile: true },
-      { label: 'My Pickups', route: '/customer/pickups', icon: 'lucideHistory', showOnMobile: true },
-      { label: 'Rewards', route: '/customer/vouchers', icon: 'lucideGift', showOnMobile: true },
-    ],
-    [UserRole.ADMIN]: [
-      { label: 'Dashboard', route: '/admin', icon: 'lucideLayoutDashboard', showOnMobile: true },
-      { label: 'Users', route: '/admin/users', icon: 'lucideUsers', showOnMobile: true },
-      { label: 'Locations', route: '/admin/locations', icon: 'lucideTruck', showOnMobile: true },
-      { label: 'Categories', route: '/admin/waste-categories', icon: 'lucideRecycle', showOnMobile: true },
-      { label: 'Pickups', route: '/admin/pickups', icon: 'lucidePackage', showOnMobile: true },
-      { label: 'Vouchers', route: '/admin/vouchers', icon: 'lucideGift', showOnMobile: false },
-    ],
-    [UserRole.COLLECTOR]: [
-      { label: 'Dashboard', route: '/collector', icon: 'lucideLayoutDashboard', showOnMobile: true },
-      { label: 'Pickups', route: '/collector/pickups', icon: 'lucideRecycle', showOnMobile: true },
-      { label: 'Earnings', route: '/collector/earnings', icon: 'lucideGift', showOnMobile: true },
-    ],
-  };
+  protected readonly roleNav = ROLE_NAV;
 
   protected readonly navItems = computed(() => {
     const role = this.user()?.role;
     return role ? this.roleNav[role] ?? [] : [];
   });
 
-  protected readonly profileRoute = '/profile';
-  protected readonly settingsRoute = '/settings';
-
-  protected getInitials(name?: string | null): string {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(n => n.charAt(0).toUpperCase())
-      .join('');
-  }
+  protected readonly profileRoute = routePath(ROUTE_PATHS.profile);
+  protected readonly settingsRoute = routePath(ROUTE_PATHS.settings);
 
   protected confirmLogout(): void {
     this.dialogService.create({
@@ -222,10 +300,14 @@ export class AppNavbarComponent {
       zWidth: 'max-w-sm',
       zOnOk: () => {
         this.authService.logout().subscribe({
-          next: () => (window.location.href = '/auth'),
-          error: () => (window.location.href = '/auth'),
+          next: () => this.redirectToAuth(),
+          error: () => this.redirectToAuth(),
         });
       },
     });
+  }
+
+  private redirectToAuth(): void {
+    void this.router.navigateByUrl(routePath(ROUTE_PATHS.auth));
   }
 }
