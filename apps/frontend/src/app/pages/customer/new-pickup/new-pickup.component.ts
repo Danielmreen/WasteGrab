@@ -2,17 +2,22 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideArrowLeft,
+  lucideArrowRight,
   lucideCheckCircle2,
   lucideCircleAlert,
   lucideCoins,
   lucideImage,
+  lucideListChecks,
   lucideLoaderCircle,
   lucideMapPin,
   lucidePackage,
   lucidePlus,
+  lucideRotateCcw,
   lucideScale,
   lucideSparkles,
   lucideUpload,
@@ -21,6 +26,7 @@ import {
 import type { Address, AnalyzeImageResponse, WasteCategory } from '@wastegrab/shared';
 import { AppHeaderComponent } from '@/ui/header/header.component';
 import { PickupRequestService } from '@/services/pickup-request.service';
+import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
 
 type NewPickupForm = FormGroup<{
   items: FormArray<PickupItemForm>;
@@ -66,6 +72,14 @@ type AiAutoSnapshot = {
   }>;
 };
 
+type WizardStep = 'images' | 'items' | 'pickup' | 'confirm';
+
+type StepMeta = {
+  id: WizardStep;
+  label: string;
+  icon: string;
+};
+
 @Component({
   selector: 'app-customer-new-pickup-page',
   templateUrl: './new-pickup.html',
@@ -73,14 +87,18 @@ type AiAutoSnapshot = {
   imports: [CommonModule, ReactiveFormsModule, AppHeaderComponent, NgIcon],
   viewProviders: [
     provideIcons({
+      lucideArrowLeft,
+      lucideArrowRight,
       lucideCheckCircle2,
       lucideCircleAlert,
       lucideCoins,
       lucideImage,
+      lucideListChecks,
       lucideLoaderCircle,
       lucideMapPin,
       lucidePackage,
       lucidePlus,
+      lucideRotateCcw,
       lucideScale,
       lucideSparkles,
       lucideUpload,
@@ -91,6 +109,8 @@ type AiAutoSnapshot = {
 export class CustomerNewPickupPage {
   private readonly http = inject(HttpClient);
   private readonly pickupRequests = inject(PickupRequestService);
+  private readonly dialogService = inject(ZardDialogService);
+  private readonly router = inject(Router);
 
   protected readonly wasteCategories = signal<WasteCategory[]>([]);
   protected readonly addresses = signal<Address[]>([]);
@@ -101,13 +121,20 @@ export class CustomerNewPickupPage {
   protected readonly aiAutoSnapshot = signal<AiAutoSnapshot | null>(null);
   protected readonly submitError = signal('');
   protected readonly submitSuccess = signal('');
+  protected readonly currentStep = signal<WizardStep>('images');
 
   protected readonly maxImages = 5;
+  protected readonly steps: StepMeta[] = [
+    { id: 'images', label: 'Images', icon: 'lucideImage' },
+    { id: 'items', label: 'Waste', icon: 'lucideListChecks' },
+    { id: 'pickup', label: 'Pickup', icon: 'lucideMapPin' },
+    { id: 'confirm', label: 'Confirm', icon: 'lucideCheckCircle2' },
+  ];
 
   protected readonly form: NewPickupForm = new FormGroup({
     items: new FormArray<PickupItemForm>([this.createPickupItemGroup()]),
     description: new FormControl('', { nonNullable: true }),
-    addressId: new FormControl('', { nonNullable: true }),
+    addressId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     addressText: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
@@ -117,6 +144,58 @@ export class CustomerNewPickupPage {
 
   protected pickupItems(): PickupItemForm[] {
     return this.form.controls.items.controls;
+  }
+
+  protected isStepActive(step: WizardStep): boolean {
+    return this.currentStep() === step;
+  }
+
+  protected isStepComplete(step: WizardStep): boolean {
+    return this.stepIndex(step) < this.currentStepIndex();
+  }
+
+  protected currentStepIndex(): number {
+    return this.stepIndex(this.currentStep());
+  }
+
+  protected canGoBack(): boolean {
+    return this.currentStepIndex() > 0 && !this.isAnalyzing() && !this.isSubmitting();
+  }
+
+  protected canGoNext(): boolean {
+    return (
+      this.currentStepIndex() < this.steps.length - 1 &&
+      this.canLeaveStep(this.currentStep()) &&
+      !this.isAnalyzing() &&
+      !this.isSubmitting()
+    );
+  }
+
+  protected nextStep(): void {
+    if (!this.canGoNext()) {
+      this.markCurrentStepTouched();
+      return;
+    }
+
+    this.currentStep.set(this.steps[this.currentStepIndex() + 1].id);
+    this.submitError.set('');
+  }
+
+  protected previousStep(): void {
+    if (!this.canGoBack()) {
+      return;
+    }
+
+    this.currentStep.set(this.steps[this.currentStepIndex() - 1].id);
+    this.submitError.set('');
+  }
+
+  protected goToStep(step: WizardStep): void {
+    const targetIndex = this.stepIndex(step);
+    if (targetIndex <= this.currentStepIndex() || this.canReachStep(step)) {
+      this.currentStep.set(step);
+      this.submitError.set('');
+    }
   }
 
   protected selectedCategory(item: PickupItemForm): WasteCategory | undefined {
@@ -156,8 +235,42 @@ export class CustomerNewPickupPage {
     return snapshot ? JSON.stringify(snapshot) : '';
   }
 
+  protected hasAiSuggestions(): boolean {
+    return Boolean(this.aiAutoSnapshot()?.items.length);
+  }
+
+  protected isUnmodifiedAiSuggestion(index: number, item: PickupItemForm): boolean {
+    const suggestion = this.aiAutoSnapshot()?.items[index];
+    if (!suggestion) {
+      return false;
+    }
+
+    return (
+      item.controls.categoryId.value === suggestion.categoryId &&
+      this.roundWeight(item.controls.estimatedWeight.value) === this.roundWeight(suggestion.estimatedWeight)
+    );
+  }
+
   protected addPickupItem(): void {
     this.form.controls.items.push(this.createPickupItemGroup());
+  }
+
+  protected resetToAiSuggestions(): void {
+    const snapshot = this.aiAutoSnapshot();
+    if (!snapshot?.items.length) {
+      return;
+    }
+
+    this.form.controls.items.clear();
+    snapshot.items.forEach((item) => {
+      this.form.controls.items.push(
+        this.createPickupItemGroup({
+          categoryId: item.categoryId,
+          estimatedWeight: item.estimatedWeight,
+        }),
+      );
+    });
+    this.submitError.set('');
   }
 
   protected removePickupItem(index: number): void {
@@ -183,7 +296,10 @@ export class CustomerNewPickupPage {
 
     if (address) {
       this.form.controls.addressText.setValue(this.formatAddress(address));
+      return;
     }
+
+    this.form.controls.addressText.setValue('');
   }
 
   protected onFilesSelected(ev: Event): void {
@@ -202,6 +318,10 @@ export class CustomerNewPickupPage {
     this.images.set([...this.images(), ...next]);
     input.value = '';
     this.submitError.set('');
+    if (this.currentStep() === 'images') {
+      this.analysisSummary.set(null);
+      this.aiAutoSnapshot.set(null);
+    }
   }
 
   protected removeImage(index: number): void {
@@ -212,6 +332,9 @@ export class CustomerNewPickupPage {
     }
 
     this.images.set(next);
+    if (!next.length) {
+      this.currentStep.set('images');
+    }
   }
 
   protected clearImages(): void {
@@ -219,6 +342,7 @@ export class CustomerNewPickupPage {
     this.images.set([]);
     this.analysisSummary.set(null);
     this.aiAutoSnapshot.set(null);
+    this.currentStep.set('images');
   }
 
   protected async analyzeImages(): Promise<void> {
@@ -242,7 +366,7 @@ export class CustomerNewPickupPage {
       const result = response.result;
 
       if (!result) {
-        this.submitError.set('AI analysis did not return a result.');
+        this.handleEmptyAiResult();
         return;
       }
 
@@ -294,8 +418,10 @@ export class CustomerNewPickupPage {
 
       if (suggestions[0]) {
         this.applyAllSuggestions(suggestions);
+        this.currentStep.set('items');
+        this.showAiDetectionDialog(suggestions);
       } else {
-        this.submitError.set('No matching category detected. You can still fill it manually.');
+        this.handleEmptyAiResult();
       }
     } catch (err) {
       console.error('AI analysis failed:', err);
@@ -322,17 +448,88 @@ export class CustomerNewPickupPage {
     this.submitError.set('');
   }
 
+  private handleEmptyAiResult(): void {
+    this.aiAutoSnapshot.set({
+      source: 'roboflow',
+      detectedAt: new Date().toISOString(),
+      summary: {
+        totalItems: 0,
+        estimatedWeight: 0,
+        points: 0,
+      },
+      items: [],
+    });
+    this.analysisSummary.set({
+      totalItems: 0,
+      estimatedWeight: 0,
+      points: 0,
+    });
+    this.submitError.set('');
+    this.currentStep.set('items');
+    this.showNoDetectionDialog();
+  }
+
+  private showNoDetectionDialog(): void {
+    this.dialogService.create({
+      zTitle: 'None detected',
+      zDescription:
+        'AI could not match any waste category from the uploaded image. You can continue by adding the waste items manually.',
+      zContent:
+        '<div class="rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground">Start with the Add button, choose the category, then enter the estimated weight.</div>',
+      zOkText: 'Proceed',
+      zCancelText: null,
+      zWidth: 'max-w-md',
+      zOnOk: () => {
+        this.currentStep.set('items');
+      },
+    });
+  }
+
+  private showAiDetectionDialog(suggestions: AiSuggestion[]): void {
+    const totalDetected = suggestions.reduce((total, suggestion) => total + suggestion.count, 0);
+    const rows = suggestions
+      .map(
+        (suggestion) => `
+          <div class="flex items-center justify-between gap-3 rounded-md bg-muted/40 px-3 py-2">
+            <div>
+              <div class="font-medium text-foreground">${this.escapeHtml(suggestion.categoryName)}</div>
+              <div class="text-xs text-muted-foreground">${suggestion.count} detected</div>
+            </div>
+            <div class="text-right text-xs text-muted-foreground">
+              <div>${Number(suggestion.estimatedWeight.toFixed(2))} kg</div>
+              <div>${suggestion.points} pts</div>
+            </div>
+          </div>
+        `,
+      )
+      .join('');
+
+    this.dialogService.create({
+      zTitle: 'Waste detected',
+      zDescription: `AI found ${totalDetected} item${totalDetected === 1 ? '' : 's'} across ${suggestions.length} categor${suggestions.length === 1 ? 'y' : 'ies'}.`,
+      zContent: `<div class="grid gap-2 text-sm">${rows}</div>`,
+      zOkText: 'Review Items',
+      zCancelText: null,
+      zWidth: 'max-w-md',
+      zOnOk: () => {
+        this.currentStep.set('items');
+      },
+    });
+  }
+
   protected async submit(): Promise<void> {
     this.submitSuccess.set('');
     this.submitError.set('');
 
     if (!this.images().length) {
+      this.currentStep.set('images');
       this.submitError.set('Add at least one pickup image.');
       return;
     }
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.currentStep.set(this.firstInvalidStep());
       this.submitError.set('Complete the required pickup details.');
       return;
     }
@@ -350,13 +547,10 @@ export class CustomerNewPickupPage {
       const payload = new FormData();
       payload.append('items', JSON.stringify(items));
       payload.append('addressText', raw.addressText);
+      payload.append('addressId', raw.addressId);
 
       if (this.aiAutoSnapshot()) {
         payload.append('ai_auto', this.aiAutoPayload());
-      }
-
-      if (raw.addressId) {
-        payload.append('addressId', raw.addressId);
       }
 
       if (raw.description.trim()) {
@@ -368,14 +562,29 @@ export class CustomerNewPickupPage {
       }
 
       const response = await firstValueFrom(this.pickupRequests.createPickupRequest(payload));
-      this.submitSuccess.set(`Pickup request ${response.pickupRequest.id.slice(0, 8)} saved.`);
-      this.resetForm();
+      this.showPickupRequestSuccessDialog(response.pickupRequest.id);
     } catch (err) {
       console.error('Pickup request failed:', err);
       this.submitError.set('Unable to save pickup request.');
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  private showPickupRequestSuccessDialog(pickupRequestId: string): void {
+    this.dialogService.create({
+      zTitle: 'Pickup request created',
+      zDescription: `Request ${pickupRequestId.slice(0, 8)} has been saved and is now pending review.`,
+      zContent:
+        '<div class="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">You can track the request status from My Requests.</div>',
+      zOkText: 'View My Requests',
+      zCancelText: null,
+      zWidth: 'max-w-md',
+      zOnOk: () => {
+        this.resetForm();
+        void this.router.navigate(['/customer', 'my-requests']);
+      },
+    });
   }
 
   private async loadInitialData(): Promise<void> {
@@ -424,6 +633,7 @@ export class CustomerNewPickupPage {
     });
     this.form.controls.items.clear();
     this.form.controls.items.push(this.createPickupItemGroup());
+    this.currentStep.set('images');
 
     const preferred = this.addresses().find((address) => address.isDefault) ?? this.addresses()[0];
     if (preferred) {
@@ -447,6 +657,19 @@ export class CustomerNewPickupPage {
     return value.trim().toLowerCase();
   }
 
+  private roundWeight(value: number | null): number {
+    return Number(Number(value ?? 0).toFixed(2));
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   private createPickupItemGroup(input?: {
     categoryId?: string;
     estimatedWeight?: number | null;
@@ -460,5 +683,63 @@ export class CustomerNewPickupPage {
         validators: [Validators.required, Validators.min(0.01)],
       }),
     });
+  }
+
+  private stepIndex(step: WizardStep): number {
+    return this.steps.findIndex((item) => item.id === step);
+  }
+
+  private canReachStep(step: WizardStep): boolean {
+    return this.steps.slice(0, this.stepIndex(step)).every((item) => this.canLeaveStep(item.id));
+  }
+
+  private canLeaveStep(step: WizardStep): boolean {
+    switch (step) {
+      case 'images':
+        return this.images().length > 0;
+      case 'items':
+        return this.validPickupItems().length > 0;
+      case 'pickup':
+        return this.form.controls.addressId.valid && this.form.controls.addressText.valid;
+      case 'confirm':
+        return this.images().length > 0 && this.form.valid;
+    }
+  }
+
+  private firstInvalidStep(): WizardStep {
+    if (!this.images().length) {
+      return 'images';
+    }
+
+    if (!this.validPickupItems().length) {
+      return 'items';
+    }
+
+    if (this.form.controls.addressId.invalid || this.form.controls.addressText.invalid) {
+      return 'pickup';
+    }
+
+    return 'confirm';
+  }
+
+  private markCurrentStepTouched(): void {
+    if (this.currentStep() === 'items') {
+      this.form.controls.items.markAllAsTouched();
+    }
+
+    if (this.currentStep() === 'pickup') {
+      this.form.controls.addressId.markAsTouched();
+      this.form.controls.addressText.markAsTouched();
+    }
+  }
+
+  private validPickupItems(): Array<{ categoryId: string; estimatedWeight: number }> {
+    return this.form
+      .getRawValue()
+      .items.filter((item) => item.categoryId && Number(item.estimatedWeight) > 0)
+      .map((item) => ({
+        categoryId: item.categoryId,
+        estimatedWeight: Number(item.estimatedWeight),
+      }));
   }
 }
