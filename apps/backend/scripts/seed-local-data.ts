@@ -110,6 +110,7 @@ const seedWasteCategories = [
 
 export async function seedLocalData() {
   await seedLocalUsers();
+  await seedLocalCustomerAddress();
   await seedLocalWasteCategories();
 }
 
@@ -137,6 +138,61 @@ export async function seedLocalUsers() {
   }
 
   console.log("Seeded local users: customer@test.com, admin@test.com, collector@test.com");
+}
+
+export async function seedLocalCustomerAddress() {
+  const { prisma } = await import("../src/prisma.js");
+  const { createAddress } = await import("../src/services/address.service.js");
+
+  const customer = await prisma.user.findUnique({
+    where: {
+      email: "customer@test.com",
+    },
+  });
+
+  if (!customer) {
+    throw new Error("Customer user must be seeded before customer address.");
+  }
+
+  const existingHomeAddress = await prisma.address.findFirst({
+    where: {
+      userId: customer.id,
+      label: "Home",
+    },
+  });
+
+  if (!existingHomeAddress) {
+    await createAddress(customer.id, {
+      label: "Home",
+      street: "123 Main Street",
+      city: "Kuala Lumpur",
+      state: "Kuala Lumpur",
+      postalCode: "50000",
+      formattedAddress: "123 Main Street, Kuala Lumpur, Kuala Lumpur 50000",
+      notes: "Default customer seed address",
+    });
+  }
+
+  const existingOfficeAddress = await prisma.address.findFirst({
+    where: {
+      userId: customer.id,
+      label: "Office",
+    },
+  });
+
+  if (!existingOfficeAddress) {
+    await createAddress(customer.id, {
+      label: "Office",
+      street: "88 Jalan Bukit Bintang",
+      city: "Kuala Lumpur",
+      state: "Kuala Lumpur",
+      postalCode: "55100",
+      formattedAddress: "88 Jalan Bukit Bintang, Kuala Lumpur, Kuala Lumpur 55100",
+      notes: "Secondary customer seed address",
+    });
+  }
+
+  console.log("Seeded customer address for customer@test.com.");
 }
 
 export async function seedLocalWasteCategories() {

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
-import { seedLocalData } from "./seed-local-users.js";
+import { seedLocalData } from "./seed-local-data.js";
 
 const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 

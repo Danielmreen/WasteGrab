@@ -2,6 +2,7 @@ import express, { type Request, type Response } from 'express';
 import multer from 'multer';
 import { promises as fs } from 'fs';
 import axios from 'axios';
+import sharp from 'sharp';
 import type { AnalyzeImageResponse } from '@wastegrab/shared';
 import { prisma } from '../prisma.js';
 
@@ -59,7 +60,11 @@ router.post(
         });
       }
 
-      const image = await fs.readFile(imagePath, { encoding: 'base64' });
+      const image = await sharp(imagePath)
+        .rotate()
+        .jpeg({ quality: 90 })
+        .toBuffer()
+        .then((buffer) => buffer.toString('base64'));
       const categories = await prisma.wasteCategory.findMany({
         where: {
           isBanned: false,
@@ -92,7 +97,7 @@ router.post(
       );
 
       const response = await axios.post<RoboflowResponse>(
-        'https://serverless.roboflow.com/harith-haiqal-syaiful-eksan/workflows/general-segmentation-api-3',
+        'https://serverless.roboflow.com/infer/workflows/harith-haiqal-syaiful-eksan/general-segmentation-api-3',
         {
           api_key: apiKey,
           inputs: {
@@ -181,7 +186,14 @@ router.post(
       res.json(payload);
 
     } catch (err: unknown) {
-      console.error(err);
+      if (axios.isAxiosError(err)) {
+        console.error('Roboflow AI analysis failed', {
+          status: err.response?.status,
+          data: err.response?.data,
+        });
+      } else {
+        console.error(err);
+      }
 
       res.status(500).json({
         success: false,

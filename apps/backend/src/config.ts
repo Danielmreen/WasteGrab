@@ -21,6 +21,10 @@ const authCookieSecure =
     ? isProduction
     : process.env.AUTH_COOKIE_SECURE === "true";
 const authCookieSameSite = parseCookieSameSite(process.env.AUTH_COOKIE_SAME_SITE);
+const supabaseUrl = process.env.SUPABASE_URL?.trim() || "";
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
+const supabasePickupImagesBucket =
+  process.env.SUPABASE_PICKUP_IMAGES_BUCKET?.trim() || "pickup-images";
 
 if (!Number.isInteger(port) || port <= 0) {
   throw new Error("PORT must be a positive number.");
@@ -39,6 +43,9 @@ export const config = {
   isProduction,
   authCookieSecure,
   authCookieSameSite,
+  supabaseUrl,
+  supabaseServiceRoleKey,
+  supabasePickupImagesBucket,
 };
 
 function parseCookieSameSite(value: string | undefined): "Lax" | "Strict" | "None" {

@@ -102,7 +102,9 @@ model PickupRequest {
 
   aiClassificationLabel String?  @map("ai_classification_label") @db.VarChar(100)
   aiConfidence          Decimal? @map("ai_confidence") @db.Decimal(5, 2)
+  aiSuggestedPayload    Json?    @map("ai_suggested_payload")
 
+  notes          String?  @db.Text
   estimatedPrice Decimal? @map("estimated_price") @db.Decimal(10, 2)
   finalPrice     Decimal? @map("final_price") @db.Decimal(10, 2)
 

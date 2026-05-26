@@ -58,3 +58,6 @@ vitest.config.*.timestamp*
 
 # generated clients
 apps/backend/src/generated/prisma/
+
+# Supabase local link/cache
+supabase/.temp/

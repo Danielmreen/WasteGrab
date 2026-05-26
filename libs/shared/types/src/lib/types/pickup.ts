@@ -18,8 +18,10 @@ export type PickupRequest = {
   collectorId: string | null;
   addressText: string;
   status: PickupStatus;
+  notes: string | null;
   aiClassificationLabel: string | null;
   aiConfidence: string | null; // Decimal as string
+  aiSuggestedPayload: unknown | null;
   estimatedPrice: string | null; // Decimal as string
   finalPrice: string | null; // Decimal as string
   createdAt: string;
@@ -43,12 +45,25 @@ export type PickupImage = {
 };
 
 export type CreatePickupRequestInput = {
+  addressId?: string;
   addressText: string;
+  notes?: string;
+  aiAuto?: unknown;
+  ai_auto?: unknown;
   items: Array<{
     categoryId: string;
     estimatedWeight?: string;
   }>;
   images?: string[]; // image URLs
+};
+
+export type PickupRequestWithDetails = PickupRequest & {
+  items: PickupItem[];
+  images: PickupImage[];
+};
+
+export type CreatePickupRequestResponse = {
+  pickupRequest: PickupRequestWithDetails;
 };
 
 export type UpdatePickupRequestInput = {
