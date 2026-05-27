@@ -29,7 +29,7 @@ const SPLASH_DURATION_MS = 1400;
     }
 
     @if (showEnvironmentBanner) {
-      <div class="absolute top-0 z-50 w-full bg-red-600 text-white text-xs font-bold leading-4 px-3 py-1 text-center uppercase animate-pulse">
+      <div class="absolute top-0 z-90 w-full bg-red-600 text-white text-xs font-bold leading-4 px-3 py-1 text-center uppercase animate-pulse">
         Running on {{ environmentLabel }}
       </div>
     }
