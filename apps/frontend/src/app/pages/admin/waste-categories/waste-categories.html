@@ -20,9 +20,7 @@
 
     <div class="grid gap-3 lg:hidden">
       @for (category of categories(); track category.id) {
-      <article
-        class="rounded-lg border border-border bg-card p-3 shadow-sm"
-      >
+      <article class="rounded-lg border border-border bg-card p-3 shadow-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="truncate font-medium text-foreground">
@@ -57,7 +55,9 @@
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-medium text-muted-foreground">Avg Weight</dt>
+            <dt class="text-xs font-medium text-muted-foreground">
+              Avg Weight
+            </dt>
             <dd class="mt-0.5 text-foreground">
               {{ category.averageWeightKg }} kg/item
             </dd>
