@@ -51,6 +51,7 @@ export class ProfilePage implements OnInit {
   private readonly addressService = inject(AddressService);
 
   protected readonly address = signal<AddressItem[]>([] as AddressItem[]);
+  protected readonly isUploadingAvatar = signal(false);
   protected readonly addressModalMode = signal<AddressModalMode>(null);
   protected readonly editingAddressId = signal<string | null>(null);
   protected readonly defaultAddress = computed(() =>
@@ -109,6 +110,47 @@ export class ProfilePage implements OnInit {
 
   protected changePassword(): void {
     this.profileModal()?.openChangePassword();
+  }
+
+  protected uploadAvatar(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+      this.dialogService.create({
+        zTitle: 'Unsupported Image',
+        zDescription: 'Please choose a JPG, PNG, WebP, or HEIC image.',
+        zOkText: 'OK',
+        zWidth: 'max-w-sm',
+      });
+      return;
+    }
+
+    this.isUploadingAvatar.set(true);
+    this.authService.uploadAvatar(file).subscribe({
+      next: () => {
+        this.dialogService.create({
+          zTitle: 'Profile Picture Updated',
+          zDescription: 'Your new profile picture is ready.',
+          zOkText: 'Done',
+          zWidth: 'max-w-sm',
+        });
+      },
+      error: (err) => {
+        this.dialogService.create({
+          zTitle: 'Upload Failed',
+          zDescription: getErrorMessage(err) || 'Unable to upload profile picture.',
+          zOkText: 'OK',
+          zWidth: 'max-w-sm',
+        });
+      },
+      complete: () => this.isUploadingAvatar.set(false),
+    });
   }
 
   protected openAddAddress(): void {
@@ -253,4 +295,18 @@ export class ProfilePage implements OnInit {
       },
     });
   }
+}
+
+function getErrorMessage(err: unknown): string | null {
+  if (typeof err !== 'object' || err === null || !('error' in err)) {
+    return null;
+  }
+
+  const response = (err as { error?: unknown }).error;
+  if (typeof response === 'object' && response !== null && 'error' in response) {
+    const message = (response as { error?: unknown }).error;
+    return typeof message === 'string' ? message : null;
+  }
+
+  return null;
 }

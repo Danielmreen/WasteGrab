@@ -160,12 +160,13 @@ userRouter.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
-function toUserResponse(user: { id: string; name: string; email: string; phone: string | null; role: string; createdAt: Date }): User {
+function toUserResponse(user: { id: string; name: string; email: string; phone: string | null; avatarUrl: string | null; role: string; createdAt: Date }): User {
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     phone: user.phone ?? null,
+    avatarUrl: user.avatarUrl ?? null,
     role: user.role as UserRole,
     createdAt: user.createdAt.toISOString(),
   };

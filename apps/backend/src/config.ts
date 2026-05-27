@@ -25,6 +25,8 @@ const supabaseUrl = process.env.SUPABASE_URL?.trim() || "";
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 const supabasePickupImagesBucket =
   process.env.SUPABASE_PICKUP_IMAGES_BUCKET?.trim() || "pickup-images";
+const supabaseUserAvatarsBucket =
+  process.env.SUPABASE_USER_AVATARS_BUCKET?.trim() || "user-avatars";
 
 if (!Number.isInteger(port) || port <= 0) {
   throw new Error("PORT must be a positive number.");
@@ -46,6 +48,7 @@ export const config = {
   supabaseUrl,
   supabaseServiceRoleKey,
   supabasePickupImagesBucket,
+  supabaseUserAvatarsBucket,
 };
 
 function parseCookieSameSite(value: string | undefined): "Lax" | "Strict" | "None" {

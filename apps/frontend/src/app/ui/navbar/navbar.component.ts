@@ -191,6 +191,7 @@ function getInitials(name?: string | null): string {
           <a [routerLink]="profileRoute" class="block rounded-xl bg-primary/5 p-3 transition-colors hover:bg-primary/15">
             <div class="flex items-center gap-3">
               <z-avatar
+                [zSrc]="user()?.avatarUrl || ''"
                 [zFallback]="userInitials()"
                 [zAlt]="avatarAlt()"
                 zSize="md"
@@ -258,6 +259,7 @@ function getInitials(name?: string | null): string {
           class="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl text-foreground hover:bg-primary/20"
         >
           <z-avatar
+            [zSrc]="user()?.avatarUrl || ''"
             [zFallback]="userInitials()"
             [zAlt]="avatarAlt()"
             zSize="sm"

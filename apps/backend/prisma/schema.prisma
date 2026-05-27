@@ -46,6 +46,7 @@ model User {
   email        String    @unique @db.VarChar(255)
   passwordHash String    @db.VarChar(255)
   phone        String?   @db.VarChar(20)
+  avatarUrl    String?   @map("avatar_url") @db.Text
   role         UserRole  @default(CUSTOMER)
   createdAt    DateTime  @default(now()) @map("created_at")
   address      Address[]

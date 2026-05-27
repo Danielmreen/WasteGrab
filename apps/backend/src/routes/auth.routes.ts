@@ -1,4 +1,6 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type Request, type RequestHandler, type Response } from "express";
+import multer from "multer";
+import sharp from "sharp";
 import type {
   ApiErrorResponse,
   AuthResponse,
@@ -22,11 +24,28 @@ import {
   registerUser,
   requestPasswordReset,
   resetPassword,
+  updateAvatar,
   updateProfile,
 } from "../services/auth.service.js";
+import { uploadPublicAvatar } from "../services/supabase-storage.service.js";
 import { getBody } from "../utils/request.js";
 
 const authRouter = Router();
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 3 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/") && file.mimetype !== "image/svg+xml") {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only raster image uploads are supported."));
+  },
+});
 
 authRouter.get("/me", async (req: Request, res: Response) => {
   const user = await getCurrentUserFromRequest(req);
@@ -182,6 +201,47 @@ authRouter.patch("/profile", async (req: Request, res: Response) => {
     res.status(statusCode).json({ error: message });
   }
 });
+
+authRouter.patch(
+  "/profile/avatar",
+  avatarUpload.single("avatar"),
+  (async (req: Request, res: Response) => {
+    const user = await getCurrentUserFromRequest(req);
+
+    if (!user) {
+      const payload: ApiErrorResponse = { error: "Not authenticated." };
+      res.status(401).json(payload);
+      return;
+    }
+
+    const file = req.file;
+
+    if (!file) {
+      res.status(400).json({ error: "Avatar image is required." } as ApiErrorResponse);
+      return;
+    }
+
+    try {
+      const avatar = await sharp(file.buffer)
+        .rotate()
+        .resize(512, 512, {
+          fit: "cover",
+          position: "center",
+        })
+        .jpeg({ quality: 88 })
+        .toBuffer();
+      const imagePath = `users/${user.id}/avatar.jpg`;
+      const imageUrl = await uploadPublicAvatar(imagePath, avatar);
+      const updatedUser = await updateAvatar(user.id, `${imageUrl}?v=${Date.now()}`);
+      const payload: UpdateProfileResponse = { user: updatedUser };
+
+      res.json(payload);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload avatar.";
+      res.status(400).json({ error: message } as ApiErrorResponse);
+    }
+  }) as RequestHandler,
+);
 
 authRouter.post("/change-password", async (req: Request, res: Response) => {
   const user = await getCurrentUserFromRequest(req);

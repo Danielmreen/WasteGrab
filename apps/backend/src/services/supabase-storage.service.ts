@@ -7,6 +7,10 @@ export function getPickupImagesBucket(): string {
   return config.supabasePickupImagesBucket;
 }
 
+export function getUserAvatarsBucket(): string {
+  return config.supabaseUserAvatarsBucket;
+}
+
 export function getSupabaseClient(): SupabaseClient {
   if (!config.supabaseUrl || !config.supabaseServiceRoleKey) {
     throw new Error("Supabase storage is not configured.");
@@ -26,13 +30,30 @@ export async function uploadPublicImage(
   path: string,
   body: Buffer,
 ): Promise<string> {
-  const bucket = getPickupImagesBucket();
+  return uploadPublicImageToBucket(getPickupImagesBucket(), path, body, false);
+}
+
+export async function uploadPublicAvatar(
+  path: string,
+  body: Buffer,
+): Promise<string> {
+  return uploadPublicImageToBucket(getUserAvatarsBucket(), path, body, true);
+}
+
+async function uploadPublicImageToBucket(
+  bucket: string,
+  path: string,
+  body: Buffer,
+  upsert: boolean,
+): Promise<string> {
+  await ensurePublicBucket(bucket);
+
   const { data, error } = await getSupabaseClient().storage
     .from(bucket)
     .upload(path, body, {
       contentType: "image/jpeg",
       cacheControl: "31536000",
-      upsert: false,
+      upsert,
     });
 
   if (error) {
@@ -48,6 +69,24 @@ export async function uploadPublicImage(
   }
 
   return publicUrl;
+}
+
+async function ensurePublicBucket(bucket: string): Promise<void> {
+  const { data } = await getSupabaseClient().storage.getBucket(bucket);
+
+  if (data) {
+    return;
+  }
+
+  const { error } = await getSupabaseClient().storage.createBucket(bucket, {
+    public: true,
+    allowedMimeTypes: ["image/jpeg"],
+    fileSizeLimit: 3 * 1024 * 1024,
+  });
+
+  if (error && !error.message.toLowerCase().includes("already exists")) {
+    throw new Error(error.message);
+  }
 }
 
 export async function removeImages(paths: string[]): Promise<void> {

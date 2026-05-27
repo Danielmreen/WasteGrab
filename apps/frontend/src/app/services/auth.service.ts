@@ -71,6 +71,16 @@ export class AuthService {
     return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/reset-password`, input, this.requestOptions);
   }
 
+  uploadAvatar(file: File) {
+    const payload = new FormData();
+    payload.append('avatar', file);
+
+    return this.http.patch<AuthResponse>(`${this.apiUrl}/profile/avatar`, payload, this.requestOptions).pipe(
+      map((response) => this.ensureValidUser(response.user)),
+      tap((user) => this.setSession(user)),
+    );
+  }
+
   getDefaultRouteForRole(role: User['role']): string {
     switch (role) {
       case UserRole.ADMIN:

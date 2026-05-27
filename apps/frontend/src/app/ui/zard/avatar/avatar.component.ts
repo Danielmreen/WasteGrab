@@ -1,6 +1,4 @@
-import { NgOptimizedImage } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -24,7 +22,6 @@ export type ZardAvatarStatus = 'online' | 'offline' | 'doNotDisturb' | 'away';
 
 @Component({
   selector: 'z-avatar, [z-avatar]',
-  imports: [NgOptimizedImage],
   template: `
     @if (zFallback() && (!zSrc() || !imageLoaded())) {
       <span class="absolute z-0 m-auto text-base">{{ zFallback() }}</span>
@@ -36,8 +33,7 @@ export type ZardAvatarStatus = 'online' | 'offline' | 'doNotDisturb' | 'away';
         [height]="40"
         [alt]="zAlt()"
         [class]="imgClasses()"
-        [ngSrc]="zSrc()"
-        [priority]="zPriority()"
+        [src]="zSrc()"
         (error)="onImageError()"
         (load)="onImageLoad()"
       />
@@ -128,7 +124,6 @@ export class ZardAvatarComponent {
   readonly class = input<string>('');
   readonly zAlt = input<string>('');
   readonly zFallback = input<string>('');
-  readonly zPriority = input(false, { transform: booleanAttribute });
   readonly zShape = input<ZardAvatarShapeVariants>('circle');
   readonly zSize = input<ZardAvatarSizeVariants>('default');
   readonly zSrc = input<string | SafeUrl>('');

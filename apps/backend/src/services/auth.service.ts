@@ -178,6 +178,18 @@ export async function updateProfile(
   return toUserResponse(updatedUser);
 }
 
+export async function updateAvatar(
+  userId: string,
+  avatarUrl: string,
+): Promise<User> {
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl },
+  });
+
+  return toUserResponse(updatedUser);
+}
+
 export async function changePassword(
   userId: string,
   currentPassword: string,
@@ -339,6 +351,7 @@ function toUserResponse(user: UserRecord): User {
     name: user.name,
     email: user.email,
     phone: user.phone,
+    avatarUrl: user.avatarUrl,
     role: user.role as UserRole,
     createdAt: user.createdAt.toISOString(),
   };
