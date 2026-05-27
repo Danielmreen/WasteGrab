@@ -34,8 +34,8 @@
           </div>
           <span
             class="shrink-0 rounded-full px-2 py-1 text-xs font-medium"
-            [class.bg-emerald-500/15]="category.isAiDetectable"
-            [class.text-emerald-700 dark:text-emerald-300]="category.isAiDetectable"
+            [class.bg-emerald-100]="category.isAiDetectable"
+            [class.text-emerald-700]="category.isAiDetectable"
             [class.bg-muted]="!category.isAiDetectable"
             [class.text-muted-foreground]="!category.isAiDetectable"
           >
@@ -67,17 +67,17 @@
             <dd class="mt-0.5 flex flex-wrap gap-1">
               @if (category.isBanned) {
               <span
-                class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-700 dark:text-rose-300"
+                class="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700"
                 >Banned</span
               >
               } @if (category.isHazardous) {
               <span
-                class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+                class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"
                 >Hazardous</span
               >
               } @if (!category.isBanned && !category.isHazardous) {
               <span
-                class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"
+                class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
                 >Active</span
               >
               }
@@ -160,8 +160,8 @@
             <td z-table-cell>
               <span
                 class="rounded-full px-2 py-1 text-xs font-medium"
-                [class.bg-emerald-500/15]="category.isAiDetectable"
-                [class.text-emerald-700 dark:text-emerald-300]="category.isAiDetectable"
+                [class.bg-emerald-100]="category.isAiDetectable"
+                [class.text-emerald-700]="category.isAiDetectable"
                 [class.bg-muted]="!category.isAiDetectable"
                 [class.text-muted-foreground]="!category.isAiDetectable"
               >
@@ -173,17 +173,17 @@
               <div class="flex flex-wrap gap-2">
                 @if (category.isBanned) {
                 <span
-                  class="rounded-full bg-rose-500/15 px-2 py-1 text-xs font-medium text-rose-700 dark:text-rose-300"
+                  class="rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700"
                   >Banned</span
                 >
                 } @if (category.isHazardous) {
                 <span
-                  class="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300"
+                  class="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700"
                   >Hazardous</span
                 >
                 } @if (!category.isBanned && !category.isHazardous) {
                 <span
-                  class="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300"
+                  class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700"
                   >Active</span
                 >
                 }
