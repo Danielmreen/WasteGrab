@@ -1,4 +1,4 @@
-<section class="p-6 md:p-8 gap-3 grid">
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
     <button z-button zType="default" [routerLink]="newPickupPath" rightSide class="gap-1">
       <ng-icon name="lucidePlus" class="size-4!" />
@@ -6,18 +6,15 @@
     </button>
   </app-header>
 
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    @for (stat of dashboardStats; track stat.label) {
-      <div class="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    @for (stat of dashboardStats(); track stat.label) {
+      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
-            <p class="text-2xl font-bold">{{ stat.value }}</p>
+            <p class="truncate text-2xl font-bold">{{ stat.value }}</p>
           </div>
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-lg"
-            [class]="stat.accentClass"
-          >
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" [class]="stat.accentClass">
             <ng-icon [name]="stat.icon" class="size-5!" />
           </div>
         </div>
@@ -25,80 +22,101 @@
     }
   </div>
 
-  <div class="rounded-2xl border border-border bg-card shadow-sm">
-    <div class="flex items-center justify-between border-b border-border px-4 py-4 lg:px-6">
-      <h3 class="text-lg font-semibold">Recent Pickups</h3>
-      <a z-button zType="ghost" zSize="sm" [routerLink]="pickupsPath" class="gap-1">
-        View All <ng-icon name="lucideChevronRight" class="size-4!" />
-      </a>
-    </div>
+  @if (activeRequest(); as request) {
+    <section class="rounded-lg border border-primary/30 bg-primary/10 shadow-sm">
+      <div class="grid gap-4 p-4 md:grid-cols-[6rem_1fr_auto] md:items-center">
+        <div class="aspect-square overflow-hidden rounded-lg border border-primary/20 bg-background">
+          @if (primaryImage(request)) {
+            <img [src]="primaryImage(request)" alt="Active pickup image" class="size-full object-cover" />
+          } @else {
+            <div class="grid size-full place-items-center text-primary">
+              <ng-icon name="lucideRecycle" class="size-8!" />
+            </div>
+          }
+        </div>
 
-    <div class="max-h-112 space-y-4 overflow-y-auto p-4 pr-2 lg:p-6">
-      @for (pickup of recentPickups; track pickup.id) {
-        <a
-          [routerLink]="[...pickupsPath, pickup.id]"
-          class="block rounded-xl border border-border p-4 transition-colors hover:bg-muted/50"
-        >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                @if (pickup.status === 'completed') {
-                  <ng-icon name="lucideCheckCircle2" class="size-5! text-muted-foreground" />
-                } @else if (pickup.status === 'in_progress') {
-                  <ng-icon name="lucideTruck" class="size-5! text-muted-foreground" />
-                } @else if (pickup.status === 'cancelled') {
-                  <ng-icon name="lucideAlertTriangle" class="size-5! text-muted-foreground" />
-                } @else {
-                  <ng-icon name="lucideClock3" class="size-5! text-muted-foreground" />
-                }
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <p class="font-medium">{{ pickup.id }}</p>
-                  @if (pickup.status === 'completed') {
-                    <span
-                      class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-                    >
-                      Completed
-                    </span>
-                  } @else if (pickup.status === 'in_progress') {
-                    <span
-                      class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800"
-                    >
-                      In Progress
-                    </span>
-                  } @else if (pickup.status === 'assigned') {
-                    <span
-                      class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
-                    >
-                      Assigned
-                    </span>
-                  } @else if (pickup.status === 'cancelled') {
-                    <span
-                      class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
-                    >
-                      Cancelled
-                    </span>
-                  } @else {
-                    <span
-                      class="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800"
-                    >
-                      Pending
-                    </span>
-                  }
-                </div>
-                <p class="text-sm text-muted-foreground">
-                  {{ pickup.wasteTypes.join(', ') }} • {{ pickup.weight }}
-                </p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="font-medium text-primary">+{{ pickup.points }} pts</p>
-              <p class="text-sm text-muted-foreground">{{ pickup.date }}</p>
-            </div>
+        <div class="min-w-0">
+          <div class="mb-2 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+              <span class="size-1.5 rounded-full bg-primary-foreground"></span>
+              Active Request
+            </span>
+            <span class="text-xs font-semibold text-primary">#{{ shortId(request.id) }}</span>
           </div>
+
+          <h2 class="truncate text-lg font-bold">{{ categoryLabel(request) }}</h2>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-2 py-1 text-xs font-semibold text-muted-foreground">
+              <ng-icon name="lucideScale" class="size-3.5!" />
+              {{ requestWeight(request) | number:'1.1-2' }} kg
+            </span>
+            <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-2 py-1 text-xs font-semibold text-primary">
+              <ng-icon name="lucideGift" class="size-3.5!" />
+              {{ potentialPoints(request) }} potential pts
+            </span>
+          </div>
+        </div>
+
+        <a
+          [routerLink]="[...pickupsPath, request.id]"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+        >
+          View Request
+          <ng-icon name="lucideChevronRight" class="size-4!" />
         </a>
-      }
-    </div>
-  </div>
+      </div>
+    </section>
+  } @else {
+    <section class="rounded-lg border border-border bg-card p-5 shadow-sm">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-start gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ng-icon name="lucideClock3" class="size-5!" />
+          </span>
+          <div>
+            <h2 class="text-base font-semibold">No active pickup request</h2>
+            <p class="mt-1 text-sm text-muted-foreground">Create a new request when your recyclables are ready.</p>
+          </div>
+        </div>
+
+        <a
+          [routerLink]="pickupsPath"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"
+        >
+          My Requests
+          <ng-icon name="lucideChevronRight" class="size-4!" />
+        </a>
+      </div>
+    </section>
+  }
+
+  @if (latestActiveVoucher(); as redemption) {
+    <section class="rounded-lg border border-border bg-card p-5 shadow-sm">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-start gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ng-icon name="lucideTicket" class="size-5!" />
+          </span>
+          <div class="min-w-0">
+            <div class="mb-1 flex flex-wrap items-center gap-2">
+              <span class="rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">Active Voucher</span>
+              <span class="text-xs font-semibold text-muted-foreground">#{{ shortId(redemption.id) }}</span>
+            </div>
+            <h2 class="truncate text-base font-semibold">{{ redemption.voucher.title }}</h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {{ redemption.redeemedCode || 'No code' }} · {{ voucherExpiryLabel(redemption) }}
+            </p>
+          </div>
+        </div>
+
+        <a
+          [routerLink]="vouchersPath"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"
+        >
+          My Vouchers
+          <ng-icon name="lucideChevronRight" class="size-4!" />
+        </a>
+      </div>
+    </section>
+  }
 </section>

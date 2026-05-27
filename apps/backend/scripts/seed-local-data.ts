@@ -34,6 +34,16 @@ const seedUsers = [
 ];
 
 const seedPassword = "ADae21!!";
+const seedIds = {
+  completedPickup: "11111111-1111-4111-8111-111111111111",
+  cafeVoucher: "22222222-2222-4222-8222-222222222222",
+  groceryVoucher: "33333333-3333-4333-8333-333333333333",
+  inactiveVoucher: "44444444-4444-4444-8444-444444444444",
+  groceryRedemption: "55555555-5555-4555-8555-555555555555",
+  pickupEarnedLedger: "66666666-6666-4666-8666-666666666666",
+  voucherRedeemedLedger: "77777777-7777-4777-8777-777777777777",
+  adminAdjustmentLedger: "88888888-8888-4888-8888-888888888888",
+};
 
 const seedWasteCategories = [
   {
@@ -112,6 +122,7 @@ export async function seedLocalData() {
   await seedLocalUsers();
   await seedLocalCustomerAddress();
   await seedLocalWasteCategories();
+  await seedLocalVouchersAndRewards();
 }
 
 export async function seedLocalUsers() {
@@ -224,6 +235,287 @@ export async function seedLocalWasteCategories() {
   }
 
   console.log("Seeded local waste categories.");
+}
+
+export async function seedLocalVouchersAndRewards() {
+  const { prisma } = await import("../src/prisma.js");
+  const {
+    PickupStatus,
+    PointLedgerStatus,
+    PointLedgerType,
+    VoucherRedemptionStatus,
+    VoucherStatus,
+  } = await import("../src/generated/prisma/enums.js");
+
+  const [customer, collector, paper, glass, plastic] = await Promise.all([
+    prisma.user.findUnique({ where: { email: "customer@test.com" } }),
+    prisma.user.findUnique({ where: { email: "collector@test.com" } }),
+    prisma.wasteCategory.findFirst({ where: { name: "Paper" } }),
+    prisma.wasteCategory.findFirst({ where: { name: "Glass" } }),
+    prisma.wasteCategory.findFirst({ where: { name: "Plastic" } }),
+  ]);
+
+  if (!customer || !collector || !paper || !glass || !plastic) {
+    throw new Error("Users and waste categories must be seeded before vouchers and rewards.");
+  }
+
+  await prisma.voucher.upsert({
+    where: { id: seedIds.cafeVoucher },
+    update: {
+      title: "Cafe Drink Voucher",
+      description: "Redeem for one selected drink at participating cafes.",
+      pointsCost: 40,
+      code: "CAFE40",
+      stock: 25,
+      status: VoucherStatus.ACTIVE,
+      startsAt: null,
+      expiresAt: new Date("2026-12-31T15:59:59.000Z"),
+    },
+    create: {
+      id: seedIds.cafeVoucher,
+      title: "Cafe Drink Voucher",
+      description: "Redeem for one selected drink at participating cafes.",
+      pointsCost: 40,
+      code: "CAFE40",
+      stock: 25,
+      status: VoucherStatus.ACTIVE,
+      expiresAt: new Date("2026-12-31T15:59:59.000Z"),
+    },
+  });
+
+  await prisma.voucher.upsert({
+    where: { id: seedIds.groceryVoucher },
+    update: {
+      title: "Grocery Discount",
+      description: "Small grocery rebate for consistent recycling activity.",
+      pointsCost: 200,
+      code: "GROCERY200",
+      stock: 9,
+      status: VoucherStatus.ACTIVE,
+      startsAt: null,
+      expiresAt: new Date("2026-10-31T15:59:59.000Z"),
+    },
+    create: {
+      id: seedIds.groceryVoucher,
+      title: "Grocery Discount",
+      description: "Small grocery rebate for consistent recycling activity.",
+      pointsCost: 200,
+      code: "GROCERY200",
+      stock: 9,
+      status: VoucherStatus.ACTIVE,
+      expiresAt: new Date("2026-10-31T15:59:59.000Z"),
+    },
+  });
+
+  await prisma.voucher.upsert({
+    where: { id: seedIds.inactiveVoucher },
+    update: {
+      title: "Transit Credit",
+      description: "Inactive sample reward kept for admin status testing.",
+      pointsCost: 300,
+      code: null,
+      stock: null,
+      status: VoucherStatus.INACTIVE,
+      startsAt: null,
+      expiresAt: null,
+    },
+    create: {
+      id: seedIds.inactiveVoucher,
+      title: "Transit Credit",
+      description: "Inactive sample reward kept for admin status testing.",
+      pointsCost: 300,
+      status: VoucherStatus.INACTIVE,
+    },
+  });
+
+  await prisma.pickupRequest.upsert({
+    where: { id: seedIds.completedPickup },
+    update: {
+      userId: customer.id,
+      collectorId: collector.id,
+      addressText: "123 Main Street, Kuala Lumpur, Kuala Lumpur 50000",
+      status: PickupStatus.COMPLETED,
+      aiClassificationLabel: "Paper, Glass, Plastic",
+      notes: "Seed completed pickup for reward ledger demo.",
+      estimatedPrice: "18.50",
+      finalPrice: "21.10",
+      completedAt: new Date("2026-05-20T04:30:00.000Z"),
+      items: {
+        deleteMany: {},
+        create: [
+          {
+            categoryId: paper.id,
+            estimatedWeight: "4.00",
+            actualWeight: "4.50",
+          },
+          {
+            categoryId: glass.id,
+            estimatedWeight: "2.00",
+            actualWeight: "2.20",
+          },
+          {
+            categoryId: plastic.id,
+            estimatedWeight: "1.00",
+            actualWeight: "1.30",
+          },
+        ],
+      },
+    },
+    create: {
+      id: seedIds.completedPickup,
+      userId: customer.id,
+      collectorId: collector.id,
+      addressText: "123 Main Street, Kuala Lumpur, Kuala Lumpur 50000",
+      status: PickupStatus.COMPLETED,
+      aiClassificationLabel: "Paper, Glass, Plastic",
+      notes: "Seed completed pickup for reward ledger demo.",
+      estimatedPrice: "18.50",
+      finalPrice: "21.10",
+      completedAt: new Date("2026-05-20T04:30:00.000Z"),
+      items: {
+        create: [
+          {
+            categoryId: paper.id,
+            estimatedWeight: "4.00",
+            actualWeight: "4.50",
+          },
+          {
+            categoryId: glass.id,
+            estimatedWeight: "2.00",
+            actualWeight: "2.20",
+          },
+          {
+            categoryId: plastic.id,
+            estimatedWeight: "1.00",
+            actualWeight: "1.30",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.voucherRedemption.upsert({
+    where: { id: seedIds.groceryRedemption },
+    update: {
+      userId: customer.id,
+      voucherId: seedIds.groceryVoucher,
+      pointsSpent: 200,
+      status: VoucherRedemptionStatus.REDEEMED,
+      redeemedCode: "GROCERY200",
+      redeemedAt: new Date("2026-05-22T08:15:00.000Z"),
+      cancelledAt: null,
+    },
+    create: {
+      id: seedIds.groceryRedemption,
+      userId: customer.id,
+      voucherId: seedIds.groceryVoucher,
+      pointsSpent: 200,
+      status: VoucherRedemptionStatus.REDEEMED,
+      redeemedCode: "GROCERY200",
+      redeemedAt: new Date("2026-05-22T08:15:00.000Z"),
+    },
+  });
+
+  await prisma.pointLedger.upsert({
+    where: { id: seedIds.pickupEarnedLedger },
+    update: {
+      userId: customer.id,
+      pickupRequestId: seedIds.completedPickup,
+      voucherId: null,
+      redemptionId: null,
+      type: PointLedgerType.PICKUP_EARNED,
+      status: PointLedgerStatus.POSTED,
+      points: 231,
+      balanceAfter: 231,
+      description: "Points earned from completed seed pickup.",
+      metadata: {
+        actualWeightKg: 8,
+      },
+      createdAt: new Date("2026-05-20T04:30:30.000Z"),
+    },
+    create: {
+      id: seedIds.pickupEarnedLedger,
+      userId: customer.id,
+      pickupRequestId: seedIds.completedPickup,
+      type: PointLedgerType.PICKUP_EARNED,
+      status: PointLedgerStatus.POSTED,
+      points: 231,
+      balanceAfter: 231,
+      description: "Points earned from completed seed pickup.",
+      metadata: {
+        actualWeightKg: 8,
+      },
+      createdAt: new Date("2026-05-20T04:30:30.000Z"),
+    },
+  });
+
+  await prisma.pointLedger.upsert({
+    where: { id: seedIds.voucherRedeemedLedger },
+    update: {
+      userId: customer.id,
+      pickupRequestId: null,
+      voucherId: seedIds.groceryVoucher,
+      redemptionId: seedIds.groceryRedemption,
+      type: PointLedgerType.VOUCHER_REDEEMED,
+      status: PointLedgerStatus.POSTED,
+      points: -200,
+      balanceAfter: 31,
+      description: "Redeemed Grocery Discount.",
+      metadata: {
+        voucherTitle: "Grocery Discount",
+      },
+      createdAt: new Date("2026-05-22T08:15:00.000Z"),
+    },
+    create: {
+      id: seedIds.voucherRedeemedLedger,
+      userId: customer.id,
+      voucherId: seedIds.groceryVoucher,
+      redemptionId: seedIds.groceryRedemption,
+      type: PointLedgerType.VOUCHER_REDEEMED,
+      status: PointLedgerStatus.POSTED,
+      points: -200,
+      balanceAfter: 31,
+      description: "Redeemed Grocery Discount.",
+      metadata: {
+        voucherTitle: "Grocery Discount",
+      },
+      createdAt: new Date("2026-05-22T08:15:00.000Z"),
+    },
+  });
+
+  await prisma.pointLedger.upsert({
+    where: { id: seedIds.adminAdjustmentLedger },
+    update: {
+      userId: customer.id,
+      pickupRequestId: null,
+      voucherId: null,
+      redemptionId: null,
+      type: PointLedgerType.ADMIN_ADJUSTMENT,
+      status: PointLedgerStatus.POSTED,
+      points: 25,
+      balanceAfter: 56,
+      description: "Seed admin bonus adjustment.",
+      metadata: {
+        reason: "Demo account setup",
+      },
+      createdAt: new Date("2026-05-23T02:00:00.000Z"),
+    },
+    create: {
+      id: seedIds.adminAdjustmentLedger,
+      userId: customer.id,
+      type: PointLedgerType.ADMIN_ADJUSTMENT,
+      status: PointLedgerStatus.POSTED,
+      points: 25,
+      balanceAfter: 56,
+      description: "Seed admin bonus adjustment.",
+      metadata: {
+        reason: "Demo account setup",
+      },
+      createdAt: new Date("2026-05-23T02:00:00.000Z"),
+    },
+  });
+
+  console.log("Seeded local vouchers, redemption logs, and point ledger.");
 }
 
 function hashPassword(password: string): string {

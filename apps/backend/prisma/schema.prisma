@@ -29,15 +29,31 @@ enum ImageType {
   COLLECTOR_PROOF
 }
 
-enum TransactionType {
-  PAYMENT
-  POINTS_REDEEMED
+enum PointLedgerType {
+  PICKUP_EARNED
+  VOUCHER_REDEEMED
+  ADMIN_ADJUSTMENT
+  EXPIRED
+  REVERSAL
 }
 
-enum TransactionStatus {
-  SUCCESS
-  FAILED
+enum PointLedgerStatus {
   PENDING
+  POSTED
+  REVERSED
+}
+
+enum VoucherStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum VoucherRedemptionStatus {
+  RESERVED
+  REDEEMED
+  CANCELLED
+  EXPIRED
 }
 
 model User {
@@ -53,7 +69,8 @@ model User {
 
   pickupRequestsAsUser      PickupRequest[] @relation("UserRequests")
   pickupRequestsAsCollector PickupRequest[] @relation("CollectorRequests")
-  transactions              Transaction[]
+  pointLedger               PointLedger[]
+  voucherRedemptions        VoucherRedemption[]
 
   @@map("users")
 }
@@ -116,7 +133,7 @@ model PickupRequest {
   collector    User?         @relation("CollectorRequests", fields: [collectorId], references: [id])
   items        PickupItem[]
   images       PickupImage[]
-  transactions Transaction[]
+  pointLedger PointLedger[]
 
   @@map("pickup_requests")
 }
@@ -146,19 +163,69 @@ model PickupImage {
   @@map("pickup_images")
 }
 
-model Transaction {
+model PointLedger {
   id              String            @id @default(uuid())
-  pickupRequestId String            @map("pickup_request_id")
   userId          String            @map("user_id")
-  amount          Decimal           @db.Decimal(10, 2)
-  type            TransactionType   @map("type")
-  status          TransactionStatus @default(SUCCESS)
+  pickupRequestId String?           @map("pickup_request_id")
+  voucherId       String?           @map("voucher_id")
+  redemptionId    String?           @map("redemption_id")
+  type            PointLedgerType
+  status          PointLedgerStatus @default(POSTED)
+  points          Int
+  balanceAfter    Int               @map("balance_after")
+  description     String?           @db.Text
+  metadata        Json?
   createdAt       DateTime          @default(now()) @map("created_at")
 
-  pickupRequest PickupRequest @relation(fields: [pickupRequestId], references: [id])
-  user          User          @relation(fields: [userId], references: [id])
+  user          User               @relation(fields: [userId], references: [id])
+  pickupRequest PickupRequest?     @relation(fields: [pickupRequestId], references: [id])
+  voucher       Voucher?           @relation(fields: [voucherId], references: [id])
+  redemption    VoucherRedemption? @relation(fields: [redemptionId], references: [id])
 
-  @@map("transactions")
+  @@index([userId, createdAt])
+  @@index([pickupRequestId])
+  @@index([voucherId])
+  @@index([redemptionId])
+  @@map("point_ledger")
+}
+
+model Voucher {
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(255)
+  description String?       @db.Text
+  pointsCost  Int           @map("points_cost")
+  code        String?       @db.VarChar(100)
+  stock       Int?
+  status      VoucherStatus @default(ACTIVE)
+  startsAt    DateTime?     @map("starts_at")
+  expiresAt   DateTime?     @map("expires_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  redemptions VoucherRedemption[]
+  pointLedger PointLedger[]
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("vouchers")
+}
+
+model VoucherRedemption {
+  id           String                  @id @default(uuid())
+  userId       String                  @map("user_id")
+  voucherId    String                  @map("voucher_id")
+  pointsSpent  Int                     @map("points_spent")
+  status       VoucherRedemptionStatus @default(REDEEMED)
+  redeemedCode String?                 @map("redeemed_code") @db.VarChar(100)
+  redeemedAt   DateTime                @default(now()) @map("redeemed_at")
+  cancelledAt  DateTime?               @map("cancelled_at")
+
+  user        User          @relation(fields: [userId], references: [id])
+  voucher     Voucher       @relation(fields: [voucherId], references: [id])
+  pointLedger PointLedger[]
+
+  @@index([userId, redeemedAt])
+  @@index([voucherId])
+  @@map("voucher_redemptions")
 }
 
 // Collection locations where collectors can deliver waste.

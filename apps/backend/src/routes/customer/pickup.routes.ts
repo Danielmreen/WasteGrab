@@ -12,9 +12,11 @@ import type {
   PickupItem,
   PickupRequest,
   PickupRequestWithDetails,
+  RewardSummaryResponse,
 } from "@wastegrab/shared";
 import {
   ImageType as PrismaImageType,
+  PointLedgerStatus as PrismaPointLedgerStatus,
   PickupStatus as PrismaPickupStatus,
 } from "../../generated/prisma/enums.js";
 import type { Prisma } from "../../generated/prisma/client.js";
@@ -83,6 +85,63 @@ pickupRouter.get(
 
     const payload: ListPickupRequestsResponse = {
       pickupRequests: pickupRequests.map(toPickupRequestWithDetails),
+    };
+
+    res.json(payload);
+  }) as RequestHandler,
+);
+
+pickupRouter.get(
+  "/rewards/summary",
+  (async (req, res) => {
+    const user = await getCurrentUserFromRequest(req);
+
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated." } as ApiErrorResponse);
+      return;
+    }
+
+    const [completedPickups, latestLedger] = await Promise.all([
+      prisma.pickupRequest.findMany({
+        where: {
+          userId: user.id,
+          status: PrismaPickupStatus.COMPLETED,
+        },
+        select: {
+          items: {
+            select: {
+              estimatedWeight: true,
+              actualWeight: true,
+            },
+          },
+        },
+      }),
+      prisma.pointLedger.findFirst({
+        where: {
+          userId: user.id,
+          status: PrismaPointLedgerStatus.POSTED,
+        },
+        orderBy: [
+          { createdAt: "desc" },
+          { id: "desc" },
+        ],
+        select: {
+          balanceAfter: true,
+        },
+      }),
+    ]);
+
+    const completedWeightKg = completedPickups.reduce((pickupTotal, request) => {
+      return pickupTotal + request.items.reduce((itemTotal, item) => {
+        return itemTotal + Number(item.actualWeight ?? item.estimatedWeight ?? 0);
+      }, 0);
+    }, 0);
+
+    const payload: RewardSummaryResponse = {
+      summary: {
+        completedWeightKg: completedWeightKg.toFixed(2),
+        pointsBalance: latestLedger?.balanceAfter ?? 0,
+      },
     };
 
     res.json(payload);

@@ -1,3 +1,380 @@
-<section class="p-6 md:p-8 gap-3 grid">
-  <app-header mode="route" />
+<section class="grid min-w-0 gap-4 p-4 lg:p-8">
+  <app-header mode="route">
+    <button z-button type="button" rightSide class="gap-2" (click)="openAdd()">
+      <ng-icon name="lucidePlus" class="size-4!" />
+      New Voucher
+    </button>
+  </app-header>
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      [class.border-primary]="activeTab() === 'catalog'"
+      [class.bg-primary]="activeTab() === 'catalog'"
+      [class.text-primary-foreground]="activeTab() === 'catalog'"
+      [class.border-border]="activeTab() !== 'catalog'"
+      [class.bg-card]="activeTab() !== 'catalog'"
+      (click)="selectTab('catalog')"
+    >
+      <span class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary">
+        <ng-icon name="lucideGift" class="size-5!" />
+      </span>
+      <span class="min-w-0">
+        <span class="block font-semibold">Vouchers</span>
+        <span class="block text-sm opacity-80">{{ vouchers().length }} catalog items</span>
+      </span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      [class.border-primary]="activeTab() === 'redemptions'"
+      [class.bg-primary]="activeTab() === 'redemptions'"
+      [class.text-primary-foreground]="activeTab() === 'redemptions'"
+      [class.border-border]="activeTab() !== 'redemptions'"
+      [class.bg-card]="activeTab() !== 'redemptions'"
+      (click)="selectTab('redemptions')"
+    >
+      <span class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary">
+        <ng-icon name="lucideReceiptText" class="size-5!" />
+      </span>
+      <span class="min-w-0">
+        <span class="block font-semibold">Redemptions</span>
+        <span class="block text-sm opacity-80">{{ redemptions().length }} recent records</span>
+      </span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      [class.border-primary]="activeTab() === 'ledger'"
+      [class.bg-primary]="activeTab() === 'ledger'"
+      [class.text-primary-foreground]="activeTab() === 'ledger'"
+      [class.border-border]="activeTab() !== 'ledger'"
+      [class.bg-card]="activeTab() !== 'ledger'"
+      (click)="selectTab('ledger')"
+    >
+      <span class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary">
+        <ng-icon name="lucideScrollText" class="size-5!" />
+      </span>
+      <span class="min-w-0">
+        <span class="block font-semibold">Point Ledger</span>
+        <span class="block text-sm opacity-80">{{ pointLedger().length }} latest entries</span>
+      </span>
+    </button>
+  </div>
+
+  @if (activeTab() === 'catalog') {
+    <section class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6">
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">Voucher Catalog</h2>
+          <p class="text-sm text-muted-foreground">Create and manage rewards customers can redeem with points.</p>
+        </div>
+        <button z-button type="button" class="gap-2" (click)="openAdd()">
+          <ng-icon name="lucidePlus" class="size-4!" />
+          New Voucher
+        </button>
+      </div>
+
+      <div class="grid gap-3 lg:hidden">
+        @for (voucher of vouchers(); track voucher.id) {
+          <article class="rounded-lg border border-border p-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-semibold">{{ voucher.title }}</p>
+                <p class="mt-1 text-sm text-muted-foreground">{{ voucher.description || 'No description' }}</p>
+              </div>
+              <span class="shrink-0 rounded-md px-2 py-1 text-xs font-semibold" [class]="statusClass(voucher.status)">
+                {{ voucher.status }}
+              </span>
+            </div>
+            <dl class="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt class="text-xs text-muted-foreground">Cost</dt>
+                <dd class="font-semibold">{{ voucher.pointsCost }} pts</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted-foreground">Stock</dt>
+                <dd class="font-semibold">{{ voucher.stock === null ? 'Unlimited' : voucher.stock }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted-foreground">Code</dt>
+                <dd class="truncate font-semibold">{{ voucher.code || '-' }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted-foreground">Expires</dt>
+                <dd class="font-semibold">{{ voucher.expiresAt ? (voucher.expiresAt | date:'mediumDate') : '-' }}</dd>
+              </div>
+            </dl>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+              <button z-button zType="outline" zSize="sm" type="button" class="gap-2" (click)="openEdit(voucher)">
+                <ng-icon name="lucidePencil" class="size-4!" />
+                Edit
+              </button>
+              <button z-button zType="destructive" zSize="sm" type="button" class="gap-2" (click)="deleteVoucher(voucher)">
+                <ng-icon name="lucideTrash2" class="size-4!" />
+                Delete
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <div class="rounded-lg border border-dashed border-border p-8 text-center">
+            <p class="font-semibold">No vouchers yet.</p>
+            <p class="mt-1 text-sm text-muted-foreground">Create a reward before customers start redeeming points.</p>
+          </div>
+        }
+      </div>
+
+      <div class="hidden max-w-full overflow-x-auto rounded-lg border border-border lg:block">
+        <table z-table class="min-w-[76rem] bg-card">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head>Voucher</th>
+              <th z-table-head>Cost</th>
+              <th z-table-head>Stock</th>
+              <th z-table-head>Status</th>
+              <th z-table-head>Window</th>
+              <th z-table-head class="w-44 !text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (voucher of vouchers(); track voucher.id) {
+              <tr z-table-row>
+                <td z-table-cell>
+                  <p class="font-semibold">{{ voucher.title }}</p>
+                  <p class="max-w-md truncate text-xs text-muted-foreground">{{ voucher.description || 'No description' }}</p>
+                  <p class="mt-1 text-xs text-muted-foreground">Code: {{ voucher.code || '-' }}</p>
+                </td>
+                <td z-table-cell>
+                  <span class="inline-flex items-center gap-1 font-semibold text-primary">
+                    <ng-icon name="lucideCoins" class="size-4!" />
+                    {{ voucher.pointsCost }} pts
+                  </span>
+                </td>
+                <td z-table-cell>{{ voucher.stock === null ? 'Unlimited' : voucher.stock }}</td>
+                <td z-table-cell>
+                  <span class="rounded-md px-2 py-1 text-xs font-semibold" [class]="statusClass(voucher.status)">
+                    {{ voucher.status }}
+                  </span>
+                </td>
+                <td z-table-cell>
+                  <p class="text-sm">{{ voucher.startsAt ? (voucher.startsAt | date:'mediumDate') : 'No start' }}</p>
+                  <p class="text-xs text-muted-foreground">{{ voucher.expiresAt ? (voucher.expiresAt | date:'mediumDate') : 'No expiry' }}</p>
+                </td>
+                <td z-table-cell class="w-44 !text-right">
+                  <div class="flex justify-end gap-2">
+                    <button z-button zType="outline" zSize="sm" type="button" (click)="openEdit(voucher)">
+                      Edit
+                    </button>
+                    <button z-button zType="destructive" zSize="sm" type="button" (click)="deleteVoucher(voucher)">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell colspan="6" class="py-10 text-center">
+                  <p class="font-semibold">No vouchers yet.</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Create a reward before customers start redeeming points.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (activeTab() === 'redemptions') {
+    <section class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Redemption Logs</h2>
+        <p class="text-sm text-muted-foreground">Latest voucher redemption activity across customers.</p>
+      </div>
+
+      <div class="max-w-full overflow-x-auto rounded-lg border border-border">
+        <table z-table class="min-w-[64rem] bg-card">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head>Customer</th>
+              <th z-table-head>Voucher</th>
+              <th z-table-head>Points</th>
+              <th z-table-head>Status</th>
+              <th z-table-head>Code</th>
+              <th z-table-head>Redeemed</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (redemption of redemptions(); track redemption.id) {
+              <tr z-table-row>
+                <td z-table-cell>
+                  <p class="font-semibold">{{ redemption.userName }}</p>
+                  <p class="text-xs text-muted-foreground">{{ redemption.userEmail }}</p>
+                </td>
+                <td z-table-cell>
+                  <p class="font-semibold">{{ redemption.voucherTitle }}</p>
+                  <p class="text-xs text-muted-foreground">#{{ shortId(redemption.voucherId) }}</p>
+                </td>
+                <td z-table-cell class="font-semibold text-rose-700">-{{ redemption.pointsSpent }} pts</td>
+                <td z-table-cell>
+                  <span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                    {{ redemption.status }}
+                  </span>
+                </td>
+                <td z-table-cell>{{ redemption.redeemedCode || '-' }}</td>
+                <td z-table-cell>{{ redemption.redeemedAt | date:'medium' }}</td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell colspan="6" class="py-10 text-center">
+                  <p class="font-semibold">No redemption logs yet.</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Rows will appear after customers redeem vouchers.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (activeTab() === 'ledger') {
+    <section class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Point Ledger</h2>
+        <p class="text-sm text-muted-foreground">Audit trail for earned, spent, adjusted, expired, and reversed points.</p>
+      </div>
+
+      <div class="max-w-full overflow-x-auto rounded-lg border border-border">
+        <table z-table class="min-w-[76rem] bg-card">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head>Customer</th>
+              <th z-table-head>Type</th>
+              <th z-table-head>Points</th>
+              <th z-table-head>Balance</th>
+              <th z-table-head>Reference</th>
+              <th z-table-head>Description</th>
+              <th z-table-head>Created</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (entry of pointLedger(); track entry.id) {
+              <tr z-table-row>
+                <td z-table-cell>
+                  <p class="font-semibold">{{ entry.userName }}</p>
+                  <p class="text-xs text-muted-foreground">{{ entry.userEmail }}</p>
+                </td>
+                <td z-table-cell>
+                  <span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                    {{ entry.type }}
+                  </span>
+                  <p class="mt-1 text-xs text-muted-foreground">{{ entry.status }}</p>
+                </td>
+                <td z-table-cell>
+                  <span class="font-semibold" [class]="pointsClass(entry.points)">
+                    {{ entry.points > 0 ? '+' : '' }}{{ entry.points }} pts
+                  </span>
+                </td>
+                <td z-table-cell class="font-semibold">{{ entry.balanceAfter }} pts</td>
+                <td z-table-cell>
+                  <p class="text-sm">{{ entry.voucherTitle || 'Pickup #' + shortId(entry.pickupRequestId) }}</p>
+                  <p class="text-xs text-muted-foreground">Ledger #{{ shortId(entry.id) }}</p>
+                </td>
+                <td z-table-cell>
+                  <p class="max-w-xs truncate text-sm">{{ entry.description || '-' }}</p>
+                </td>
+                <td z-table-cell>{{ entry.createdAt | date:'medium' }}</td>
+              </tr>
+            } @empty {
+              <tr z-table-row>
+                <td z-table-cell colspan="7" class="py-10 text-center">
+                  <p class="font-semibold">No point ledger entries yet.</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Rows will appear after pickups award points or vouchers are redeemed.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (modalMode() === 'add' || modalMode() === 'edit') {
+    <z-modal
+      [isOpen]="true"
+      [title]="modalMode() === 'edit' ? 'Edit Voucher' : 'Create Voucher'"
+      [description]="modalMode() === 'edit' ? 'Update voucher cost, stock, and availability' : 'Create a reward customers can redeem with points'"
+      [okText]="modalMode() === 'edit' ? 'Save Changes' : 'Create Voucher'"
+      cancelText="Cancel"
+      size="lg"
+      (ok)="modalMode() === 'edit' ? saveEdit() : saveCreate()"
+      (cancel)="closeModal()"
+    >
+      <form [formGroup]="form" class="grid gap-4 sm:grid-cols-2">
+        <z-form-field class="sm:col-span-2">
+          <z-form-label [zRequired]="true">Title</z-form-label>
+          <z-form-control>
+            <input z-input type="text" formControlName="title" placeholder="Coffee Voucher" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label [zRequired]="true">Points Cost</z-form-label>
+          <z-form-control>
+            <input z-input type="number" min="0" step="1" formControlName="pointsCost" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>Stock</z-form-label>
+          <z-form-control>
+            <input z-input type="number" min="0" step="1" formControlName="stock" placeholder="Unlimited" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>Status</z-form-label>
+          <z-form-control>
+            <select z-input formControlName="status" class="w-full">
+              <option [value]="VoucherStatus.ACTIVE">Active</option>
+              <option [value]="VoucherStatus.INACTIVE">Inactive</option>
+              <option [value]="VoucherStatus.EXPIRED">Expired</option>
+            </select>
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>Code</z-form-label>
+          <z-form-control>
+            <input z-input type="text" formControlName="code" placeholder="Optional code" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>Starts At</z-form-label>
+          <z-form-control>
+            <input z-input type="datetime-local" formControlName="startsAt" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field>
+          <z-form-label>Expires At</z-form-label>
+          <z-form-control>
+            <input z-input type="datetime-local" formControlName="expiresAt" class="w-full" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="sm:col-span-2">
+          <z-form-label>Description</z-form-label>
+          <z-form-control>
+            <textarea z-input formControlName="description" rows="3" placeholder="Redemption details or terms" class="w-full"></textarea>
+          </z-form-control>
+        </z-form-field>
+      </form>
+    </z-modal>
+  }
 </section>

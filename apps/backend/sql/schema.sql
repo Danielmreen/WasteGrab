@@ -95,22 +95,61 @@ CREATE TABLE address (
 --   INDEX idx_image_type (image_type)
 -- );
 
--- -- Transactions table
--- CREATE TABLE transactions (
+-- -- Vouchers table
+-- CREATE TABLE vouchers (
 --   id CHAR(36) PRIMARY KEY,
---   pickup_request_id CHAR(36) NOT NULL,
---   user_id CHAR(36) NOT NULL,
---   amount DECIMAL(10, 2) NOT NULL,
---   type ENUM('PAYMENT', 'POINTS_REDEEMED'),
---   status ENUM('SUCCESS', 'FAILED', 'PENDING') DEFAULT 'SUCCESS',
---   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
---   FOREIGN KEY (pickup_request_id) REFERENCES pickup_requests(id) ON DELETE RESTRICT,
---   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
---   INDEX idx_pickup_request_id (pickup_request_id),
---   INDEX idx_user_id (user_id),
---   INDEX idx_type (type),
+--   title VARCHAR(255) NOT NULL,
+--   description LONGTEXT,
+--   points_cost INT NOT NULL,
+--   code VARCHAR(100),
+--   stock INT,
+--   status ENUM('ACTIVE', 'INACTIVE', 'EXPIRED') NOT NULL DEFAULT 'ACTIVE',
+--   starts_at DATETIME,
+--   expires_at DATETIME,
+--   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --   INDEX idx_status (status),
---   INDEX idx_created_at (created_at)
+--   INDEX idx_expires_at (expires_at)
+-- );
+--
+-- -- Voucher redemptions table
+-- CREATE TABLE voucher_redemptions (
+--   id CHAR(36) PRIMARY KEY,
+--   user_id CHAR(36) NOT NULL,
+--   voucher_id CHAR(36) NOT NULL,
+--   points_spent INT NOT NULL,
+--   status ENUM('RESERVED', 'REDEEMED', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'REDEEMED',
+--   redeemed_code VARCHAR(100),
+--   redeemed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   cancelled_at DATETIME,
+--   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+--   FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE RESTRICT,
+--   INDEX idx_user_redeemed_at (user_id, redeemed_at),
+--   INDEX idx_voucher_id (voucher_id)
+-- );
+--
+-- -- Point ledger table
+-- -- Points are recorded as immutable rows. Positive points are earned, negative points are spent.
+-- CREATE TABLE point_ledger (
+--   id CHAR(36) PRIMARY KEY,
+--   user_id CHAR(36) NOT NULL,
+--   pickup_request_id CHAR(36),
+--   voucher_id CHAR(36),
+--   redemption_id CHAR(36),
+--   type ENUM('PICKUP_EARNED', 'VOUCHER_REDEEMED', 'ADMIN_ADJUSTMENT', 'EXPIRED', 'REVERSAL') NOT NULL,
+--   status ENUM('PENDING', 'POSTED', 'REVERSED') NOT NULL DEFAULT 'POSTED',
+--   points INT NOT NULL,
+--   balance_after INT NOT NULL,
+--   description LONGTEXT,
+--   metadata JSON,
+--   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+--   FOREIGN KEY (pickup_request_id) REFERENCES pickup_requests(id) ON DELETE RESTRICT,
+--   FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE RESTRICT,
+--   FOREIGN KEY (redemption_id) REFERENCES voucher_redemptions(id) ON DELETE RESTRICT,
+--   INDEX idx_user_created_at (user_id, created_at),
+--   INDEX idx_pickup_request_id (pickup_request_id),
+--   INDEX idx_voucher_id (voucher_id),
+--   INDEX idx_redemption_id (redemption_id)
 -- );
 
 -- -- Sample data for waste categories

@@ -4,6 +4,7 @@ import type {
   CreatePickupRequestResponse,
   GetPickupRequestResponse,
   ListPickupRequestsResponse,
+  RewardSummaryResponse,
 } from '@wastegrab/shared';
 import { environment } from '../../environments/environment';
 
@@ -19,6 +20,10 @@ export class PickupRequestService {
 
   listPickupRequests() {
     return this.http.get<ListPickupRequestsResponse>(this.apiUrl, this.opts);
+  }
+
+  getRewardSummary() {
+    return this.http.get<RewardSummaryResponse>(`${this.apiUrl}/rewards/summary`, this.opts);
   }
 
   getPickupRequest(id: string) {
