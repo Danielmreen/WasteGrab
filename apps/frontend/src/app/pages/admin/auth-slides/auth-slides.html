@@ -1,0 +1,254 @@
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
+  <app-header mode="route">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
+      <ng-icon name="lucidePlus" class="size-4!" />
+      New Slide
+    </button>
+  </app-header>
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <article class="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <p class="text-sm text-muted-foreground">Slides</p>
+      <p class="mt-2 text-3xl font-semibold">{{ slides().length }}</p>
+    </article>
+    <article class="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <p class="text-sm text-muted-foreground">Active</p>
+      <p class="mt-2 text-3xl font-semibold text-primary">{{ activeCount() }}</p>
+    </article>
+    <article class="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <p class="text-sm text-muted-foreground">Login Slider</p>
+      <p class="mt-2 text-sm font-medium">Uses active slides by sort order</p>
+    </article>
+  </div>
+
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+  </div>
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
+  <section class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+    <div class="border-b border-border px-5 py-4">
+    <app-table-header
+      title="Auth Slider"
+      description="Manage the real image slides shown on the login and registration screen."
+      [filters]="filters"
+      [activeFilter]="activeFilter()"
+      (filterChange)="setFilter($event)"
+    />
+    </div>
+
+      <div class="grid gap-3 lg:hidden">
+        @for (slide of filteredSlides(); track slide.id) {
+        <article class="rounded-lg border border-border p-3">
+          <img
+            [src]="slide.imageUrl"
+            [alt]="slide.imageAlt"
+            class="aspect-video w-full rounded-lg object-cover"
+            draggable="false"
+          />
+          <div class="mt-3 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-semibold">{{ slide.title }}</p>
+              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ slide.quote }}</p>
+            </div>
+            <z-badge zShape="pill" [zType]="slide.isActive ? 'default' : 'secondary'">
+              {{ slide.isActive ? 'Active' : 'Inactive' }}
+            </z-badge>
+          </div>
+          <p class="mt-2 text-xs text-muted-foreground">Order {{ slide.sortOrder }} · {{ slide.author || 'No author' }}</p>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button z-button zType="outline" zSize="sm" type="button" class="gap-2" (click)="openEdit(slide)">
+              <ng-icon name="lucidePencil" class="size-4!" />
+              Edit
+            </button>
+            <button z-button zType="destructive" zSize="sm" type="button" class="gap-2" (click)="deleteSlide(slide)">
+              <ng-icon name="lucideTrash2" class="size-4!" />
+              Delete
+            </button>
+          </div>
+        </article>
+        } @empty {
+        <div class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+          <p class="font-semibold">No slides yet.</p>
+          <p class="mt-1 text-sm text-muted-foreground">Create a slide to override the fallback login images.</p>
+        </div>
+        }
+      </div>
+
+      <div class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block">
+        <table z-table class="min-w-6xl bg-card">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head>Slide</th>
+              <th z-table-head>Quote</th>
+              <th z-table-head>Order</th>
+              <th z-table-head>Status</th>
+              <th z-table-head class="w-44 text-right!">Actions</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (slide of filteredSlides(); track slide.id) {
+            <tr z-table-row>
+              <td z-table-cell>
+                <div class="flex items-center gap-3">
+                  <img
+                    [src]="slide.imageUrl"
+                    [alt]="slide.imageAlt"
+                    class="size-16 shrink-0 rounded-lg object-cover"
+                    draggable="false"
+                  />
+                  <div class="min-w-0">
+                    <p class="font-semibold">{{ slide.title }}</p>
+                    <p class="truncate text-xs text-muted-foreground">{{ slide.imageAlt }}</p>
+                    <p class="mt-1 text-xs text-muted-foreground">{{ slide.author || 'No author' }}</p>
+                  </div>
+                </div>
+              </td>
+              <td z-table-cell>
+                <p class="max-w-md truncate text-sm">{{ slide.quote }}</p>
+              </td>
+              <td z-table-cell>{{ slide.sortOrder }}</td>
+              <td z-table-cell>
+                <z-badge zShape="pill" [zType]="slide.isActive ? 'default' : 'secondary'">
+                  {{ slide.isActive ? 'Active' : 'Inactive' }}
+                </z-badge>
+              </td>
+              <td z-table-cell>
+                <div class="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    class="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    aria-label="Edit slide"
+                    (click)="openEdit(slide)"
+                  >
+                    <ng-icon name="lucidePencil" class="size-4!" />
+                  </button>
+                  <button
+                    type="button"
+                    class="grid size-9 place-items-center rounded-lg border border-destructive/20 text-destructive transition hover:bg-destructive/10"
+                    aria-label="Delete slide"
+                    (click)="deleteSlide(slide)"
+                  >
+                    <ng-icon name="lucideTrash2" class="size-4!" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr z-table-row>
+              <td z-table-cell colspan="5" class="py-10 text-center text-muted-foreground">
+                No auth slides found.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+  </section>
+  }
+</section>
+
+@if (modalMode() === 'add' || modalMode() === 'edit') {
+<z-modal
+  [isOpen]="true"
+  [title]="modalMode() === 'edit' ? 'Edit Auth Slide' : 'New Auth Slide'"
+  description="Use a direct image URL. Active slides appear on the auth screen in ascending order."
+  [okText]="modalMode() === 'edit' ? 'Save Changes' : 'Create Slide'"
+  cancelText="Cancel"
+  size="lg"
+  (ok)="modalMode() === 'edit' ? saveEdit() : saveCreate()"
+  (cancel)="closeModal()"
+>
+  <form class="grid gap-4" [formGroup]="form" (ngSubmit)="modalMode() === 'edit' ? saveEdit() : saveCreate()">
+    <z-form-field>
+      <z-form-label>Title</z-form-label>
+      <z-form-control>
+        <input z-input formControlName="title" placeholder="Reduce Waste" />
+      </z-form-control>
+    </z-form-field>
+
+    <z-form-field>
+      <z-form-label>Quote</z-form-label>
+      <z-form-control>
+        <textarea z-input formControlName="quote" rows="3" placeholder="Short message shown below the title"></textarea>
+      </z-form-control>
+    </z-form-field>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <z-form-field>
+        <z-form-label>Author</z-form-label>
+        <z-form-control>
+          <input z-input formControlName="author" placeholder="Sustainability Lead" />
+        </z-form-control>
+      </z-form-field>
+
+      <z-form-field>
+        <z-form-label>Sort order</z-form-label>
+        <z-form-control>
+          <input z-input type="number" formControlName="sortOrder" />
+        </z-form-control>
+      </z-form-field>
+    </div>
+
+    <div class="rounded-lg border border-dashed border-border p-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="font-medium">Slide image</p>
+          <p class="text-sm text-muted-foreground">Uploads are resized and stored in the Supabase auth-slides bucket.</p>
+        </div>
+        <label
+          class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted"
+          [class.pointer-events-none]="isUploadingImage()"
+          [class.opacity-60]="isUploadingImage()"
+        >
+          {{ isUploadingImage() ? 'Uploading...' : 'Upload Image' }}
+          <input
+            type="file"
+            accept="image/*"
+            class="sr-only"
+            (change)="uploadImage($event)"
+            [disabled]="isUploadingImage()"
+          />
+        </label>
+      </div>
+    </div>
+
+    <z-form-field>
+      <z-form-label>Image URL</z-form-label>
+      <z-form-control>
+        <input z-input formControlName="imageUrl" placeholder="Supabase public URL or external image URL" />
+      </z-form-control>
+    </z-form-field>
+
+    <z-form-field>
+      <z-form-label>Image alt text</z-form-label>
+      <z-form-control>
+        <input z-input formControlName="imageAlt" placeholder="People collecting recycling in a community cleanup" />
+      </z-form-control>
+    </z-form-field>
+
+    @if (form.controls.imageUrl.value) {
+    <img
+      [src]="form.controls.imageUrl.value"
+      [alt]="form.controls.imageAlt.value || 'Auth slide preview'"
+      class="aspect-video w-full rounded-lg border border-border object-cover"
+      draggable="false"
+    />
+    }
+
+    <div class="flex items-center gap-3 rounded-lg border border-border p-3 text-sm">
+      <z-checkbox formControlName="isActive" />
+      <span>
+        <span class="block font-medium">Active</span>
+        <span class="block text-muted-foreground">Show this slide on the auth screen.</span>
+      </span>
+    </div>
+  </form>
+</z-modal>
+}

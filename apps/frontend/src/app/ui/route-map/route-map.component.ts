@@ -44,10 +44,10 @@ const ROUTE_REQUEST_TIMEOUT_MS = 8_000;
 @Component({
   selector: 'app-route-map',
   template: `
-    <div class="relative h-full min-h-64 w-full overflow-hidden bg-muted">
-      <div #mapHost class="h-full min-h-64 w-full"></div>
+    <div class="relative size-full min-h-64  overflow-hidden bg-muted">
+      <div #mapHost class="size-full min-h-64 "></div>
       @if (loadError) {
-      <div class="absolute bottom-3 left-3 right-3 rounded-md border border-border bg-background/95 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
+      <div class="absolute bottom-3 inset-x-3  rounded-md border border-border bg-background/95 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
         {{ loadError }}
       </div>
       }

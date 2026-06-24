@@ -6,7 +6,8 @@ const voucher = {
   id: 'voucher-id',
   title: 'Coffee Voucher',
   description: 'Free coffee reward',
-  imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+  imageUrl:
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
   pointsCost: 100,
   code: 'COFFEE100',
   stock: 5,
@@ -27,19 +28,30 @@ test('customer can redeem a reward voucher and view it in My Vouchers', async ({
 
   await page.goto('/customer/vouchers');
 
-  await expect(page.getByText('Points Balance')).toBeVisible();
+  await expect(page.getByText('Available Points')).toBeVisible();
   await expect(page.getByText('Coffee Voucher')).toBeVisible();
-  await expect(page.locator('article').filter({ hasText: 'Coffee Voucher' }).locator('img')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Redeem Voucher' })).toBeVisible();
+  await expect(
+    page
+      .locator('article')
+      .filter({ hasText: 'Coffee Voucher' })
+      .locator('img'),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Redeem' }),
+  ).toBeVisible();
 
-  await page.getByRole('button', { name: 'Redeem Voucher' }).click();
-  await page.getByRole('button', { name: 'Redeem' }).last().click();
+  await page.getByRole('button', { name: 'Redeem' }).click();
+  await page.getByTestId('z-ok-button').click();
 
-  await expect(page.getByRole('heading', { name: 'Voucher Redeemed' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Voucher Redeemed' }),
+  ).toBeVisible();
   await expect(page.getByText('Your code is COFFEE100.')).toBeVisible();
   await page.getByRole('button', { name: 'Done' }).click();
 
-  await expect(page.getByRole('button', { name: 'My Vouchers' })).toHaveClass(/bg-primary/);
+  await expect(page.getByRole('button', { name: 'My Vouchers' })).toHaveClass(
+    /bg-card/,
+  );
   await expect(page.getByText('COFFEE100', { exact: true })).toBeVisible();
   await expect(page.getByText('100 pts')).toBeVisible();
 });

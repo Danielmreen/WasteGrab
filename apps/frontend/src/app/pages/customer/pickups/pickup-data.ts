@@ -31,11 +31,11 @@ export type Pickup = {
 };
 
 export const pickupStatusColors: Record<PickupStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  assigned: 'bg-blue-100 text-blue-800',
-  in_progress: 'bg-purple-100 text-purple-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  pending: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  assigned: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
+  in_progress: 'bg-violet-500/10 text-violet-700 dark:text-violet-300',
+  completed: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  cancelled: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
 };
 
 export const pickupStatusLabels: Record<PickupStatus, string> = {

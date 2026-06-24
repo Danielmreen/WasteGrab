@@ -1,6 +1,7 @@
 export type { ApiErrorResponse, ApiResponse, HealthResponse, PaginatedResponse } from './lib/response.model';
 export * from './lib/types/address';
 export * from './lib/types/ai-analysis';
+export * from './lib/types/auth-slide';
 export * from './lib/types/location';
 export * from './lib/types/notification';
 export * from './lib/types/place';

@@ -1,3 +1,32 @@
-<section class="p-6 md:p-8 gap-3 grid">
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route" />
+
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+  </div>
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
+  <div class="grid gap-5">
+    <app-stat-grid [stats]="stats()" gridClass="grid grid-cols-2 gap-3 xl:grid-cols-4" />
+
+    <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <app-collector-monthly-collection [months]="monthlySummaries()" />
+
+      <app-collector-pickup-list
+        title="Recent Completed Pickups"
+        description="Your latest finished jobs and their verified weight."
+        [items]="recentCompletedCards()"
+        actionLabel="View all"
+        [actionRoute]="myPickupsPath"
+        emptyText="Completed jobs will show up here with their final weight."
+      />
+    </section>
+  </div>
+  }
 </section>

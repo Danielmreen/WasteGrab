@@ -48,6 +48,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
+import { BrandLogoComponent } from '@/ui/brand/brand-logo.component';
 
 type NavLink = {
   href: string;
@@ -122,7 +123,7 @@ type FooterGroup = {
 
 @Component({
   selector: 'app-home-page',
-  imports: [DecimalPipe, RouterLink, ZardButtonComponent, NgIcon],
+  imports: [DecimalPipe, RouterLink, ZardButtonComponent, NgIcon, BrandLogoComponent],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [

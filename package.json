@@ -18,6 +18,7 @@
   "private": true,
   "dependencies": {
     "@angular-devkit/build-angular": "21.2.7",
+    "@angular/animations": "^21.2.9",
     "@angular/cdk": "^21.2.10",
     "@angular/common": "21.2.9",
     "@angular/compiler": "21.2.9",
@@ -94,6 +95,7 @@
     "esbuild": "^0.27.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-better-tailwindcss": "^4.5.0",
     "eslint-plugin-playwright": "^1.6.2",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",

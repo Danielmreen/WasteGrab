@@ -1,4 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { Router, type NextFunction, type Request, type Response } from "express";
+import multer from "multer";
+import sharp from "sharp";
 import type {
   ApiErrorResponse,
   CreateWasteCategoryInput,
@@ -7,9 +10,25 @@ import type {
 } from "@wastegrab/shared";
 import { prisma } from "../../prisma.js";
 import { getCurrentUserFromRequest } from "../../services/auth.service.js";
+import { uploadPublicWasteCategory } from "../../services/supabase-storage.service.js";
 import { getBody } from "../../utils/request.js";
 
 const wasteCategoryRouter = Router();
+const wasteCategoryImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 3 * 1024 * 1024,
+    files: 1,
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/") && file.mimetype !== "image/svg+xml") {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only raster image uploads are supported."));
+  },
+});
 
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const user = await getCurrentUserFromRequest(req);
@@ -52,6 +71,33 @@ wasteCategoryRouter.get("/:id", requireAdmin, async (req: Request, res: Response
   }
 });
 
+wasteCategoryRouter.post("/upload", requireAdmin, wasteCategoryImageUpload.single("image"), async (req: Request, res: Response) => {
+  if (!req.file) {
+    res.status(400).json({ error: "Missing image file." } as ApiErrorResponse);
+    return;
+  }
+
+  try {
+    const image = await sharp(req.file.buffer)
+      .rotate()
+      .resize({
+        width: 800,
+        height: 800,
+        fit: "cover",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 88 })
+      .toBuffer();
+
+    const imageUrl = await uploadPublicWasteCategory(`waste-categories/${randomUUID()}.jpg`, image);
+
+    res.status(201).json({ imageUrl });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unable to upload waste category image.";
+    res.status(400).json({ error: message } as ApiErrorResponse);
+  }
+});
+
 wasteCategoryRouter.post("/", requireAdmin, async (req: Request, res: Response) => {
   const input = getBody(req.body) as Partial<CreateWasteCategoryInput>;
   const name = typeof input.name === "string" ? input.name.trim() : "";
@@ -78,6 +124,7 @@ wasteCategoryRouter.post("/", requireAdmin, async (req: Request, res: Response) 
         isHazardous: Boolean(input.isHazardous),
         isAiDetectable: input.isAiDetectable ?? true,
         description: normalizeOptionalString(input.description),
+        imageUrl: normalizeOptionalString(input.imageUrl),
       },
     });
 
@@ -129,6 +176,7 @@ wasteCategoryRouter.patch("/:id", requireAdmin, async (req: Request, res: Respon
     if (input.isHazardous !== undefined) data.isHazardous = input.isHazardous;
     if (input.isAiDetectable !== undefined) data.isAiDetectable = input.isAiDetectable;
     if (input.description !== undefined) data.description = normalizeOptionalString(input.description);
+    if (input.imageUrl !== undefined) data.imageUrl = normalizeOptionalString(input.imageUrl);
 
     const updated = await prisma.wasteCategory.update({
       where: { id: existing.id },
@@ -201,6 +249,7 @@ function toWasteCategoryResponse(category: {
   isHazardous: boolean;
   isAiDetectable: boolean;
   description: string | null;
+  imageUrl: string | null;
 }): WasteCategory {
   return {
     id: category.id,
@@ -211,6 +260,7 @@ function toWasteCategoryResponse(category: {
     isHazardous: category.isHazardous,
     isAiDetectable: category.isAiDetectable,
     description: category.description,
+    imageUrl: category.imageUrl,
   };
 }
 

@@ -24,6 +24,7 @@ export class NotificationService {
 
   readonly notifications = signal<Notification[]>([]);
   readonly unreadCount = signal(0);
+  readonly pickupUpdate = signal<{ pickupId: string; at: number } | null>(null);
   readonly webPushPublicKey = signal<string | null>(null);
   readonly pushSubscription = signal<PushSubscription | null>(null);
   readonly hasEnabledPush = computed(() => Boolean(this.pushSubscription()));
@@ -72,6 +73,10 @@ export class NotificationService {
     });
     this.events.addEventListener('notification', () => {
       void this.loadNotifications().subscribe();
+    });
+    this.events.addEventListener('pickup-update', (e: MessageEvent) => {
+      const data = JSON.parse(e.data) as { pickupId: string };
+      this.pickupUpdate.set({ pickupId: data.pickupId, at: Date.now() });
     });
   }
 

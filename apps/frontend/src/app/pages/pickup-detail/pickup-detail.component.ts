@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -19,17 +19,21 @@ import {
   lucideSparkles,
   lucideTruck,
   lucideUser,
+  lucideWifi,
   lucideXCircle,
 } from '@ng-icons/lucide';
 import { AdminPickupService } from '@/services/admin-pickup.service';
+import { NotificationService } from '@/services/notification.service';
 import { CollectorPickupService, type CollectorLocation, type CollectorPickupScope } from '@/services/collector-pickup.service';
 import { AuthService } from '@/services/auth.service';
 import { PickupRequestService } from '@/services/pickup-request.service';
 import { AppHeaderComponent } from '@/ui/header/header.component';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
 import { RouteMapComponent, type RouteMapPoint, type RouteMapStop } from '@/ui/route-map/route-map.component';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
 import { Z_MODAL_DATA } from '@/ui/zard/dialog/dialog.service';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
 import { PickupStatus, type AdminPickupRequest, type CollectionLocation, type CollectorPickupRequest, type PickupItem, type PickupRequestWithDetails } from '@wastegrab/shared';
 import { firstValueFrom, map } from 'rxjs';
 
@@ -89,7 +93,7 @@ const PICKUP_STATUS_FLOW = [
 
 @Component({
   selector: 'app-accept-pickup-dialog',
-  imports: [CommonModule, NgIcon, RouteMapComponent],
+  imports: [NgIcon, RouteMapComponent],
   template: `
     <div class="grid gap-4">
       <div class="overflow-hidden rounded-lg border border-border">
@@ -204,7 +208,7 @@ export class AcceptPickupDialogComponent {
 
 @Component({
   selector: 'app-dropoff-location-dialog',
-  imports: [CommonModule, NgIcon, RouterLink, RouteMapComponent],
+  imports: [DecimalPipe, NgIcon, RouterLink, RouteMapComponent],
   template: `
     <div class="grid gap-4">
       @if (selectedLocation(); as selected) {
@@ -232,7 +236,7 @@ export class AcceptPickupDialogComponent {
               <span class="block truncate text-sm font-semibold">{{ location.name }}</span>
               <span class="block truncate text-xs text-muted-foreground">{{ locationLabel(location) }}</span>
             </span>
-            <span class="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+            <span class="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
               {{ location.distanceKm | number:'1.1-1' }} km
             </span>
           </span>
@@ -312,7 +316,7 @@ export class DropoffLocationDialogComponent {
 @Component({
   selector: 'app-pickup-detail-page',
   templateUrl: './pickup-detail.html',
-  imports: [CommonModule, FormsModule, AppHeaderComponent, FetchStateComponent, RouterLink, NgIcon, RouteMapComponent],
+  imports: [DecimalPipe, FormsModule, AppHeaderComponent, EmptyStateComponent, RouterLink, NgIcon, RouteMapComponent, StatGridComponent],
   viewProviders: [
     provideIcons({
       lucideArrowLeft,
@@ -329,6 +333,7 @@ export class DropoffLocationDialogComponent {
       lucideSparkles,
       lucideTruck,
       lucideUser,
+      lucideWifi,
       lucideXCircle,
     }),
   ],
@@ -336,11 +341,12 @@ export class DropoffLocationDialogComponent {
 })
 export class PickupDetailPage {
   private readonly route = inject(ActivatedRoute);
+  private readonly notificationService = inject(NotificationService);
   private readonly adminPickups = inject(AdminPickupService);
   private readonly collectorPickups = inject(CollectorPickupService);
   private readonly customerPickups = inject(PickupRequestService);
   private readonly auth = inject(AuthService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
   private readonly router = inject(Router);
 
   protected readonly pickup = signal<PickupDetail | null>(null);
@@ -394,6 +400,21 @@ export class PickupDetailPage {
   protected readonly pointsSummaryLabel = computed(() =>
     this.pickup()?.status === PickupStatus.COMPLETED ? 'Awarded points' : 'Potential points',
   );
+  protected readonly stats = computed<StatCardItem[]>(() => {
+    const pickup = this.pickup();
+    if (!pickup) return [];
+    const items: StatCardItem[] = [
+      { icon: 'lucideScale', label: 'Total weight', value: this.totalWeight().toFixed(2), unit: 'kg' },
+      { icon: 'lucideCoins', label: this.pointsSummaryLabel(), value: this.totalPoints(), unit: 'pts' },
+      { icon: 'lucideImage', label: 'Images', value: pickup.images.length },
+    ];
+    items.push(
+      this.showDistance(pickup)
+        ? { icon: 'lucideNavigation', label: 'Distance', value: this.distanceLabel(pickup) }
+        : { icon: 'lucidePackageCheck', label: 'Current status', value: this.statusLabel(pickup.status) },
+    );
+    return items;
+  });
   protected readonly timelineSteps = computed<TimelineStep[]>(() => {
     const pickup = this.pickup();
     if (!pickup) {
@@ -474,11 +495,12 @@ export class PickupDetailPage {
   constructor() {
     effect(() => {
       const id = this.pickupId();
-      if (!id) {
-        return;
-      }
-
+      if (!id) return;
       void this.loadPickup();
+    });
+    effect(() => {
+      const update = this.notificationService.pickupUpdate();
+      if (update?.pickupId === this.pickupId()) void this.loadPickup();
     });
   }
 
@@ -1240,19 +1262,19 @@ export class PickupDetailPage {
   private statusMeta(status: PickupStatus): { label: string; className: string; icon: string } {
     switch (status) {
       case PickupStatus.PENDING:
-        return { label: 'Pending', className: 'bg-amber-100 text-amber-700', icon: 'lucideClock3' };
+        return { label: 'Pending', className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300', icon: 'lucideClock3' };
       case PickupStatus.ACCEPTED:
-        return { label: 'Accepted', className: 'bg-blue-100 text-blue-700', icon: 'lucideTruck' };
+        return { label: 'Accepted', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300', icon: 'lucideTruck' };
       case PickupStatus.ARRIVED:
-        return { label: 'Arrived', className: 'bg-violet-100 text-violet-700', icon: 'lucideMapPin' };
+        return { label: 'Arrived', className: 'bg-violet-500/10 text-violet-700 dark:text-violet-300', icon: 'lucideMapPin' };
       case PickupStatus.VERIFIED:
-        return { label: 'Verified', className: 'bg-cyan-100 text-cyan-700', icon: 'lucideCheckCircle2' };
+        return { label: 'Verified', className: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300', icon: 'lucideCheckCircle2' };
       case PickupStatus.COMPLETED:
-        return { label: 'Completed', className: 'bg-emerald-100 text-emerald-700', icon: 'lucidePackageCheck' };
+        return { label: 'Completed', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300', icon: 'lucidePackageCheck' };
       case PickupStatus.CANCELLED:
-        return { label: 'Cancelled', className: 'bg-rose-100 text-rose-700', icon: 'lucideXCircle' };
+        return { label: 'Cancelled', className: 'bg-rose-500/10 text-rose-700 dark:text-rose-300', icon: 'lucideXCircle' };
       default:
-        return { label: status, className: 'bg-slate-100 text-slate-700', icon: 'lucideLoaderCircle' };
+        return { label: status, className: 'bg-muted text-muted-foreground', icon: 'lucideLoaderCircle' };
     }
   }
 }

@@ -8,7 +8,7 @@ import { config } from "./config.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import authRouter from "./routes/auth.routes.js";
 import placesRouter from "./routes/places.routes.js";
-import { adminUserRouter, adminLocationRouter, adminNotificationRouter, adminPickupRouter, adminWasteCategoryRouter, adminVoucherRouter, adminAchievementRouter, collectorPickupRouter, customerAddressRouter, customerPickupRouter, customerVoucherRouter, customerAchievementRouter, notificationRouter } from "./routes/index.js";
+import { adminUserRouter, adminLocationRouter, adminNotificationRouter, adminPickupRouter, adminWasteCategoryRouter, adminVoucherRouter, adminAchievementRouter, adminAuthSlideRouter, collectorPickupRouter, customerAddressRouter, customerPickupRouter, customerVoucherRouter, customerAchievementRouter, notificationRouter, authSlideRouter } from "./routes/index.js";
 import roboflowAI from "./routes/roboflow-ai.js";
 import wasteCategoryRouter from "./routes/waste-category.routes.js";
 
@@ -52,6 +52,8 @@ app.use("/api/admin/pickups", adminPickupRouter);
 app.use("/api/admin/waste-categories", adminWasteCategoryRouter);
 app.use("/api/admin/vouchers", adminVoucherRouter);
 app.use("/api/admin/achievements", adminAchievementRouter);
+app.use("/api/admin/auth-slides", adminAuthSlideRouter);
+app.use("/api/auth-slides", authSlideRouter);
 app.use("/api/collector/pickups", collectorPickupRouter);
 app.use("/api/customer/address", customerAddressRouter);
 app.use("/api/customer/pickups", customerPickupRouter);

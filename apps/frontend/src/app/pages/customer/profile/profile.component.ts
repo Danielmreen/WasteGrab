@@ -1,9 +1,11 @@
+import { isPlatformBrowser } from '@angular/common';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@/services/auth.service';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
+import { ZardSheetService } from '@/ui/zard/sheet/sheet.service';
 import { ZardAvatarComponent } from '@/ui/zard/avatar/avatar.component';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
 import { ZardBadgeComponent } from '@/ui/zard/badge';
@@ -47,10 +49,13 @@ type AddressItem = Address;
 })
 export class ProfilePage implements OnInit {
   protected readonly authService = inject(AuthService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
+  private readonly sheetService = inject(ZardSheetService);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
   private readonly profileModal = viewChild(ProfileModalComponent);
+  private readonly logoutSheetContent = viewChild<TemplateRef<unknown>>('logoutSheetContent');
   private readonly addressService = inject(AddressService);
 
   protected readonly address = signal<AddressItem[]>([] as AddressItem[]);
@@ -132,10 +137,6 @@ export class ProfilePage implements OnInit {
 
   protected setAddressFilter(filter: AddressFilter): void {
     this.activeAddressFilter.set(filter);
-  }
-
-  protected refreshAddresses(): void {
-    this.loadAddresses();
   }
 
   protected editProfile(): void {
@@ -314,20 +315,38 @@ export class ProfilePage implements OnInit {
   }
 
   protected logout(): void {
-    this.dialogService.create({
-      zTitle: 'Confirm Logout',
-      zDescription: 'Are you sure you want to logout?',
-      zOkText: 'Logout',
-      zOkDestructive: true,
-      zCancelText: 'Cancel',
-      zWidth: 'max-w-sm',
-      zOnOk: () => {
-        this.authService.logout().subscribe({
-          next: () => (window.location.href = '/auth'),
-          error: () => (window.location.href = '/auth'),
-        });
-      },
-    });
+    const onOk = () => {
+      this.authService.logout().subscribe({
+        next: () => (window.location.href = '/auth'),
+        error: () => (window.location.href = '/auth'),
+      });
+    };
+
+    const isMobile = isPlatformBrowser(this.platformId) && window.innerWidth < 768;
+    const content = this.logoutSheetContent();
+
+    if (isMobile && content) {
+      this.sheetService.create({
+        zContent: content,
+        zSide: 'bottom',
+        zTitle: 'Confirm Logout',
+        zOkText: 'Logout',
+        zOkDestructive: true,
+        zCancelText: 'Cancel',
+        zCustomClasses: 'rounded-t-2xl',
+        zOnOk: onOk,
+      });
+    } else {
+      this.dialogService.create({
+        zTitle: 'Confirm Logout',
+        zDescription: 'Are you sure you want to logout?',
+        zOkText: 'Logout',
+        zOkDestructive: true,
+        zCancelText: 'Cancel',
+        zWidth: 'max-w-sm',
+        zOnOk: onOk,
+      });
+    }
   }
 
   private loadAddresses(): void {

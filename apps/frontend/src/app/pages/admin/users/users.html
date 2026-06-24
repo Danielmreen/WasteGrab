@@ -1,10 +1,9 @@
-<section class="grid min-w-0 gap-4 p-4 lg:p-8">
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
     <button
-      z-button
       type="button"
       rightSide
-      class="gap-2"
+      class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all"
       (click)="openAddUser()"
     >
       <ng-icon name="lucidePlus" class="size-4!" />
@@ -12,72 +11,32 @@
     </button>
   </app-header>
 
-  <div class="grid gap-3 sm:grid-cols-3">
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideUsers" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Customers</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ customerCount() }} user accounts</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideTruck" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Collectors</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ collectorCount() }} field accounts</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideShield" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Admins</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ adminCount() }} operators</span
-        >
-      </span>
-    </article>
-  </div>
+  <app-stat-grid [stats]="stats()" gridClass="grid grid-cols-2 gap-3 sm:grid-cols-3" />
 
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+  </div>
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="User Management"
       description="Manage user accounts, roles, and permissions."
       [filters]="filters"
       [activeFilter]="activeFilter()"
-      [showRefresh]="true"
       (filterChange)="setFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading users..."
-    >
       <!-- Users Table -->
       <div class="grid gap-3 lg:hidden">
         @for (user of filteredUsers(); track user.id) {
@@ -134,7 +93,7 @@
         </article>
         } @empty {
         <div
-          class="rounded-lg border border-dashed border-border p-8 text-center"
+          class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
         >
           <p class="font-semibold">No users found.</p>
           <p class="mt-1 text-sm text-muted-foreground">
@@ -155,9 +114,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-lg border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
       >
-        <table z-table class="min-w-[64rem] bg-card">
+        <table z-table class="min-w-5xl bg-card">
           <caption z-table-caption class="sr-only">
             Users management table
           </caption>
@@ -169,7 +128,7 @@
               <th z-table-head>Role</th>
               <th z-table-head>Phone</th>
               <th z-table-head>Joined</th>
-              <th z-table-head class="w-44 !text-right">Actions</th>
+              <th z-table-head class="w-44 text-right!">Actions</th>
             </tr>
           </thead>
 
@@ -198,7 +157,7 @@
                 <p>{{ user.createdAt | date: 'MMM dd, yyyy' }}</p>
               </td>
 
-              <td z-table-cell class="w-44 !text-right">
+              <td z-table-cell class="w-44 text-right!">
                 <div class="flex justify-end gap-2">
                   <button
                     z-button
@@ -247,8 +206,8 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
+  }
 </section>
 
 <!-- User Modal -->

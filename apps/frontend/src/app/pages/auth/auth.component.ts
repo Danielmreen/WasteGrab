@@ -1,9 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, Validators, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
 import { ZardCardComponent } from '@/ui/zard/card/card.component';
 import { ZardInputDirective } from '@/ui/zard/input';
@@ -11,6 +9,9 @@ import { ZardFormFieldComponent, ZardFormLabelComponent, ZardFormControlComponen
 import { ZardModalComponent } from '@/ui/zard/modal/modal.component';
 import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
 import { AuthService } from '@/services/auth.service';
+import { BrandLogoComponent } from '@/ui/brand/brand-logo.component';
+import { AuthSlideService } from '@/services/auth-slide.service';
+import type { AuthSlide } from '@wastegrab/shared';
 
 type AuthMode = 'login' | 'register';
 
@@ -28,13 +29,13 @@ type RegisterFormGroup = FormGroup<{
 
 @Component({
   selector: 'app-auth-page',
-  imports: [CommonModule, ReactiveFormsModule, ZardButtonComponent, ZardCardComponent, ZardInputDirective, ZardFormFieldComponent, ZardFormLabelComponent, ZardFormControlComponent, ZardModalComponent, NgIcon],
-  providers: [provideIcons({ lucideChevronLeft, lucideChevronRight })],
+  imports: [CommonModule, ReactiveFormsModule, ZardButtonComponent, ZardCardComponent, ZardInputDirective, ZardFormFieldComponent, ZardFormLabelComponent, ZardFormControlComponent, ZardModalComponent, BrandLogoComponent],
   templateUrl: './auth.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AuthPage {
+export class AuthPage implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
+  private readonly authSlideService = inject(AuthSlideService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(ZardDialogService);
 
@@ -42,6 +43,7 @@ export class AuthPage {
   protected readonly isSubmitting = signal(false);
   protected readonly error = signal('');
   protected readonly currentSlide = signal(0);
+  protected readonly slides = signal<AuthSlide[]>([]);
   protected autoplayInterval: ReturnType<typeof setInterval> | null = null;
   
   // Forgot password state
@@ -49,33 +51,6 @@ export class AuthPage {
   protected readonly forgotPasswordEmail = signal('');
   protected readonly forgotPasswordError = signal('');
   protected readonly forgotPasswordSubmitting = signal(false);
-
-  protected readonly slides = [
-    {
-      title: 'Reduce Waste',
-      quote: 'Help reduce environmental impact by properly managing and recycling waste responsibly.',
-      author: 'Eco Warrior',
-      color: 'from-emerald-500 to-teal-600',
-    },
-    {
-      title: 'Earn Rewards',
-      quote: 'Get rewarded for your contribution to a cleaner planet and sustainable future.',
-      author: 'Sustainability Lead',
-      color: 'from-blue-500 to-cyan-600',
-    },
-    {
-      title: 'Build Community',
-      quote: 'Connect with others who care about sustainability and environmental change.',
-      author: 'Community Manager',
-      color: 'from-purple-500 to-pink-600',
-    },
-    {
-      title: 'Make Impact',
-      quote: 'Track your environmental impact and see the difference you make every day.',
-      author: 'Impact Director',
-      color: 'from-orange-500 to-red-600',
-    },
-  ];
 
   protected readonly loginForm: LoginFormGroup = new FormGroup({
     email: new FormControl('', {
@@ -128,37 +103,62 @@ export class AuthPage {
     }),
   });
 
-  constructor() {
-    effect(() => {
-      if (this.autoplayInterval) {
-        clearInterval(this.autoplayInterval);
-      }
-      this.startAutoplay();
-    });
+  ngOnInit(): void {
+    this.loadSlides();
+    this.startAutoplay();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoplay();
   }
 
   protected startAutoplay(): void {
+    this.stopAutoplay();
+    if (this.slides().length <= 1) return;
+
     this.autoplayInterval = setInterval(() => {
-      this.currentSlide.set((this.currentSlide() + 1) % this.slides.length);
+      const slideCount = this.slides().length;
+      if (slideCount <= 1) return;
+      this.currentSlide.set((this.currentSlide() + 1) % slideCount);
     }, 5000);
   }
 
   protected stopAutoplay(): void {
     if (this.autoplayInterval) {
       clearInterval(this.autoplayInterval);
+      this.autoplayInterval = null;
     }
   }
 
   protected goToSlide(index: number): void {
+    if (index < 0 || index >= this.slides().length) return;
     this.currentSlide.set(index);
   }
 
   protected nextSlide(): void {
-    this.currentSlide.set((this.currentSlide() + 1) % this.slides.length);
+    const slideCount = this.slides().length;
+    if (slideCount === 0) return;
+    this.currentSlide.set((this.currentSlide() + 1) % slideCount);
   }
 
   protected prevSlide(): void {
-    this.currentSlide.set((this.currentSlide() - 1 + this.slides.length) % this.slides.length);
+    const slideCount = this.slides().length;
+    if (slideCount === 0) return;
+    this.currentSlide.set((this.currentSlide() - 1 + slideCount) % slideCount);
+  }
+
+  private loadSlides(): void {
+    this.authSlideService.listSlides().subscribe({
+      next: ({ slides }) => {
+        this.slides.set(slides);
+        this.currentSlide.set(slides.length === 0 ? 0 : Math.min(this.currentSlide(), slides.length - 1));
+        this.startAutoplay();
+      },
+      error: () => {
+        this.slides.set([]);
+        this.currentSlide.set(0);
+      },
+    });
   }
 
   protected openForgotPassword(): void {

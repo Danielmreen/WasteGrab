@@ -1,0 +1,64 @@
+{
+  "slug": "wastegrab",
+  "title": "WasteGrab",
+  "type": "Full-Stack Web App",
+  "category": "Recycling Platform",
+  "summary": "A smart recycling pickup and rewards platform connecting customers, collectors, and admins — with AI-assisted waste analysis and map-based route planning.",
+  "overview": "WasteGrab is an Nx monorepo with an Angular 21 frontend, an Express/Prisma backend, and a shared TypeScript types library. Customers request recyclable pickups with image upload and AI-suggested category, weight, and reward points via Roboflow; collectors manage assigned pickups with MapLibre + OSRM route previews and verify actual weight; admins manage users, categories, collection locations, vouchers, notifications, and reward activity. It includes a reward points ledger, voucher redemption, in-app and web push notifications, and full role-based authentication.",
+  "year": "2026",
+  "spotlight": true,
+  "thumbnail": "https://picsum.photos/seed/wastegrab-cover/1400/900",
+  "spotlightImage": "https://picsum.photos/seed/wastegrab-hero/1800/1100",
+  "techStack": [
+    "Angular 21",
+    "TypeScript",
+    "Tailwind CSS",
+    "Node.js",
+    "Express.js",
+    "Prisma 7",
+    "MySQL",
+    "MariaDB",
+    "Roboflow API",
+    "Supabase Storage",
+    "MapLibre GL",
+    "OSRM Routing",
+    "Google Maps Places",
+    "Nx",
+    "Docker",
+    "GitHub Actions",
+    "Railway",
+    "GHCR"
+  ],
+  "highlights": [
+    "Full-stack recycling pickup and rewards platform for customers, collectors, and admins (Angular 21, Express, Prisma, MySQL/MariaDB).",
+    "Customer pickup requests with image upload, saved addresses, lifecycle tracking, history, and voucher redemption.",
+    "Roboflow AI analysis suggests waste category, estimated weight, and reward points before submission — manually adjustable.",
+    "Collector workflows: available and assigned pickups, MapLibre + OSRM multi-stop route previews, status updates, and actual-weight verification.",
+    "Admin modules for users, collectors, pickups, waste categories, collection locations, vouchers, notifications, and reward activity.",
+    "Reward points ledger, in-app and web push notifications, and Nx-based CI/CD with Docker, GitHub Actions, GHCR, and Railway."
+  ],
+  "previewImages": [
+    {
+      "src": "https://picsum.photos/seed/wastegrab-1/1400/900",
+      "title": "Customer Pickup",
+      "caption": "Pickup request with image upload and AI estimates.",
+      "alt": "WasteGrab customer pickup flow"
+    },
+    {
+      "src": "https://picsum.photos/seed/wastegrab-2/1400/900",
+      "title": "Collector Routes",
+      "caption": "Map-based route planning with OSRM previews.",
+      "alt": "WasteGrab collector route planning"
+    },
+    {
+      "src": "https://picsum.photos/seed/wastegrab-3/1400/900",
+      "title": "Admin Dashboard",
+      "caption": "Managing pickups, categories, vouchers, and rewards.",
+      "alt": "WasteGrab admin dashboard"
+    }
+  ],
+  "actions": {
+    "open": "https://wastegrab.alifdaniel.dpdns.org",
+    "github": "https://github.com/Danielmreen/WasteGrab"
+  }
+}

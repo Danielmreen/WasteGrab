@@ -55,18 +55,18 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
     }),
   ],
   template: `
-    <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate-950/55 p-4 backdrop-blur-sm">
-      <section class="my-auto w-full max-w-3xl rounded-lg border border-border bg-background shadow-2xl">
-        <div class="border-b border-border px-5 py-5 sm:px-6">
+    <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 p-4 backdrop-blur-sm">
+      <section class="my-auto w-full max-w-3xl rounded-2xl border border-border bg-card shadow-2xl">
+        <div class="border-b border-border p-5  sm:px-6">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="flex min-w-0 items-start gap-4">
-              <div class="grid size-12 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+              <div class="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                 <ng-icon [name]="activeStepMeta().icon" class="size-6" />
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-medium text-primary">Customer setup</p>
-                <h2 class="mt-1 text-2xl font-semibold tracking-normal text-foreground">{{ stepTitle() }}</h2>
-                <p class="mt-2 text-sm leading-6 text-muted-foreground">{{ stepDescription() }}</p>
+                <h2 class="mt-1 text-2xl font-bold tracking-tight text-foreground">{{ stepTitle() }}</h2>
+                <p class="mt-2 text-sm/6  text-muted-foreground">{{ stepDescription() }}</p>
               </div>
             </div>
             <button z-button zType="ghost" type="button" [zDisabled]="isBusy()" (click)="finishOnboarding()">
@@ -94,24 +94,24 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
           </div>
         </div>
 
-        <div class="px-5 py-5 sm:px-6">
+        <div class="p-5  sm:px-6">
           @switch (activeStep()) {
             @case ('welcome') {
               <div class="grid gap-3 sm:grid-cols-3">
-                <div class="rounded-lg border border-border bg-card p-4">
+                <div class="rounded-xl border border-border bg-card p-4">
                   <ng-icon name="lucideMapPin" class="size-5 text-primary" />
                   <h3 class="mt-3 text-sm font-semibold text-foreground">Save your pickup address</h3>
-                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Use it faster when creating a request.</p>
+                  <p class="mt-1 text-sm/5  text-muted-foreground">Use it faster when creating a request.</p>
                 </div>
-                <div class="rounded-lg border border-border bg-card p-4">
+                <div class="rounded-xl border border-border bg-card p-4">
                   <ng-icon name="lucideBell" class="size-5 text-primary" />
                   <h3 class="mt-3 text-sm font-semibold text-foreground">Get pickup updates</h3>
-                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Know when the collector accepts or completes the pickup.</p>
+                  <p class="mt-1 text-sm/5  text-muted-foreground">Know when the collector accepts or completes the pickup.</p>
                 </div>
-                <div class="rounded-lg border border-border bg-card p-4">
+                <div class="rounded-xl border border-border bg-card p-4">
                   <ng-icon name="lucideSmartphone" class="size-5 text-primary" />
                   <h3 class="mt-3 text-sm font-semibold text-foreground">Make the app yours</h3>
-                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Install the app when supported and choose a theme.</p>
+                  <p class="mt-1 text-sm/5  text-muted-foreground">Install the app when supported and choose a theme.</p>
                 </div>
               </div>
             }
@@ -123,7 +123,7 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
                     <ng-icon name="lucideCheckCircle2" class="mt-0.5 size-5 text-primary" />
                     <div>
                       <h3 class="text-sm font-semibold text-foreground">Default address ready</h3>
-                      <p class="mt-1 text-sm leading-5 text-muted-foreground">
+                      <p class="mt-1 text-sm/5  text-muted-foreground">
                         {{ address.label }} · {{ address.street }}, {{ address.city }}
                       </p>
                     </div>
@@ -164,14 +164,14 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
             }
 
             @case ('notifications') {
-              <div class="rounded-lg border border-border bg-card p-5">
+              <div class="rounded-xl border border-border bg-card p-5">
                 <div class="flex items-start gap-4">
-                  <div class="grid size-11 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <div class="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                     <ng-icon name="lucideBell" class="size-5" />
                   </div>
                   <div class="min-w-0">
                     <h3 class="text-base font-semibold text-foreground">Pickup alerts</h3>
-                    <p class="mt-1 text-sm leading-6 text-muted-foreground">
+                    <p class="mt-1 text-sm/6  text-muted-foreground">
                       WasteGrab can send browser notifications for pickup status changes and reward updates.
                     </p>
                     <p class="mt-3 text-sm font-medium" [class.text-primary]="notificationStatus() === 'enabled'" [class.text-muted-foreground]="notificationStatus() !== 'enabled'">
@@ -186,29 +186,29 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
               <div class="grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  class="flex items-start gap-3 rounded-lg border border-border bg-card p-4 text-left transition hover:bg-muted"
+                  class="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-left transition hover:bg-muted"
                   (click)="toggleDarkMode()"
                 >
-                  <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground">
+                  <div class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground">
                     <ng-icon name="lucideMoon" class="size-5" />
                   </div>
                   <div>
                     <h3 class="text-sm font-semibold text-foreground">Dark mode</h3>
-                    <p class="mt-1 text-sm leading-5 text-muted-foreground">{{ darkMode() ? 'Dark theme is on.' : 'Light theme is on.' }}</p>
+                    <p class="mt-1 text-sm/5  text-muted-foreground">{{ darkMode() ? 'Dark theme is on.' : 'Light theme is on.' }}</p>
                   </div>
                 </button>
                 <button
                   type="button"
-                  class="flex items-start gap-3 rounded-lg border border-border bg-card p-4 text-left transition hover:bg-muted disabled:opacity-60"
+                  class="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-left transition hover:bg-muted disabled:opacity-60"
                   [disabled]="!canInstallPwa()"
                   (click)="installPwa()"
                 >
-                  <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground">
+                  <div class="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground">
                     <ng-icon name="lucideSmartphone" class="size-5" />
                   </div>
                   <div>
                     <h3 class="text-sm font-semibold text-foreground">Install app</h3>
-                    <p class="mt-1 text-sm leading-5 text-muted-foreground">
+                    <p class="mt-1 text-sm/5  text-muted-foreground">
                       {{ pwaStatusLabel() }}
                     </p>
                   </div>
@@ -218,11 +218,11 @@ const CUSTOMER_ONBOARDING_STEPS: { key: CustomerOnboardingStep; label: string; i
 
             @case ('done') {
               <div class="rounded-lg border border-primary/30 bg-primary/10 p-5 text-center">
-                <div class="mx-auto grid size-12 place-items-center rounded-lg bg-primary text-primary-foreground">
+                <div class="mx-auto grid size-12 place-items-center rounded-full bg-primary text-primary-foreground">
                   <ng-icon name="lucideCheckCircle2" class="size-6" />
                 </div>
                 <h3 class="mt-4 text-lg font-semibold text-foreground">You are ready</h3>
-                <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                <p class="mx-auto mt-2 max-w-md text-sm/6  text-muted-foreground">
                   Your customer setup is saved. Create a pickup request when you are ready to recycle.
                 </p>
               </div>

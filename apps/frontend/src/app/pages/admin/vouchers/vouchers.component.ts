@@ -1,23 +1,26 @@
-import { CommonModule } from '@angular/common';
+
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideCoins,
   lucideGift,
+  lucideLoaderCircle,
   lucidePencil,
   lucidePlus,
   lucideReceiptText,
   lucideScrollText,
   lucideTrash2,
+  lucideWifi,
 } from '@ng-icons/lucide';
 import { firstValueFrom } from 'rxjs';
 
 import { AppHeaderComponent } from '@/ui/header/header.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
 import { ZardDatePickerComponent } from '@/ui/zard/date-picker';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
 import { ZardFormControlComponent, ZardFormFieldComponent, ZardFormLabelComponent } from '@/ui/zard/form/form.component';
 import { ZardInputDirective } from '@/ui/zard/input';
@@ -40,11 +43,11 @@ type VoucherCatalogFilter = 'all' | VoucherStatus;
   selector: 'app-admin-vouchers-page',
   templateUrl: './vouchers.html',
   imports: [
-    CommonModule,
+
+    DatePipe,
     ReactiveFormsModule,
     AppHeaderComponent,
     ZardButtonComponent,
-    FetchStateComponent,
     TableHeaderComponent,
     ZardDatePickerComponent,
     ZardModalComponent,
@@ -52,6 +55,7 @@ type VoucherCatalogFilter = 'all' | VoucherStatus;
     ZardFormLabelComponent,
     ZardFormControlComponent,
     ZardInputDirective,
+    EmptyStateComponent,
     NgIcon,
     ...ZardSelectImports,
     ...ZardTableImports,
@@ -60,18 +64,20 @@ type VoucherCatalogFilter = 'all' | VoucherStatus;
     provideIcons({
       lucideCoins,
       lucideGift,
+      lucideLoaderCircle,
       lucidePencil,
       lucidePlus,
       lucideReceiptText,
       lucideScrollText,
       lucideTrash2,
+      lucideWifi,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminVouchersPage implements OnInit {
   private readonly vouchersService = inject(AdminVoucherService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
 
   protected readonly VoucherStatus = VoucherStatus;
   protected readonly statusOptions = [
@@ -159,10 +165,6 @@ export class AdminVouchersPage implements OnInit {
 
   protected setLedgerFilter(filter: string): void {
     this.activeLedgerFilter.set(filter);
-  }
-
-  protected refresh(): void {
-    void this.loadInitialData();
   }
 
   protected openAdd(): void {
@@ -255,9 +257,9 @@ export class AdminVouchersPage implements OnInit {
   }
 
   protected statusClass(status: VoucherStatus): string {
-    if (status === VoucherStatus.ACTIVE) return 'bg-emerald-100 text-emerald-700';
-    if (status === VoucherStatus.EXPIRED) return 'bg-amber-100 text-amber-700';
-    return 'bg-slate-100 text-slate-600';
+    if (status === VoucherStatus.ACTIVE) return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
+    if (status === VoucherStatus.EXPIRED) return 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
+    return 'bg-muted text-muted-foreground';
   }
 
   protected pointsClass(points: number): string {

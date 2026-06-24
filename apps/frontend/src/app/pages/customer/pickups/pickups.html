@@ -1,79 +1,49 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button
-      z-button
-      zType="default"
+    <a
       [routerLink]="['/customer/new-pickup']"
-      [zDisabled]="activeRequests().length > 0"
-      [title]="activeRequests().length > 0 ? 'Complete or cancel your active request before creating a new one' : ''"
+      [class.pointer-events-none]="activeRequests().length > 0"
+      [class.opacity-50]="activeRequests().length > 0"
+      [title]="activeRequests().length > 0 ? 'Complete or cancel your active request first' : ''"
       rightSide
-      class="gap-1"
+      class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all"
     >
       <ng-icon name="lucidePlus" class="size-4!" />
       New Request
-    </button>
+    </a>
   </app-header>
 
-  <div class="mx-auto grid w-full max-w-7xl gap-5">
-    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <div class="mb-3 flex items-center justify-between">
-          <span class="text-sm font-medium text-muted-foreground"
-            >Total Requests</span
-          >
-          <ng-icon name="lucidePackage" class="size-4! text-primary" />
-        </div>
-        <div class="text-2xl font-bold">{{ requests().length }}</div>
-      </div>
+  <div class="grid w-full gap-5">
+    <!-- Stats -->
+    <app-stat-grid [stats]="pageStats()" />
 
-      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <div class="mb-3 flex items-center justify-between">
-          <span class="text-sm font-medium text-muted-foreground">Active</span>
-          <ng-icon name="lucideTruck" class="size-4! text-primary" />
-        </div>
-        <div class="text-2xl font-bold">{{ activeRequests().length }}</div>
-      </div>
+    <!-- Active request hero -->
+    @if (latestActiveRequest(); as active) {
+    <section class="brand-hero card-lift relative overflow-hidden rounded-3xl">
+      <div
+        class="pointer-events-none absolute -right-10 -top-14 size-44 rounded-full bg-white/10"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="pointer-events-none absolute -bottom-12 -left-10 size-36 rounded-full bg-white/5"
+        aria-hidden="true"
+      ></div>
 
-      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <div class="mb-3 flex items-center justify-between">
-          <span class="text-sm font-medium text-muted-foreground"
-            >Contributed Weight</span
-          >
-          <ng-icon name="lucideScale" class="size-4! text-primary" />
-        </div>
-        <div class="text-2xl font-bold">
-          {{ totalEstimatedWeight() | number:'1.1-2' }} kg
-        </div>
-      </div>
-
-      <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <div class="mb-3 flex items-center justify-between">
-          <span class="text-sm font-medium text-muted-foreground"
-            >Pickup Points</span
-          >
-          <ng-icon name="lucideCoins" class="size-4! text-primary" />
-        </div>
-        <div class="text-2xl font-bold">{{ totalPotentialPoints() }}</div>
-      </div>
-    </section>
-
-    @if (latestActiveRequest()) {
-    <section
-      class="rounded-lg border border-primary/30 bg-primary/10 shadow-sm"
-    >
-      <div class="grid gap-4 p-4 md:grid-cols-[7rem_1fr_auto] md:items-center">
+      <div
+        class="grid gap-4 p-5 md:grid-cols-[auto_1fr_auto] md:items-center lg:p-6"
+      >
         <div
-          class="aspect-square overflow-hidden rounded-lg border border-primary/20 bg-background"
+          class="aspect-square size-20 shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white/10 md:size-24"
         >
-          @if (primaryImage(latestActiveRequest()!)) {
+          @if (primaryImage(active)) {
           <img
-            [src]="primaryImage(latestActiveRequest()!)"
-            alt="Active pickup image"
+            [src]="primaryImage(active)"
+            alt="Active pickup"
             class="size-full object-cover"
           />
           } @else {
-          <div class="grid size-full place-items-center text-primary">
-            <ng-icon name="lucideRecycle" class="size-8!" />
+          <div class="grid size-full place-items-center">
+            <ng-icon name="lucideRecycle" class="size-8! text-white/70" />
           </div>
           }
         </div>
@@ -81,26 +51,41 @@
         <div class="min-w-0">
           <div class="mb-2 flex flex-wrap items-center gap-2">
             <span
-              class="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground"
+              class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white"
             >
-              <span class="size-1.5 rounded-full bg-primary-foreground"></span>
-              Active Request
+              <span class="size-1.5 animate-pulse rounded-full bg-white"></span>
+              Live · Active
             </span>
-            <span class="text-xs font-semibold text-primary"
-              >#{{ shortId(latestActiveRequest()!.id) }}</span
+            <span class="font-mono text-xs font-semibold text-white/70"
+              >#{{ shortId(active.id) }}</span
             >
           </div>
-          <h2 class="truncate text-lg font-bold text-foreground">
-            {{ categoryLabel(latestActiveRequest()!) }}
+          <h2 class="truncate text-lg font-bold text-white">
+            {{ categoryLabel(active) }}
           </h2>
-          <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-            {{ latestActiveRequest()!.addressText }}
+          <p class="mt-1 line-clamp-1 text-sm text-white/75">
+            <ng-icon
+              name="lucideMapPin"
+              class="mr-0.5 inline size-3.5! align-text-bottom"
+            />
+            {{ active.addressText }}
           </p>
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            @for (step of progressSteps; track step.status) {
+            <span
+              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition-all"
+              [class]="isStepComplete(active, step.status) ? 'bg-white text-emerald-700' : isCurrentStep(active, step.status) ? 'bg-white/25 text-white ring-1 ring-white/40' : 'bg-white/10 text-white/40'"
+            >
+              <ng-icon [name]="step.icon" class="size-3!" />
+              {{ step.label }}
+            </span>
+            }
+          </div>
         </div>
 
         <a
-          [routerLink]="['/customer/pickups', latestActiveRequest()!.id]"
-          class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          [routerLink]="['/customer/pickups', active.id]"
+          class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:bg-white/90 active:scale-95"
         >
           Track
           <ng-icon name="lucideArrowUpRight" class="size-4!" />
@@ -109,141 +94,71 @@
     </section>
     }
 
-    <section
-      class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
-    >
-      <app-table-header
-        title="My Requests"
-        description="Track uploaded waste images, estimates, and pickup status."
-        [filters]="filters"
-        [activeFilter]="activeFilter()"
-        [showRefresh]="true"
-        (filterChange)="setFilter($event)"
-        (refresh)="refresh()"
+    <!-- Request list -->
+    @if (isLoading()) {
+    <div class="flex items-center justify-center py-16">
+      <ng-icon
+        name="lucideLoaderCircle"
+        class="size-6! animate-spin text-muted-foreground"
       />
+    </div>
+    } @else if (loadError()) {
+    <app-empty-state
+      icon="lucideWifi"
+      [title]="loadError()"
+      description="Pull down to retry or check your connection."
+    />
+    } @else {
+    <section
+      class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
+    >
+      <div class="border-b border-border px-5 py-4">
+        <app-table-header
+          title="My Requests"
+          [description]="filteredSummaries().length + (activeFilter() === 'all' ? ' total' : ' ' + activeFilter()) + ' request' + (filteredSummaries().length === 1 ? '' : 's')"
+          [filters]="filters"
+          [activeFilter]="activeFilter()"
+          (filterChange)="setFilter($event)"
+        />
+      </div>
 
-      <app-fetch-state
-        [isLoading]="isLoading()"
-        [loadError]="loadError()"
-        loadingText="Loading requests..."
-      >
-        <div class="grid gap-3">
-          @for (request of filteredRequests(); track request.id) {
-          <a
-            [routerLink]="['/customer/pickups', request.id]"
-            class="grid gap-4 rounded-lg border border-border bg-background p-3 transition-colors hover:bg-muted/40 md:grid-cols-[5.5rem_1fr_auto] md:items-center"
-          >
-            <div
-              class="aspect-square overflow-hidden rounded-md border border-border bg-muted"
-            >
-              @if (primaryImage(request)) {
-              <img
-                [src]="primaryImage(request)"
-                alt="Pickup request image"
-                class="size-full object-cover"
-              />
-              } @else {
-              <div
-                class="grid size-full place-items-center text-muted-foreground"
-              >
-                <ng-icon name="lucideImage" class="size-6!" />
-              </div>
-              }
-            </div>
-
-            <div class="min-w-0">
-              <div class="mb-2 flex flex-wrap items-center gap-2">
-                <span class="text-xs font-bold text-muted-foreground"
-                  >#{{ shortId(request.id) }}</span
-                >
-                <span
-                  class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold"
-                  [class]="statusClass(request.status)"
-                >
-                  <ng-icon
-                    [name]="statusIcon(request.status)"
-                    class="size-3.5!"
-                  />
-                  {{ statusLabel(request.status) }}
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 text-xs text-muted-foreground"
-                >
-                  <ng-icon name="lucideClock3" class="size-3.5!" />
-                  {{ formatDate(request.createdAt) }}
-                </span>
-              </div>
-
-              <h3 class="truncate text-sm font-bold text-foreground">
-                {{ categoryLabel(request) }}
-              </h3>
-              <p class="mt-1 line-clamp-1 text-sm text-muted-foreground">
-                {{ request.addressText }}
-              </p>
-
-              <div class="mt-3 flex flex-wrap gap-2">
-                <span
-                  class="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground"
-                >
-                  <ng-icon name="lucideScale" class="size-3.5!" />
-                  {{ requestWeight(request) | number:'1.1-2' }} kg
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground"
-                >
-                  <ng-icon name="lucideImage" class="size-3.5!" />
-                  {{ request.images.length }} image{{ request.images.length ===
-                  1 ? '' : 's' }}
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary"
-                >
-                  <ng-icon name="lucideCoins" class="size-3.5!" />
-                  {{ potentialPoints(request) }} {{ request.status === PickupStatus.COMPLETED ? 'awarded' : 'potential' }} pts
-                </span>
-              </div>
-            </div>
-
-            <div
-              class="flex items-center justify-between gap-4 md:block md:text-right"
-            >
-              <div>
-                <p class="text-xs text-muted-foreground">{{ pointsLabel(request) }}</p>
-                <p class="text-sm font-bold text-primary">
-                  {{ potentialPoints(request) }} pts
-                </p>
-              </div>
-              <ng-icon
-                name="lucideArrowUpRight"
-                class="size-5! text-muted-foreground md:mt-3"
-              />
-            </div>
-          </a>
-          }
+      @if (filteredSummaries().length) {
+      <div>
+        <!-- Desktop column headers -->
+        <div
+          class="hidden grid-cols-[1.7fr_1fr_1fr_0.7fr_0.7fr] items-center border-b border-border/70 px-3 py-2 text-xs font-semibold text-muted-foreground md:grid"
+        >
+          <span>Request</span>
+          <span>Date</span>
+          <span>Status</span>
+          <span class="text-right">Weight</span>
+          <span class="text-right">Points</span>
         </div>
-
-        @if (!filteredRequests().length) {
-        <div class="grid min-h-72 place-items-center p-6 text-center">
-          <div>
-            <ng-icon
-              name="lucideRecycle"
-              class="mx-auto mb-3 size-10! text-primary"
-            />
-            <h3 class="text-base font-semibold">No requests found</h3>
-            <p class="mt-1 text-sm text-muted-foreground">
-              Create a pickup request to start tracking your recyclables.
-            </p>
-            <a
-              routerLink="/customer/new-pickup"
-              class="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-            >
-              <ng-icon name="lucidePlus" class="size-4!" />
-              New Request
-            </a>
-          </div>
-        </div>
+        @for (summary of filteredSummaries(); track summary.id) {
+        <app-customer-pickup-list-item [item]="summary" />
         }
-      </app-fetch-state>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center gap-4 px-6 py-16 text-center">
+        <div class="grid size-16 place-items-center rounded-full bg-muted">
+          <ng-icon name="lucideRecycle" class="size-7! text-muted-foreground" />
+        </div>
+        <div>
+          <p class="font-semibold text-foreground">No requests found</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            Create a pickup request to start tracking your recyclables.
+          </p>
+        </div>
+        <a
+          routerLink="/customer/new-pickup"
+          class="inline-flex h-10 items-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-all"
+        >
+          <ng-icon name="lucidePlus" class="size-4!" />
+          New Request
+        </a>
+      </div>
+      }
     </section>
+    }
   </div>
 </section>

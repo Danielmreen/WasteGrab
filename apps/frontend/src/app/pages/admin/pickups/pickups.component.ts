@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -11,27 +11,29 @@ import {
   lucideLoaderCircle,
   lucideMapPin,
   lucidePackageCheck,
-  lucideRefreshCw,
   lucideScale,
   lucideTruck,
   lucideXCircle,
 } from '@ng-icons/lucide';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, interval } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminPickupService } from '@/services/admin-pickup.service';
 import { ImageType, PickupStatus, type AdminPickupRequest } from '@wastegrab/shared';
 
 import { AppHeaderComponent } from '@/ui/header/header.component';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
-import { ZardButtonComponent } from '@/ui/zard/button/button.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
 import { ZardTableImports } from '@/ui/zard/table';
+import { DecimalPipe } from '@angular/common';
 
 type PickupFilter = 'all' | 'active' | 'completed' | 'cancelled';
 
 @Component({
   selector: 'app-admin-pickups-page',
   templateUrl: './pickups.html',
-  imports: [CommonModule, RouterLink, AppHeaderComponent, FetchStateComponent, ZardButtonComponent, TableHeaderComponent, NgIcon, ...ZardTableImports],
+  imports: [RouterLink, AppHeaderComponent, EmptyStateComponent, TableHeaderComponent, DecimalPipe, StatGridComponent, NgIcon, ...ZardTableImports],
   viewProviders: [
     provideIcons({
       lucideArrowUpRight,
@@ -42,7 +44,6 @@ type PickupFilter = 'all' | 'active' | 'completed' | 'cancelled';
       lucideLoaderCircle,
       lucideMapPin,
       lucidePackageCheck,
-      lucideRefreshCw,
       lucideScale,
       lucideTruck,
       lucideXCircle,
@@ -70,6 +71,12 @@ export class AdminPickupsPage {
   protected readonly completedPickups = computed(() => this.pickups().filter((pickup) => pickup.status === PickupStatus.COMPLETED));
   protected readonly cancelledPickups = computed(() => this.pickups().filter((pickup) => pickup.status === PickupStatus.CANCELLED));
   protected readonly totalPotentialPoints = computed(() => this.pickups().reduce((total, pickup) => total + this.potentialPoints(pickup), 0));
+  protected readonly stats = computed<StatCardItem[]>(() => [
+    { icon: 'lucidePackageCheck', label: 'Total', value: this.pickups().length },
+    { icon: 'lucideTruck', label: 'Active', value: this.activePickups().length },
+    { icon: 'lucideCheckCircle2', label: 'Completed', value: this.completedPickups().length },
+    { icon: 'lucideCoins', label: 'Pickup Points', value: this.totalPotentialPoints(), unit: 'pts' },
+  ]);
 
   protected readonly filteredPickups = computed(() => {
     const filter = this.activeFilter();
@@ -83,14 +90,13 @@ export class AdminPickupsPage {
 
   constructor() {
     void this.loadPickups();
+    interval(60_000).pipe(takeUntilDestroyed()).subscribe(() => {
+      void this.loadPickups();
+    });
   }
 
   protected setFilter(filter: PickupFilter): void {
     this.activeFilter.set(filter);
-  }
-
-  protected refresh(): void {
-    void this.loadPickups();
   }
 
   protected statusLabel(status: PickupStatus): string {
@@ -180,19 +186,19 @@ export class AdminPickupsPage {
   private statusMeta(status: PickupStatus): { label: string; className: string; icon: string } {
     switch (status) {
       case PickupStatus.PENDING:
-        return { label: 'Pending', className: 'bg-amber-100 text-amber-700', icon: 'lucideClock3' };
+        return { label: 'Pending', className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300', icon: 'lucideClock3' };
       case PickupStatus.ACCEPTED:
-        return { label: 'Accepted', className: 'bg-blue-100 text-blue-700', icon: 'lucideTruck' };
+        return { label: 'Accepted', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300', icon: 'lucideTruck' };
       case PickupStatus.ARRIVED:
-        return { label: 'Arrived', className: 'bg-violet-100 text-violet-700', icon: 'lucideMapPin' };
+        return { label: 'Arrived', className: 'bg-violet-500/10 text-violet-700 dark:text-violet-300', icon: 'lucideMapPin' };
       case PickupStatus.VERIFIED:
-        return { label: 'Verified', className: 'bg-cyan-100 text-cyan-700', icon: 'lucideCheckCircle2' };
+        return { label: 'Verified', className: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300', icon: 'lucideCheckCircle2' };
       case PickupStatus.COMPLETED:
-        return { label: 'Completed', className: 'bg-emerald-100 text-emerald-700', icon: 'lucidePackageCheck' };
+        return { label: 'Completed', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300', icon: 'lucidePackageCheck' };
       case PickupStatus.CANCELLED:
-        return { label: 'Cancelled', className: 'bg-rose-100 text-rose-700', icon: 'lucideXCircle' };
+        return { label: 'Cancelled', className: 'bg-rose-500/10 text-rose-700 dark:text-rose-300', icon: 'lucideXCircle' };
       default:
-        return { label: status, className: 'bg-slate-100 text-slate-700', icon: 'lucideLoaderCircle' };
+        return { label: status, className: 'bg-muted text-muted-foreground', icon: 'lucideLoaderCircle' };
     }
   }
 }

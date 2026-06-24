@@ -22,6 +22,7 @@ wasteCategoryRouter.get('/', async (_, res: Response) => {
       isHazardous: true,
       isAiDetectable: true,
       description: true,
+      imageUrl: true,
     },
   });
 

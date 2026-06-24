@@ -1,6 +1,6 @@
-<section class="grid min-w-0 gap-4 p-4 lg:p-8">
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button z-button type="button" rightSide class="gap-2" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       New Voucher
     </button>
@@ -9,7 +9,7 @@
   <div class="grid gap-3 sm:grid-cols-3">
     <button
       type="button"
-      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'catalog'"
       [class.bg-primary]="activeTab() === 'catalog'"
       [class.text-primary-foreground]="activeTab() === 'catalog'"
@@ -18,7 +18,7 @@
       (click)="selectTab('catalog')"
     >
       <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
       >
         <ng-icon name="lucideGift" class="size-5!" />
       </span>
@@ -32,7 +32,7 @@
 
     <button
       type="button"
-      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'redemptions'"
       [class.bg-primary]="activeTab() === 'redemptions'"
       [class.text-primary-foreground]="activeTab() === 'redemptions'"
@@ -41,7 +41,7 @@
       (click)="selectTab('redemptions')"
     >
       <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
       >
         <ng-icon name="lucideReceiptText" class="size-5!" />
       </span>
@@ -55,7 +55,7 @@
 
     <button
       type="button"
-      class="flex items-center gap-3 rounded-lg border p-4 text-left transition-colors"
+      class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'ledger'"
       [class.bg-primary]="activeTab() === 'ledger'"
       [class.text-primary-foreground]="activeTab() === 'ledger'"
@@ -64,7 +64,7 @@
       (click)="selectTab('ledger')"
     >
       <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
       >
         <ng-icon name="lucideScrollText" class="size-5!" />
       </span>
@@ -77,33 +77,39 @@
     </button>
   </div>
 
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+  </div>
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
   @if (activeTab() === 'catalog') {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="Voucher Catalog"
       description="Create and manage rewards customers can redeem with points."
       [filters]="catalogFilters"
       [activeFilter]="activeCatalogFilter()"
-      [showRefresh]="true"
       (filterChange)="setCatalogFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading vouchers data..."
-    >
       <div class="grid gap-3 lg:hidden">
         @for (voucher of filteredVouchers(); track voucher.id) {
         <article class="rounded-lg border border-border p-3">
-          <div class="mb-3 overflow-hidden rounded-lg border border-border bg-gradient-to-r from-primary/20 via-accent/20 to-emerald-500/20">
+          <div class="mb-3 overflow-hidden rounded-lg border border-border bg-linear-to-r from-primary/20 via-teal-500/15 to-teal-400/20">
             @if (voucher.imageUrl) {
-            <img [src]="voucher.imageUrl" [alt]="voucher.title" class="aspect-[16/7] w-full object-cover" />
+            <img [src]="voucher.imageUrl" [alt]="voucher.title" class="aspect-16/7 w-full object-cover" />
             } @else {
-            <div class="grid aspect-[16/7] place-items-center text-primary">
+            <div class="grid aspect-16/7 place-items-center text-primary">
               <ng-icon name="lucideGift" class="size-8!" />
             </div>
             }
@@ -116,7 +122,7 @@
               </p>
             </div>
             <span
-              class="shrink-0 rounded-md px-2 py-1 text-xs font-semibold"
+              class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
               [class]="statusClass(voucher.status)"
             >
               {{ voucher.status }}
@@ -172,7 +178,7 @@
         </article>
         } @empty {
         <div
-          class="rounded-lg border border-dashed border-border p-8 text-center"
+          class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
         >
           <p class="font-semibold">No vouchers yet.</p>
           <p class="mt-1 text-sm text-muted-foreground">
@@ -183,9 +189,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-lg border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
       >
-        <table z-table class="min-w-[76rem] bg-card">
+        <table z-table class="min-w-304 bg-card">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Voucher</th>
@@ -193,7 +199,7 @@
               <th z-table-head>Stock</th>
               <th z-table-head>Status</th>
               <th z-table-head>Window</th>
-              <th z-table-head class="w-44 !text-right">Actions</th>
+              <th z-table-head class="w-44 text-right!">Actions</th>
             </tr>
           </thead>
           <tbody z-table-body>
@@ -201,7 +207,7 @@
             <tr z-table-row>
               <td z-table-cell>
                 <div class="flex items-center gap-3">
-                  <div class="grid size-14 shrink-0 overflow-hidden rounded-lg border border-border bg-gradient-to-r from-primary/20 via-accent/20 to-emerald-500/20">
+                  <div class="grid size-14 shrink-0 overflow-hidden rounded-lg border border-border bg-linear-to-r from-primary/20 via-teal-500/15 to-teal-400/20">
                     @if (voucher.imageUrl) {
                     <img [src]="voucher.imageUrl" [alt]="voucher.title" class="size-full object-cover" />
                     } @else {
@@ -232,7 +238,7 @@
               </td>
               <td z-table-cell>
                 <span
-                  class="rounded-md px-2 py-1 text-xs font-semibold"
+                  class="rounded-full px-2 py-1 text-xs font-semibold"
                   [class]="statusClass(voucher.status)"
                 >
                   {{ voucher.status }}
@@ -248,7 +254,7 @@
                   : 'No expiry' }}
                 </p>
               </td>
-              <td z-table-cell class="w-44 !text-right">
+              <td z-table-cell class="w-44 text-right!">
                 <div class="flex justify-end gap-2">
                   <button
                     z-button
@@ -284,29 +290,23 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
   } @if (activeTab() === 'redemptions') {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="Redemption Logs"
       description="Latest voucher redemption activity across customers."
       [filters]="redemptionFilters()"
       [activeFilter]="activeRedemptionFilter()"
-      [showRefresh]="true"
       (filterChange)="setRedemptionFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading redemptions data..."
-    >
-      <div class="max-w-full overflow-x-auto rounded-lg border border-border">
-        <table z-table class="min-w-[64rem] bg-card">
+      <div class="max-w-full overflow-x-auto rounded-2xl border border-border">
+        <table z-table class="min-w-5xl bg-card">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Customer</th>
@@ -337,7 +337,7 @@
               </td>
               <td z-table-cell>
                 <span
-                  class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700"
+                  class="rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground"
                 >
                   {{ redemption.status }}
                 </span>
@@ -358,29 +358,23 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
   } @if (activeTab() === 'ledger') {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="Point Ledger"
       description="Audit trail for earned, spent, adjusted, expired, and reversed points."
       [filters]="ledgerFilters()"
       [activeFilter]="activeLedgerFilter()"
-      [showRefresh]="true"
       (filterChange)="setLedgerFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading ledger data..."
-    >
-      <div class="max-w-full overflow-x-auto rounded-lg border border-border">
-        <table z-table class="min-w-[76rem] bg-card">
+      <div class="max-w-full overflow-x-auto rounded-2xl border border-border">
+        <table z-table class="min-w-304 bg-card">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Customer</th>
@@ -403,7 +397,7 @@
               </td>
               <td z-table-cell>
                 <span
-                  class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700"
+                  class="rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground"
                 >
                   {{ entry.type }}
                 </span>
@@ -449,8 +443,8 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
+  }
   } @if (modalMode() === 'add' || modalMode() === 'edit') {
   <z-modal
     [isOpen]="true"

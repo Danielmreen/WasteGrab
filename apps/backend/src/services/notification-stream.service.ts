@@ -57,3 +57,14 @@ export function emitNotificationEvent(userId: string): void {
     client.write("notification");
   }
 }
+
+export function emitPickupUpdateEvent(userId: string, pickupId: string): void {
+  const clients = clientsByUserId.get(userId);
+  if (!clients) {
+    return;
+  }
+
+  for (const client of clients) {
+    client.write("pickup-update", { pickupId });
+  }
+}

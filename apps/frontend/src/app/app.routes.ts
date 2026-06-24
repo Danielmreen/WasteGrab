@@ -11,34 +11,88 @@ type LazyPage = NonNullable<Route['loadComponent']>;
 const pages = {
   home: () => import('./pages/home/home.component').then((m) => m.HomePage),
   auth: () => import('./pages/auth/auth.component').then((m) => m.AuthPage),
-  profile: () => import('./pages/customer/profile/profile.component').then((m) => m.ProfilePage),
-  settings: () => import('./pages/customer/settings/settings.component').then((m) => m.SettingsPage),
-  customerDashboard: () => import('./pages/customer/customer.component').then((m) => m.CustomerPage),
+  profile: () =>
+    import('./pages/customer/profile/profile.component').then(
+      (m) => m.ProfilePage,
+    ),
+  settings: () =>
+    import('./pages/customer/settings/settings.component').then(
+      (m) => m.SettingsPage,
+    ),
+  customerDashboard: () =>
+    import('./pages/customer/customer.component').then((m) => m.CustomerPage),
   customerNewPickup: () =>
-    import('./pages/customer/new-pickup/new-pickup.component').then((m) => m.CustomerNewPickupPage),
-  customerPickups: () => import('./pages/customer/pickups/pickups.component').then((m) => m.CustomerPickupsPage),
-  customerVouchers: () => import('./pages/customer/vouchers/vouchers.component').then((m) => m.CustomerVouchersPage),
-  customerAchievements: () => import('./pages/customer/achievements/achievements.component').then((m) => m.CustomerAchievementsPage),
+    import('./pages/customer/new-pickup/new-pickup.component').then(
+      (m) => m.CustomerNewPickupPage,
+    ),
+  customerPickups: () =>
+    import('./pages/customer/pickups/pickups.component').then(
+      (m) => m.CustomerPickupsPage,
+    ),
+  customerVouchers: () =>
+    import('./pages/customer/vouchers/vouchers.component').then(
+      (m) => m.CustomerVouchersPage,
+    ),
+  customerAchievements: () =>
+    import('./pages/customer/achievements/achievements.component').then(
+      (m) => m.CustomerAchievementsPage,
+    ),
   customerLeaderboard: () =>
-    import('./pages/customer/leaderboard/leaderboard.component').then((m) => m.CustomerLeaderboardPage),
-  adminDashboard: () => import('./pages/admin/admin.component').then((m) => m.AdminPage),
-  adminCollectors: () => import('./pages/admin/collection-locations/collection-location.component').then((m) => m.AdminCollectionLocationPage),
-  adminPickups: () => import('./pages/admin/pickups/pickups.component').then((m) => m.AdminPickupsPage),
-  adminUsers: () => import('./pages/admin/users/users.component').then((m) => m.AdminUsersPage),
+    import('./pages/customer/leaderboard/leaderboard.component').then(
+      (m) => m.CustomerLeaderboardPage,
+    ),
+  adminDashboard: () =>
+    import('./pages/admin/admin.component').then((m) => m.AdminPage),
+  adminCollectors: () =>
+    import('./pages/admin/collection-locations/collection-location.component').then(
+      (m) => m.AdminCollectionLocationPage,
+    ),
+  adminPickups: () =>
+    import('./pages/admin/pickups/pickups.component').then(
+      (m) => m.AdminPickupsPage,
+    ),
+  adminUsers: () =>
+    import('./pages/admin/users/users.component').then((m) => m.AdminUsersPage),
   adminWasteCategories: () =>
-    import('./pages/admin/waste-categories/waste-categories.component').then((m) => m.AdminWasteCategoriesPage),
-  adminVouchers: () => import('./pages/admin/vouchers/vouchers.component').then((m) => m.AdminVouchersPage),
-  adminAchievements: () => import('./pages/admin/achievements/achievements.component').then((m) => m.AdminAchievementsPage),
+    import('./pages/admin/waste-categories/waste-categories.component').then(
+      (m) => m.AdminWasteCategoriesPage,
+    ),
+  adminVouchers: () =>
+    import('./pages/admin/vouchers/vouchers.component').then(
+      (m) => m.AdminVouchersPage,
+    ),
+  adminAchievements: () =>
+    import('./pages/admin/achievements/achievements.component').then(
+      (m) => m.AdminAchievementsPage,
+    ),
+  adminAuthSlides: () =>
+    import('./pages/admin/auth-slides/auth-slides.component').then(
+      (m) => m.AdminAuthSlidesPage,
+    ),
   adminNotifications: () =>
-    import('./pages/admin/notifications/notifications.component').then((m) => m.AdminNotificationsPage),
-  collectorDashboard: () => import('./pages/collector/collector.component').then((m) => m.CollectorPage),
+    import('./pages/admin/notifications/notifications.component').then(
+      (m) => m.AdminNotificationsPage,
+    ),
+  collectorDashboard: () =>
+    import('./pages/collector/collector.component').then(
+      (m) => m.CollectorPage,
+    ),
   collectorEarnings: () =>
-    import('./pages/collector/earnings/earnings.component').then((m) => m.CollectorEarningsPage),
+    import('./pages/collector/earnings/earnings.component').then(
+      (m) => m.CollectorEarningsPage,
+    ),
   collectorPickups: () =>
-    import('./pages/collector/pickups/pickups.component').then((m) => m.CollectorPickupsPage),
+    import('./pages/collector/pickups/pickups.component').then(
+      (m) => m.CollectorPickupsPage,
+    ),
   collectorLocationDetail: () =>
-    import('./pages/collector/location-detail/location-detail.component').then((m) => m.CollectorLocationDetailPage),
-  pickupDetail: () => import('./pages/pickup-detail/pickup-detail.component').then((m) => m.PickupDetailPage),
+    import('./pages/collector/location-detail/location-detail.component').then(
+      (m) => m.CollectorLocationDetailPage,
+    ),
+  pickupDetail: () =>
+    import('./pages/pickup-detail/pickup-detail.component').then(
+      (m) => m.PickupDetailPage,
+    ),
 } satisfies Record<string, LazyPage>;
 
 interface RouteConfig {
@@ -120,11 +174,6 @@ const ROUTE_CONFIG = [
         loadComponent: pages.customerPickups,
       },
       {
-        path: ROUTE_PATHS.customer.rewards,
-        title: 'Rewards',
-        loadComponent: pages.customerVouchers,
-      },
-      {
         path: ROUTE_PATHS.customer.achievements,
         title: 'Achievements',
         loadComponent: pages.customerAchievements,
@@ -202,6 +251,11 @@ const ROUTE_CONFIG = [
         path: ROUTE_PATHS.admin.achievements,
         title: 'Achievements',
         loadComponent: pages.adminAchievements,
+      },
+      {
+        path: ROUTE_PATHS.admin.authSlides,
+        title: 'Auth Slides',
+        loadComponent: pages.adminAuthSlides,
       },
     ],
   },

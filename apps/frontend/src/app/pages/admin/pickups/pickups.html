@@ -1,112 +1,45 @@
-<section class="grid min-w-0 gap-4 p-4 lg:p-8">
-  <app-header mode="route">
-    <button
-      z-button
-      type="button"
-      rightSide
-      zType="outline"
-      class="gap-2"
-      (click)="refresh()"
-    >
-      <ng-icon name="lucideRefreshCw" class="size-4!" />
-      Refresh
-    </button>
-  </app-header>
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
+  <app-header mode="route" />
 
-  <div class="grid gap-3 sm:grid-cols-4">
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucidePackageCheck" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Total</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ pickups().length }} pickup requests</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideTruck" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Active</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ activePickups().length }} in progress</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideCheckCircle2" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Completed</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ completedPickups().length }} finished</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideCoins" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Pickup Points</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ totalPotentialPoints() }} pts</span
-        >
-      </span>
-    </article>
+  <app-stat-grid [stats]="stats()" gridClass="grid grid-cols-2 gap-3 xl:grid-cols-4" />
+
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
   </div>
-
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="Pickup Requests"
       description="Review customer pickup requests, status, collectors, images, and point estimates."
       [filters]="filters"
       [activeFilter]="activeFilter()"
-      [showRefresh]="true"
       (filterChange)="setFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading pickup requests..."
-    >
       <div class="grid gap-3 lg:hidden">
         @for (pickup of filteredPickups(); track pickup.id) {
-        <a [routerLink]="[pickup.id]" class="block rounded-lg border border-border p-3 transition-colors hover:bg-muted/40">
+        <a [routerLink]="[pickup.id]" class="block rounded-2xl border border-border/60 p-3 transition-all hover:-translate-y-px hover:bg-muted/40">
           <div class="flex items-start gap-3">
             @if (primaryImage(pickup)) {
             <img
               [src]="primaryImage(pickup)!"
               alt=""
-              class="size-16 rounded-lg object-cover"
+              class="size-16 rounded-xl object-cover"
             />
             } @else {
             <div
-              class="grid size-16 place-items-center rounded-lg bg-muted text-muted-foreground"
+              class="grid size-16 place-items-center rounded-full bg-muted text-muted-foreground"
             >
               <ng-icon name="lucideImage" class="size-5!" />
             </div>
@@ -120,7 +53,7 @@
                   </p>
                 </div>
                 <span
-                  class="shrink-0 rounded-md px-2 py-1 text-xs font-semibold"
+                  class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
                   [class]="statusClass(pickup.status)"
                 >
                   {{ statusLabel(pickup.status) }}
@@ -161,7 +94,7 @@
         </a>
         } @empty {
         <div
-          class="rounded-lg border border-dashed border-border p-8 text-center"
+          class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
         >
           <p class="font-semibold">No pickup requests found.</p>
           <p class="mt-1 text-sm text-muted-foreground">
@@ -172,9 +105,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-lg border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
       >
-        <table z-table class="min-w-[86rem] bg-card">
+        <table z-table class="min-w-344 bg-card">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Request</th>
@@ -195,11 +128,11 @@
                   <img
                     [src]="primaryImage(pickup)!"
                     alt=""
-                    class="size-12 rounded-lg object-cover"
+                    class="size-12 rounded-xl object-cover"
                   />
                   } @else {
                   <div
-                    class="grid size-12 place-items-center rounded-lg bg-muted text-muted-foreground"
+                    class="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground"
                   >
                     <ng-icon name="lucideImage" class="size-4!" />
                   </div>
@@ -223,7 +156,7 @@
               </td>
               <td z-table-cell>
                 <span
-                  class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold"
                   [class]="statusClass(pickup.status)"
                 >
                   <ng-icon
@@ -268,6 +201,6 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
+  }
 </section>

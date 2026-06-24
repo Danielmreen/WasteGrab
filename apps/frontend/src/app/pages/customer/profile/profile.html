@@ -1,8 +1,8 @@
-<section class="grid min-w-0 gap-3 p-4 md:p-8">
+<section class="grid min-w-0 gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route" />
 
   @if (authService.currentUser(); as user) {
-  <div class="min-w-0 space-y-6 rounded-lg bg-white p-4 shadow md:p-6">
+  <div class="min-w-0 space-y-6 rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
     <!-- Avatar -->
     <div class="flex items-center gap-4">
       <z-avatar
@@ -10,11 +10,11 @@
         [zFallback]="user.name.slice(0, 2).toUpperCase()"
         [zAlt]="user.name + ' avatar'"
         zSize="lg"
-        class="ring-2 ring-slate-200 shadow-sm"
+        class="ring-2 ring-primary/20 shadow-sm"
       />
       <div>
-        <p class="text-sm text-slate-500">Profile Picture</p>
-        <p class="font-medium text-slate-900">{{ user.name }}</p>
+        <p class="text-sm text-muted-foreground">Profile Picture</p>
+        <p class="font-semibold text-foreground">{{ user.name }}</p>
         <div class="mt-3 flex flex-wrap gap-2">
           <input
             #avatarInput
@@ -38,20 +38,20 @@
     </div>
 
     <!-- User Info -->
-    <div class="space-y-4 border-t pt-6">
-      <div class="grid gap-2">
-        <div class="text-sm font-medium text-slate-700">Full Name</div>
-        <p class="text-slate-900">{{ user.name }}</p>
+    <div class="grid gap-3 border-t border-border pt-6 sm:grid-cols-3">
+      <div class="rounded-lg bg-muted/60 p-3">
+        <p class="text-xs font-medium text-muted-foreground">Full Name</p>
+        <p class="mt-1 truncate font-medium text-foreground">{{ user.name }}</p>
       </div>
 
-      <div class="grid gap-2">
-        <div class="text-sm font-medium text-slate-700">Email</div>
-        <p class="text-slate-900">{{ user.email }}</p>
+      <div class="rounded-lg bg-muted/60 p-3">
+        <p class="text-xs font-medium text-muted-foreground">Email</p>
+        <p class="mt-1 truncate font-medium text-foreground">{{ user.email }}</p>
       </div>
 
-      <div class="grid gap-2">
-        <div class="text-sm font-medium text-slate-700">Member Since</div>
-        <p class="text-slate-900">
+      <div class="rounded-lg bg-muted/60 p-3">
+        <p class="text-xs font-medium text-muted-foreground">Member Since</p>
+        <p class="mt-1 font-medium text-foreground">
           {{ user.createdAt | date: 'MMM dd, yyyy' }}
         </p>
       </div>
@@ -59,7 +59,7 @@
 
     <!-- Actions -->
     <div
-      class="border-t pt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+      class="border-t border-border pt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
     >
       <div class="flex gap-3 flex-row lg:flex-1 lg:max-w-md">
         <button z-button zType="outline" class="flex-1" (click)="editProfile()">
@@ -86,26 +86,24 @@
   </div>
 
   @if (user.role === 'CUSTOMER') {
-  <div class="min-w-0 space-y-6 rounded-lg bg-white p-4 shadow md:p-6">
+  <div class="min-w-0 space-y-6 rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
     <app-table-header
       title="Address List"
       description="Filter saved addresses and refresh your latest address data."
       [filters]="addressFilters"
       [activeFilter]="activeAddressFilter()"
-      [showRefresh]="true"
       (filterChange)="setAddressFilter($event)"
-      (refresh)="refreshAddresses()"
     />
 
     @if (isLoadingAddress()) {
     <div
-      class="rounded-lg border border-dashed border-slate-200 p-8 text-center text-slate-500"
+      class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center text-muted-foreground"
     >
       <p class="font-medium">Loading saved addresses...</p>
     </div>
     } @else if (loadAddressError()) {
-    <div class="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
-      <p class="font-medium text-red-700">{{ loadAddressError() }}</p>
+    <div class="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+      <p class="font-medium text-destructive">{{ loadAddressError() }}</p>
       <div class="mt-4">
         <button
           z-button
@@ -122,25 +120,25 @@
     <div class="grid gap-3 md:hidden">
       @for (address of filteredAddresses(); track address.id) {
       <article
-        class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+        class="rounded-lg border border-border bg-background p-3"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="truncate font-medium text-slate-900">
+            <p class="truncate font-semibold text-foreground">
               {{ address.label }}
             </p>
-            <p class="mt-1 text-sm text-slate-500">{{ address.street }}</p>
+            <p class="mt-1 text-sm text-muted-foreground">{{ address.street }}</p>
           </div>
           @if (address.isDefault) {
           <z-badge zType="secondary" zShape="pill">Default</z-badge>
           }
         </div>
 
-        <p class="mt-3 text-sm text-slate-700">
+        <p class="mt-3 text-sm text-foreground">
           {{ address.city }}, {{ address.state }} {{ address.postalCode }}
         </p>
         @if (address.notes) {
-        <p class="mt-1 text-sm text-slate-500">{{ address.notes }}</p>
+        <p class="mt-1 text-sm text-muted-foreground">{{ address.notes }}</p>
         }
 
         <div
@@ -180,9 +178,9 @@
         </div>
       </article>
       } @empty {
-      <div class="rounded-lg border border-slate-200 p-6 text-center">
-        <p class="font-medium text-slate-900">No saved address yet.</p>
-        <p class="mt-1 text-sm text-slate-500">
+      <div class="rounded-2xl border border-dashed border-border bg-card/50 p-6 text-center">
+        <p class="font-medium text-foreground">No saved address yet.</p>
+        <p class="mt-1 text-sm text-muted-foreground">
           Add your first pickup location to get started.
         </p>
         <div class="mt-4">
@@ -200,9 +198,9 @@
     </div>
 
     <div
-      class="hidden max-w-full overflow-x-auto rounded-2xl border border-slate-200 md:block"
+      class="hidden max-w-full overflow-x-auto rounded-2xl border border-border md:block"
     >
-      <table z-table class="min-w-[56rem] bg-white">
+      <table z-table class="min-w-4xl bg-card">
         <caption z-table-caption class="sr-only">
           Saved user address
         </caption>
@@ -221,7 +219,7 @@
             <td z-table-cell>
               <div class="space-y-1">
                 <div class="flex flex-wrap items-center gap-2">
-                  <p class="font-medium text-slate-900">{{ address.label }}</p>
+                  <p class="font-medium text-foreground">{{ address.label }}</p>
                   @if (address.isDefault) {
                   <z-badge zType="secondary" zShape="pill">Default</z-badge>
                   }
@@ -231,13 +229,13 @@
 
             <td z-table-cell>
               <div class="space-y-1">
-                <p class="text-slate-900">{{ address.street }}</p>
-                <p class="text-sm text-slate-500">
+                <p class="text-foreground">{{ address.street }}</p>
+                <p class="text-sm text-muted-foreground">
                   {{ address.city }}, {{ address.state }} {{ address.postalCode
                   }}
                 </p>
                 @if (address.notes) {
-                <p class="text-sm text-slate-500">{{ address.notes }}</p>
+                <p class="text-sm text-muted-foreground">{{ address.notes }}</p>
                 }
               </div>
             </td>
@@ -281,8 +279,8 @@
           } @empty {
           <tr z-table-row>
             <td z-table-cell colspan="3" class="py-10 text-center">
-              <p class="font-medium text-slate-900">No saved address yet.</p>
-              <p class="mt-1 text-sm text-slate-500">
+              <p class="font-medium text-foreground">No saved address yet.</p>
+              <p class="mt-1 text-sm text-muted-foreground">
                 Add your first pickup location to get started.
               </p>
               <div class="mt-4">
@@ -310,8 +308,8 @@
     </div>
   </div>
   } } @else {
-  <div class="min-w-0 space-y-6 rounded-lg bg-white p-4 shadow md:p-6">
-    <p class="text-center text-slate-900">Something went wrong.</p>
+  <div class="min-w-0 space-y-6 rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
+    <p class="text-center text-foreground">Something went wrong.</p>
   </div>
   }
 </section>
@@ -422,3 +420,9 @@
   </form>
 </z-modal>
 }
+
+<ng-template #logoutSheetContent>
+  <p class="px-4 pb-2 text-sm text-muted-foreground">
+    Are you sure you want to logout?
+  </p>
+</ng-template>

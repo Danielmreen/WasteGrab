@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -6,7 +7,7 @@ SCOPE="${GRAPHIFY_SCOPE_DIR:-/private/tmp/wastegrab-graphify-scope}"
 MODE="${1:-label}"
 PYTHON_FILE="$ROOT/graphify-out/.graphify_python"
 LM_STUDIO_URL="${OLLAMA_BASE_URL:-http://127.0.0.1:1234/v1}"
-LM_STUDIO_MODEL="${OLLAMA_MODEL:-gemma-4-26b-a4b-it-mlx@4bit}"
+LM_STUDIO_MODEL="${OLLAMA_MODEL:-qwen/qwen3.6-27b}"
 
 cd "$ROOT"
 

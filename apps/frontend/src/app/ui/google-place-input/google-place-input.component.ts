@@ -23,7 +23,7 @@ export type { GooglePlaceSelection } from '@/services/place-search.service';
       />
 
       @if (isOpen()) {
-        <div class="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 overflow-hidden rounded-md border border-border bg-popover shadow-lg">
+        <div class="absolute inset-x-0  top-[calc(100%+0.35rem)] z-50 overflow-hidden rounded-md border border-border bg-popover shadow-lg">
           @if (isLoading()) {
             <div class="px-3 py-2 text-sm text-muted-foreground">Searching...</div>
           } @else if (error()) {

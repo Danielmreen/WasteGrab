@@ -1,90 +1,66 @@
-<section class="grid min-w-0 gap-4 p-4 lg:p-8">
+<section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button z-button type="button" rightSide class="gap-2" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       New Category
     </button>
   </app-header>
 
-  <div class="grid gap-3 sm:grid-cols-3">
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideSparkles" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Active</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ activeCount() }} usable categories</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideBrain" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">AI Detectable</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ aiCount() }} image matches</span
-        >
-      </span>
-    </article>
-    <article
-      class="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-    >
-      <span
-        class="grid size-10 place-items-center rounded-lg bg-background/80 text-primary"
-      >
-        <ng-icon name="lucideCircleSlash" class="size-5!" />
-      </span>
-      <span>
-        <span class="block font-semibold">Restricted</span>
-        <span class="block text-sm text-muted-foreground"
-          >{{ restrictedCount() }} flagged categories</span
-        >
-      </span>
-    </article>
-  </div>
+  <app-stat-grid [stats]="stats()" gridClass="grid grid-cols-2 gap-3 sm:grid-cols-3" />
 
+  @if (isLoading()) {
+  <div class="flex items-center justify-center py-16">
+    <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+  </div>
+  } @else if (loadError()) {
+  <app-empty-state
+    icon="lucideWifi"
+    [title]="loadError()"
+    description="Pull down to retry or check your connection."
+  />
+  } @else {
   <section
-    class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm lg:p-6"
+    class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
   >
+    <div class="border-b border-border px-5 py-4">
     <app-table-header
       title="Waste Categories"
       description="Manage pickup categories, point rewards, AI detection, and restrictions."
       [filters]="filters"
       [activeFilter]="activeFilter()"
-      [showRefresh]="true"
       (filterChange)="setFilter($event)"
-      (refresh)="refresh()"
     />
+    </div>
 
-    <app-fetch-state
-      [isLoading]="isLoading()"
-      [loadError]="loadError()"
-      loadingText="Loading waste categories..."
-    >
       <div class="grid gap-3 lg:hidden">
         @for (category of filteredCategories(); track category.id) {
         <article class="rounded-lg border border-border p-3">
           <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="truncate font-semibold">{{ category.name }}</p>
-              <p class="mt-1 text-sm text-muted-foreground">
-                {{ category.description || 'No description provided' }}
-              </p>
+            <div class="flex min-w-0 items-start gap-3">
+              @if (category.imageUrl) {
+              <img
+                [src]="category.imageUrl"
+                [alt]="category.name"
+                class="size-10 shrink-0 rounded-lg border border-border object-cover"
+                draggable="false"
+              />
+              } @else {
+              <span
+                class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+              >
+                <ng-icon name="lucideImage" class="size-4!" />
+              </span>
+              }
+              <div class="min-w-0">
+                <p class="truncate font-semibold">{{ category.name }}</p>
+                <p class="mt-1 text-sm text-muted-foreground">
+                  {{ category.description || 'No description provided' }}
+                </p>
+              </div>
             </div>
             <span
-              class="shrink-0 rounded-md px-2 py-1 text-xs font-semibold"
-              [class]="category.isAiDetectable ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+              class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+              [class]="category.isAiDetectable ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-muted text-muted-foreground'"
             >
               {{ category.isAiDetectable ? 'AI' : 'No AI' }}
             </span>
@@ -107,7 +83,7 @@
               <dt class="text-xs text-muted-foreground">Status</dt>
               <dd class="mt-0.5">
                 <span
-                  class="rounded-md px-2 py-1 text-xs font-semibold"
+                  class="rounded-full px-2 py-1 text-xs font-semibold"
                   [class]="statusClass(category)"
                 >
                   {{ statusLabel(category) }}
@@ -141,7 +117,7 @@
         </article>
         } @empty {
         <div
-          class="rounded-lg border border-dashed border-border p-8 text-center"
+          class="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center"
         >
           <p class="font-semibold">No waste categories found.</p>
           <p class="mt-1 text-sm text-muted-foreground">
@@ -157,9 +133,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-lg border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
       >
-        <table z-table class="min-w-[68rem] bg-card">
+        <table z-table class="min-w-272 bg-card">
           <caption z-table-caption class="sr-only">
             Waste category management table
           </caption>
@@ -170,7 +146,7 @@
               <th z-table-head>Reward</th>
               <th z-table-head>AI</th>
               <th z-table-head>Status</th>
-              <th z-table-head class="w-44 !text-right">Actions</th>
+              <th z-table-head class="w-44 text-right!">Actions</th>
             </tr>
           </thead>
 
@@ -178,10 +154,28 @@
             @for (category of filteredCategories(); track category.id) {
             <tr z-table-row>
               <td z-table-cell>
-                <p class="font-semibold">{{ category.name }}</p>
-                <p class="max-w-md truncate text-xs text-muted-foreground">
-                  {{ category.description || 'No description provided' }}
-                </p>
+                <div class="flex items-center gap-3">
+                  @if (category.imageUrl) {
+                  <img
+                    [src]="category.imageUrl"
+                    [alt]="category.name"
+                    class="size-10 shrink-0 rounded-lg border border-border object-cover"
+                    draggable="false"
+                  />
+                  } @else {
+                  <span
+                    class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                  >
+                    <ng-icon name="lucideImage" class="size-4!" />
+                  </span>
+                  }
+                  <div class="min-w-0">
+                    <p class="font-semibold">{{ category.name }}</p>
+                    <p class="max-w-md truncate text-xs text-muted-foreground">
+                      {{ category.description || 'No description provided' }}
+                    </p>
+                  </div>
+                </div>
               </td>
 
               <td z-table-cell>
@@ -198,8 +192,8 @@
 
               <td z-table-cell>
                 <span
-                  class="rounded-md px-2 py-1 text-xs font-semibold"
-                  [class]="category.isAiDetectable ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+                  class="rounded-full px-2 py-1 text-xs font-semibold"
+                  [class]="category.isAiDetectable ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-muted text-muted-foreground'"
                 >
                   {{ category.isAiDetectable ? 'Detectable' : 'Ignored' }}
                 </span>
@@ -207,14 +201,14 @@
 
               <td z-table-cell>
                 <span
-                  class="rounded-md px-2 py-1 text-xs font-semibold"
+                  class="rounded-full px-2 py-1 text-xs font-semibold"
                   [class]="statusClass(category)"
                 >
                   {{ statusLabel(category) }}
                 </span>
               </td>
 
-              <td z-table-cell class="w-44 !text-right">
+              <td z-table-cell class="w-44 text-right!">
                 <div class="flex justify-end gap-2">
                   <button
                     z-button
@@ -262,8 +256,8 @@
           </tbody>
         </table>
       </div>
-    </app-fetch-state>
   </section>
+  }
 
   @if (modalMode() === 'add' || modalMode() === 'edit') {
   <z-modal
@@ -318,22 +312,69 @@
         </z-form-control>
       </z-form-field>
 
-      <div class="grid gap-3 rounded border border-slate-200 p-3 sm:col-span-2">
-        <z-checkbox formControlName="isBanned" class="text-sm text-slate-700">
+      <div class="grid gap-3 rounded-lg border border-border p-3 sm:col-span-2">
+        <z-checkbox formControlName="isBanned" class="text-sm text-foreground">
           Banned category
         </z-checkbox>
         <z-checkbox
           formControlName="isHazardous"
-          class="text-sm text-slate-700"
+          class="text-sm text-foreground"
         >
           Hazardous category
         </z-checkbox>
         <z-checkbox
           formControlName="isAiDetectable"
-          class="text-sm text-slate-700"
+          class="text-sm text-foreground"
         >
           Available for AI image detection
         </z-checkbox>
+      </div>
+
+      <div class="grid gap-3 rounded-lg border border-dashed border-border p-4 sm:col-span-2">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-medium">Category image</p>
+            <p class="text-sm text-muted-foreground">
+              Uploads are resized and stored in the Supabase waste-categories bucket.
+            </p>
+          </div>
+          <label
+            class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition hover:bg-muted"
+            [class.pointer-events-none]="isUploadingImage()"
+            [class.opacity-60]="isUploadingImage()"
+          >
+            <ng-icon name="lucideImage" class="size-4!" />
+            {{ isUploadingImage() ? 'Uploading...' : 'Upload Image' }}
+            <input
+              type="file"
+              accept="image/*"
+              class="sr-only"
+              (change)="uploadImage($event)"
+              [disabled]="isUploadingImage()"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.imageUrl.value) {
+        <div class="flex items-center gap-3">
+          <img
+            [src]="form.controls.imageUrl.value"
+            [alt]="form.controls.name.value || 'Waste category preview'"
+            class="size-20 rounded-lg border border-border object-cover"
+            draggable="false"
+          />
+          <button
+            z-button
+            zType="outline"
+            zSize="sm"
+            type="button"
+            (click)="clearImage()"
+          >
+            <ng-icon name="lucideTrash2" class="size-4!" />
+            Remove
+          </button>
+        </div>
+        }
       </div>
 
       <z-form-field class="sm:col-span-2">

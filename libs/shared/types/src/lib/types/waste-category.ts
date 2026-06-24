@@ -7,6 +7,7 @@ export type WasteCategory = {
   isHazardous: boolean;
   isAiDetectable: boolean;
   description: string | null;
+  imageUrl: string | null;
 };
 
 export type CreateWasteCategoryInput = {
@@ -17,6 +18,7 @@ export type CreateWasteCategoryInput = {
   isHazardous?: boolean;
   isAiDetectable?: boolean;
   description?: string;
+  imageUrl?: string | null;
 };
 
 export type UpdateWasteCategoryInput = {
@@ -27,4 +29,5 @@ export type UpdateWasteCategoryInput = {
   isHazardous?: boolean;
   isAiDetectable?: boolean;
   description?: string;
+  imageUrl?: string | null;
 };

@@ -13,17 +13,17 @@ import { ZardButtonComponent } from '@/ui/zard/button/button.component';
   imports: [NgIcon, ZardButtonComponent],
   viewProviders: [provideIcons({ lucideCheckCircle2 })],
   template: `
-    <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate-950/55 p-4 backdrop-blur-sm">
+    <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 p-4 backdrop-blur-sm">
       <section class="my-auto w-full max-w-xl rounded-lg border border-border bg-background shadow-2xl">
         <div class="px-5 py-6 sm:px-6">
           <div class="flex items-start gap-4">
-            <div class="grid size-12 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <div class="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
               <ng-icon name="lucideCheckCircle2" class="size-6" />
             </div>
             <div class="min-w-0">
               <p class="text-sm font-medium text-primary">Admin setup</p>
-              <h2 class="mt-1 text-2xl font-semibold tracking-normal text-foreground">Welcome to WasteGrab</h2>
-              <p class="mt-2 text-sm leading-6 text-muted-foreground">
+              <h2 class="mt-1 text-2xl font-bold tracking-tight text-foreground">Welcome to WasteGrab</h2>
+              <p class="mt-2 text-sm/6  text-muted-foreground">
                 Your admin workspace is ready.
               </p>
             </div>

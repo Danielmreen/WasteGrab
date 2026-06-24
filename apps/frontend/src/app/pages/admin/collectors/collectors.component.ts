@@ -1,16 +1,18 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideMapPin, lucideNavigation, lucidePencil, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
+import { lucideLoaderCircle, lucideMapPin, lucideNavigation, lucidePencil, lucidePlus, lucideTrash2, lucideWifi } from '@ng-icons/lucide';
 
 import { AppHeaderComponent } from '@/ui/header/header.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { ZardTableImports } from '@/ui/zard/table';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
 import { ZardModalComponent } from '@/ui/zard/modal/modal.component';
 import { ZardFormControlComponent, ZardFormFieldComponent, ZardFormLabelComponent } from '@/ui/zard/form/form.component';
 import { ZardInputDirective } from '@/ui/zard/input';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
 import { LocationService, type LocationRecord } from '@/services/location.service';
 import { GooglePlaceInputComponent, type GooglePlaceSelection } from '@/ui/google-place-input/google-place-input.component';
@@ -26,7 +28,7 @@ type LocationFilter = 'all' | 'mapped' | 'unmapped';
     AppHeaderComponent,
     ...ZardTableImports,
     ZardButtonComponent,
-    FetchStateComponent,
+    StatGridComponent,
     TableHeaderComponent,
     ZardModalComponent,
     ZardFormFieldComponent,
@@ -34,22 +36,25 @@ type LocationFilter = 'all' | 'mapped' | 'unmapped';
     ZardFormControlComponent,
     ZardInputDirective,
     GooglePlaceInputComponent,
+    EmptyStateComponent,
     NgIcon,
   ],
   viewProviders: [
     provideIcons({
+      lucideLoaderCircle,
       lucideMapPin,
       lucideNavigation,
       lucidePencil,
       lucidePlus,
       lucideTrash2,
+      lucideWifi,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminCollectorsPage implements OnInit {
   private readonly locationService = inject(LocationService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
 
   protected readonly locations = signal<LocationRecord[]>([]);
   protected readonly isLoading = signal(true);
@@ -68,6 +73,11 @@ export class AdminCollectorsPage implements OnInit {
   protected readonly cityCount = computed(() => new Set(this.locations()
     .map((location) => location.city)
     .filter(Boolean)).size);
+  protected readonly stats = computed<StatCardItem[]>(() => [
+    { icon: 'lucideMapPin', label: 'Locations', value: this.locations().length },
+    { icon: 'lucideNavigation', label: 'Mapped', value: this.mappedCount() },
+    { icon: 'lucideMapPin', label: 'Cities', value: this.cityCount(), spanClass: 'col-span-2 sm:col-span-1' },
+  ]);
   protected readonly filteredLocations = computed(() => {
     const filter = this.activeFilter();
     const locations = this.locations();
@@ -101,10 +111,6 @@ export class AdminCollectorsPage implements OnInit {
 
   protected setFilter(filter: LocationFilter): void {
     this.activeFilter.set(filter);
-  }
-
-  protected refresh(): void {
-    this.loadLocations();
   }
 
   private loadLocations(): void {

@@ -1,191 +1,195 @@
 <div class="flex min-h-screen flex-col lg:flex-row">
   <!-- Left: Form Section -->
-  <div class="flex flex-1 items-center justify-center bg-white p-4 sm:p-8">
+  <div class="flex flex-1 items-center justify-center bg-background p-4 sm:p-8">
     <div class="w-full max-w-md space-y-6 sm:space-y-8">
       <!-- Header -->
       <div class="text-center">
-        <h1 class="text-2xl font-bold sm:text-3xl">
-          @if (mode() === 'login') {
-            Welcome back
-          } @else {
-            Create account
-          }
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+          @if (mode() === 'login') { Welcome back } @else { Create account }
         </h1>
-        <p class="mt-2 text-sm text-slate-600 sm:text-base">
-          @if (mode() === 'login') {
-            Sign in to your account to continue
-          } @else {
-            Sign up to get started with WasteGrab
-          }
+        <p class="mt-2 text-sm text-muted-foreground sm:text-base">
+          @if (mode() === 'login') { Sign in to your account to continue } @else
+          { Sign up to get started with WasteGrab }
         </p>
       </div>
 
       <!-- Error Message -->
       @if (error()) {
-        <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
-          {{ error() }}
-        </div>
+      <div
+        class="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+      >
+        {{ error() }}
+      </div>
       }
 
       <!-- Login Form -->
       @if (mode() === 'login') {
-        <z-card class="p-4 sm:p-6 lg:p-8">
-          <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="space-y-4 sm:space-y-6">
-            <!-- Email Field -->
-            <z-form-field>
-              <z-form-label [zRequired]="true">Email</z-form-label>
-              <z-form-control>
-                <input
-                  z-input
-                  type="email"
-                  formControlName="email"
-                  placeholder="name@example.com"
-                  class="w-full"
-                  autocomplete="email"
-                />
-              </z-form-control>
-            </z-form-field>
+      <z-card class="p-4 sm:p-6 lg:p-8">
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="submitLogin()"
+          class="space-y-4 sm:space-y-6"
+        >
+          <!-- Email Field -->
+          <z-form-field>
+            <z-form-label [zRequired]="true">Email</z-form-label>
+            <z-form-control>
+              <input
+                z-input
+                type="email"
+                formControlName="email"
+                placeholder="name@example.com"
+                class="w-full"
+                autocomplete="email"
+              />
+            </z-form-control>
+          </z-form-field>
 
-            <!-- Password Field -->
-            <z-form-field>
-              <div class="flex items-center justify-between">
-                <z-form-label [zRequired]="true">Password</z-form-label>
-                <button
-                  type="button"
-                  z-button
-                  zType="link"
-                  (click)="openForgotPassword()"
-                  class="p-0 text-xs"
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <z-form-control>
-                <input
-                  z-input
-                  type="password"
-                  formControlName="password"
-                  placeholder="••••••••"
-                  class="w-full"
-                  autocomplete="current-password"
-                />
-              </z-form-control>
-            </z-form-field>
+          <!-- Password Field -->
+          <z-form-field>
+            <div class="flex items-center justify-between">
+              <z-form-label [zRequired]="true">Password</z-form-label>
+              <button
+                type="button"
+                z-button
+                zType="link"
+                (click)="openForgotPassword()"
+                class="p-0 text-xs"
+              >
+                Forgot password?
+              </button>
+            </div>
+            <z-form-control>
+              <input
+                z-input
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                class="w-full"
+                autocomplete="current-password"
+              />
+            </z-form-control>
+          </z-form-field>
 
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              z-button
-              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              [zDisabled]="isSubmitting()"
-            >
-              @if (isSubmitting()) {
-                Signing in...
-              } @else {
-                Sign in
-              }
-            </button>
-          </form>
-        </z-card>
-
-        <!-- Toggle to Register -->
-        <p class="text-center text-sm text-slate-600">
-          Don't have an account?
-          <button z-button zType="link" (click)="switchMode('register')" class="px-0">
-            Sign up
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            z-button
+            class="w-full"
+            [zDisabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) { Signing in... } @else { Sign in }
           </button>
-        </p>
+        </form>
+      </z-card>
+
+      <!-- Toggle to Register -->
+      <p class="text-center text-sm text-muted-foreground">
+        Don't have an account?
+        <button
+          z-button
+          zType="link"
+          (click)="switchMode('register')"
+          class="px-0"
+        >
+          Sign up
+        </button>
+      </p>
       }
 
       <!-- Register Form -->
       @if (mode() === 'register') {
-        <z-card class="p-4 sm:p-6 lg:p-8">
-          <form
-            [formGroup]="registerForm"
-            (ngSubmit)="submitRegister()"
-            class="space-y-4 sm:space-y-6"
+      <z-card class="p-4 sm:p-6 lg:p-8">
+        <form
+          [formGroup]="registerForm"
+          (ngSubmit)="submitRegister()"
+          class="space-y-4 sm:space-y-6"
+        >
+          <!-- Name Field -->
+          <z-form-field>
+            <z-form-label [zRequired]="true">Full Name</z-form-label>
+            <z-form-control>
+              <input
+                z-input
+                type="text"
+                formControlName="name"
+                placeholder="John Doe"
+                class="w-full"
+                autocomplete="name"
+              />
+            </z-form-control>
+          </z-form-field>
+
+          <!-- Email Field -->
+          <z-form-field>
+            <z-form-label [zRequired]="true">Email</z-form-label>
+            <z-form-control>
+              <input
+                z-input
+                type="email"
+                formControlName="email"
+                placeholder="name@example.com"
+                class="w-full"
+                autocomplete="email"
+              />
+            </z-form-control>
+          </z-form-field>
+
+          <!-- Password Field -->
+          <z-form-field>
+            <z-form-label [zRequired]="true">Password</z-form-label>
+            <z-form-control>
+              <input
+                z-input
+                type="password"
+                formControlName="password"
+                placeholder="At least 8 characters"
+                class="w-full"
+                autocomplete="new-password"
+              />
+            </z-form-control>
+          </z-form-field>
+
+          <!-- Phone Field -->
+          <z-form-field>
+            <z-form-label>Phone (optional)</z-form-label>
+            <z-form-control>
+              <input
+                z-input
+                type="tel"
+                formControlName="phone"
+                placeholder="+1 (555) 000-0000"
+                class="w-full"
+                autocomplete="tel"
+              />
+            </z-form-control>
+          </z-form-field>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            z-button
+            class="w-full"
+            [zDisabled]="isSubmitting()"
           >
-            <!-- Name Field -->
-            <z-form-field>
-              <z-form-label [zRequired]="true">Full Name</z-form-label>
-              <z-form-control>
-                <input
-                  z-input
-                  type="text"
-                  formControlName="name"
-                  placeholder="John Doe"
-                  class="w-full"
-                  autocomplete="name"
-                />
-              </z-form-control>
-            </z-form-field>
+            @if (isSubmitting()) { Creating account... } @else { Create account
+            }
+          </button>
+        </form>
+      </z-card>
 
-            <!-- Email Field -->
-            <z-form-field>
-              <z-form-label [zRequired]="true">Email</z-form-label>
-              <z-form-control>
-                <input
-                  z-input
-                  type="email"
-                  formControlName="email"
-                  placeholder="name@example.com"
-                  class="w-full"
-                  autocomplete="email"
-                />
-              </z-form-control>
-            </z-form-field>
-
-            <!-- Password Field -->
-            <z-form-field>
-              <z-form-label [zRequired]="true">Password</z-form-label>
-              <z-form-control>
-                <input
-                  z-input
-                  type="password"
-                  formControlName="password"
-                  placeholder="At least 8 characters"
-                  class="w-full"
-                  autocomplete="new-password"
-                />
-              </z-form-control>
-            </z-form-field>
-
-            <!-- Phone Field -->
-            <z-form-field>
-              <z-form-label>Phone (optional)</z-form-label>
-              <z-form-control>
-                <input
-                  z-input
-                  type="tel"
-                  formControlName="phone"
-                  placeholder="+1 (555) 000-0000"
-                  class="w-full"
-                  autocomplete="tel"
-                />
-              </z-form-control>
-            </z-form-field>
-
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              z-button
-              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-              [zDisabled]="isSubmitting()"
-            >
-              @if (isSubmitting()) {
-                Creating account...
-              } @else {
-                Create account
-              }
-            </button>
-          </form>
-        </z-card>
-
-        <!-- Toggle to Login -->
-        <p class="text-center text-sm text-slate-600">
-          Already have an account?
-          <button z-button zType="link" (click)="switchMode('login')" class="px-0">Sign in</button>
-        </p>
+      <!-- Toggle to Login -->
+      <p class="text-center text-sm text-muted-foreground">
+        Already have an account?
+        <button
+          z-button
+          zType="link"
+          (click)="switchMode('login')"
+          class="px-0"
+        >
+          Sign in
+        </button>
+      </p>
       }
     </div>
   </div>
@@ -282,54 +286,58 @@
 
   <!-- Right: Slideshow (Desktop Only) -->
   <aside
-    class="hidden flex-1 lg:flex lg:flex-col lg:overflow-hidden relative bg-slate-900"
+    class="brand-hero hidden flex-1 lg:flex lg:flex-col lg:overflow-hidden relative m-2 rounded-3xl"
     (mouseenter)="stopAutoplay()"
     (mouseleave)="startAutoplay()"
   >
     <!-- Slideshow Container -->
     <div class="absolute inset-0 flex items-center justify-center">
-      @for (slide of slides; let i = $index; track i) {
-        @if (currentSlide() === i) {
-          <div
-            [class]="
-              'absolute inset-0 bg-linear-to-br ' + slide.color + ' transition-all duration-500'
-            "
-          ></div>
-        }
-      }
+      @if (slides().length === 0) {
+      <div class="brand-hero absolute inset-0"></div>
+      } @for (slide of slides(); let i = $index; track slide.id) { @if
+      (currentSlide() === i) {
+      <img
+        [src]="slide.imageUrl"
+        [alt]="slide.imageAlt"
+        class="absolute inset-0 size-full object-cover transition-opacity duration-500"
+        draggable="false"
+      />
+      } }
       <!-- Black overlay -->
-      <div class="absolute inset-0 bg-black/40"></div>
-      <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
+      <div
+        class="absolute inset-0"
+        [ngClass]="slides().length === 0 ? 'bg-primary/15' : 'bg-black/40'"
+      ></div>
+      <div
+        class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
+      ></div>
     </div>
 
     <!-- Content -->
     <div class="relative z-10 flex flex-col justify-between h-full p-10">
       <!-- Top: Logo/Branding -->
-      <div class="flex items-center space-x-3 rounded-xl bg-white/10 backdrop-blur-sm p-3 w-fit">
-        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-          <span class="text-lg font-bold text-white">WG</span>
-        </div>
-        <div class="leading-tight">
-          <span class="text-sm font-bold text-white">WasteGrab</span>
-          <p class="text-xs text-white/70">Reduce. Earn. Impact.</p>
-        </div>
+      <div class="w-fit rounded-2xl bg-white/95 p-2 shadow-sm backdrop-blur">
+        <app-brand-logo size="sm" />
       </div>
 
+      @if (slides().length > 0) {
       <!-- Bottom: Quote & Navigation -->
       <div class="space-y-6">
         <!-- Slide Title & Indicator -->
         <div>
-          <h2 class="text-4xl font-bold text-white mb-3">{{ slides[currentSlide()]?.title }}</h2>
-          <div class="bg-emerald-500/60 h-1 w-16 rounded"></div>
+          <h2 class="text-4xl font-bold text-white mb-3">
+            {{ slides()[currentSlide()]?.title }}
+          </h2>
+          <div class="h-1.5 w-16 rounded-full bg-linear-to-r from-emerald-300 to-teal-300"></div>
         </div>
 
         <!-- Quote -->
         <blockquote class="space-y-3">
-          <p class="text-lg leading-relaxed font-light text-white">
-            &ldquo;{{ slides[currentSlide()]?.quote }}&rdquo;
+          <p class="text-lg/relaxed  font-light text-white">
+            &ldquo;{{ slides()[currentSlide()]?.quote }}&rdquo;
           </p>
           <footer class="text-sm font-medium text-white/80">
-            — {{ slides[currentSlide()]?.author }}
+            — {{ slides()[currentSlide()]?.author || 'WasteGrab' }}
           </footer>
         </blockquote>
 
@@ -337,39 +345,28 @@
         <div class="flex items-center justify-between">
           <!-- Dot Indicators -->
           <div class="flex gap-2">
-            @for (slide of slides; let i = $index; track i) {
-              <button
-                type="button"
-                [attr.aria-label]="'Show testimonial ' + (i + 1)"
-                (click)="goToSlide(i)"
-                [class.w-12]="currentSlide() === i"
-                class="h-1 rounded-full transition-all duration-300"
-                [ngClass]="
-                  currentSlide() === i ? 'bg-emerald-500 w-12' : 'bg-white/40 w-6 hover:bg-white/60'
+            @for (slide of slides(); let i = $index; track slide.id) {
+            <button
+              type="button"
+              [attr.aria-label]="'Show testimonial ' + (i + 1)"
+              (click)="goToSlide(i)"
+              [class.w-12]="currentSlide() === i"
+              class="h-1 rounded-full transition-all duration-300"
+              [ngClass]="
+                  currentSlide() === i ? 'bg-teal-300 w-12' : 'bg-white/40 w-6 hover:bg-white/60'
                 "
-              >
-                <span class="sr-only">Show testimonial {{ i + 1 }}</span>
-              </button>
+            >
+              <span class="sr-only">Show testimonial {{ i + 1 }}</span>
+            </button>
             }
-          </div>
-
-          <!-- Navigation Buttons -->
-          <div class="flex gap-2">
-            <button
-              (click)="prevSlide()"
-              class="rounded-full bg-white/10 p-2 text-white hover:bg-emerald-500 transition-colors backdrop-blur-sm"
-            >
-              <ng-icon name="lucideChevronLeft" size="20"></ng-icon>
-            </button>
-            <button
-              (click)="nextSlide()"
-              class="rounded-full bg-white/10 p-2 text-white hover:bg-emerald-500 transition-colors backdrop-blur-sm"
-            >
-              <ng-icon name="lucideChevronRight" size="20"></ng-icon>
-            </button>
           </div>
         </div>
       </div>
+      } @else {
+      <div class="grid flex-1 place-items-center">
+        <p class="text-xl font-semibold text-white/90">No slideshow</p>
+      </div>
+      }
     </div>
   </aside>
 </div>

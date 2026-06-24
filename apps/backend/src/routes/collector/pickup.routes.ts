@@ -19,6 +19,7 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../prisma.js";
 import { getCurrentUserFromRequest } from "../../services/auth.service.js";
 import { awardEligibleAchievements } from "../../services/achievement.service.js";
+import { emitPickupUpdateEvent } from "../../services/notification-stream.service.js";
 
 const pickupRouter = Router();
 
@@ -221,6 +222,7 @@ pickupRouter.patch("/:pickupRequestId/accept", requireCollector, async (req: Req
       include: pickupRequestInclude,
     });
 
+    emitPickupUpdateEvent(pickup.userId, pickup.id);
     res.json({ pickupRequest: toCollectorPickupRequest(updated, null) } satisfies GetCollectorPickupRequestResponse);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to accept pickup.";
@@ -253,6 +255,7 @@ pickupRouter.patch("/:pickupRequestId/arrive", requireCollector, async (req: Req
       include: pickupRequestInclude,
     });
 
+    emitPickupUpdateEvent(pickup.userId, pickup.id);
     res.json({ pickupRequest: toCollectorPickupRequest(updated, null) } satisfies GetCollectorPickupRequestResponse);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to mark pickup arrived.";
@@ -316,6 +319,7 @@ pickupRouter.patch("/:pickupRequestId/verify", requireCollector, async (req: Req
       });
     });
 
+    emitPickupUpdateEvent(existing.userId, existing.id);
     res.json({ pickupRequest: toCollectorPickupRequest(updated, null) } satisfies GetCollectorPickupRequestResponse);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to verify pickup.";
@@ -394,7 +398,7 @@ pickupRouter.patch("/:pickupRequestId/complete", requireCollector, async (req: R
     });
 
     await awardEligibleAchievements(existing.userId);
-
+    emitPickupUpdateEvent(existing.userId, existing.id);
     res.json({ pickupRequest: toCollectorPickupRequest(updated, null) } satisfies GetCollectorPickupRequestResponse);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to complete pickup.";

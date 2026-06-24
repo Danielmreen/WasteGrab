@@ -73,8 +73,8 @@ export type SliderThumbVariants = VariantProps<typeof sliderThumbVariants>;
 export const sliderOrientationVariants = cva('absolute', {
   variants: {
     zOrientation: {
-      horizontal: 'translate-x-[-50%]',
-      vertical: 'translate-y-[50%]',
+      horizontal: '-translate-x-1/2',
+      vertical: 'translate-y-1/2',
     },
   },
   defaultVariants: {

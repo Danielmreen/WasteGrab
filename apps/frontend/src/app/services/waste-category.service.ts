@@ -31,6 +31,13 @@ export class WasteCategoryService {
     return this.http.post<WasteCategory>(this.apiUrl, payload, this.opts);
   }
 
+  uploadImage(file: File): Observable<{ imageUrl: string }> {
+    const payload = new FormData();
+    payload.append('image', file);
+
+    return this.http.post<{ imageUrl: string }>(`${this.apiUrl}/upload`, payload, this.opts);
+  }
+
   updateCategory(id: string, payload: UpdateWasteCategoryInput): Observable<WasteCategory> {
     return this.http.patch<WasteCategory>(`${this.apiUrl}/${id}`, payload, this.opts);
   }

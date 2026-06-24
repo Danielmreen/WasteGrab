@@ -2,16 +2,18 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideExternalLink, lucideImage, lucideMapPin, lucidePencil, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
+import { lucideExternalLink, lucideImage, lucideLoaderCircle, lucideMapPin, lucidePencil, lucidePlus, lucideTrash2, lucideWifi } from '@ng-icons/lucide';
 
 import { AppHeaderComponent } from '@/ui/header/header.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { ZardTableImports } from '@/ui/zard/table';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
 import { ZardModalComponent } from '@/ui/zard/modal/modal.component';
 import { ZardFormControlComponent, ZardFormFieldComponent, ZardFormLabelComponent } from '@/ui/zard/form/form.component';
 import { ZardInputDirective } from '@/ui/zard/input';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
 import { LocationService, type LocationRecord } from '@/services/location.service';
 import { GooglePlaceInputComponent, type GooglePlaceSelection } from '@/ui/google-place-input/google-place-input.component';
@@ -27,7 +29,7 @@ type LocationModalMode = 'add' | 'edit' | null;
     AppHeaderComponent,
     ...ZardTableImports,
     ZardButtonComponent,
-    FetchStateComponent,
+    StatGridComponent,
     TableHeaderComponent,
     ZardModalComponent,
     ZardFormFieldComponent,
@@ -35,23 +37,26 @@ type LocationModalMode = 'add' | 'edit' | null;
     ZardFormControlComponent,
     ZardInputDirective,
     GooglePlaceInputComponent,
+    EmptyStateComponent,
     NgIcon,
   ],
   viewProviders: [
     provideIcons({
-      lucideMapPin,
       lucideExternalLink,
       lucideImage,
+      lucideLoaderCircle,
+      lucideMapPin,
       lucidePencil,
       lucidePlus,
       lucideTrash2,
+      lucideWifi,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminCollectionLocationPage implements OnInit, OnDestroy {
   private readonly locationService = inject(LocationService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
 
   protected readonly locations = signal<LocationRecord[]>([]);
   protected readonly isLoading = signal(true);
@@ -62,6 +67,11 @@ export class AdminCollectionLocationPage implements OnInit, OnDestroy {
   protected readonly cityCount = computed(() => new Set(this.locations()
     .map((location) => location.city)
     .filter(Boolean)).size);
+  protected readonly stats = computed<StatCardItem[]>(() => [
+    { icon: 'lucideMapPin', label: 'Locations', value: this.locations().length },
+    { icon: 'lucideImage', label: 'Photos', value: this.imageCount() },
+    { icon: 'lucideMapPin', label: 'Cities', value: this.cityCount(), spanClass: 'col-span-2 sm:col-span-1' },
+  ]);
   protected readonly placeImagePreview = signal<string | null>(null);
   private placeImageFile: File | null = null;
   private placeImageObjectUrl: string | null = null;
@@ -85,10 +95,6 @@ export class AdminCollectionLocationPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearPlaceImageObjectUrl();
-  }
-
-  protected refresh(): void {
-    this.loadLocations();
   }
 
   private loadLocations(): void {

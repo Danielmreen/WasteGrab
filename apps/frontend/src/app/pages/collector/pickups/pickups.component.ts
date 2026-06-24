@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -12,21 +12,25 @@ import {
   lucideMapPin,
   lucideNavigation,
   lucidePackageCheck,
-  lucideRefreshCw,
   lucideScale,
   lucideTruck,
+  lucideWifi,
   lucideXCircle,
 } from '@ng-icons/lucide';
 import { ImageType, PickupStatus, type CollectionLocation, type CollectorPickupRequest } from '@wastegrab/shared';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, interval } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NotificationService } from '@/services/notification.service';
 
 import { CollectorPickupService, type CollectorLocation, type CollectorPickupScope } from '@/services/collector-pickup.service';
 import { AppHeaderComponent } from '@/ui/header/header.component';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
 import { RouteMapComponent, type RouteMapStop } from '@/ui/route-map/route-map.component';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
-import { ZardButtonComponent } from '@/ui/zard/button/button.component';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { ZardTableImports } from '@/ui/zard/table';
+import { CollectorLocationBarComponent } from '../_components/collector-location-bar.component';
 
 type PickupFilter = 'all' | 'available' | 'assigned' | 'completed' | 'cancelled';
 type LocationStatus = 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported';
@@ -48,7 +52,7 @@ const ROUTE_FIT_THRESHOLD_KM = 15;
 @Component({
   selector: 'app-collector-pickups-page',
   templateUrl: './pickups.html',
-  imports: [CommonModule, RouterLink, AppHeaderComponent, FetchStateComponent, ZardButtonComponent, TableHeaderComponent, NgIcon, RouteMapComponent, ...ZardTableImports],
+  imports: [DecimalPipe, RouterLink, AppHeaderComponent, EmptyStateComponent, CollectorLocationBarComponent, TableHeaderComponent, StatGridComponent, NgIcon, RouteMapComponent, ...ZardTableImports],
   viewProviders: [
     provideIcons({
       lucideArrowUpRight,
@@ -60,9 +64,9 @@ const ROUTE_FIT_THRESHOLD_KM = 15;
       lucideMapPin,
       lucideNavigation,
       lucidePackageCheck,
-      lucideRefreshCw,
       lucideScale,
       lucideTruck,
+      lucideWifi,
       lucideXCircle,
     }),
   ],
@@ -71,6 +75,7 @@ const ROUTE_FIT_THRESHOLD_KM = 15;
 export class CollectorPickupsPage {
   private readonly pickupService = inject(CollectorPickupService);
   private readonly route = inject(ActivatedRoute);
+  private readonly notificationService = inject(NotificationService);
 
   protected readonly pickupScope = this.readPickupScope();
   protected readonly pickups = signal<CollectorPickupRequest[]>([]);
@@ -103,6 +108,12 @@ export class CollectorPickupsPage {
   protected readonly assignedPickups = computed(() => this.pickups().filter((pickup) => pickup.collectorId !== null && this.isActiveStatus(pickup.status)));
   protected readonly completedPickups = computed(() => this.pickups().filter((pickup) => pickup.status === PickupStatus.COMPLETED));
   protected readonly totalPotentialPoints = computed(() => this.pickups().reduce((total, pickup) => total + this.potentialPoints(pickup), 0));
+  protected readonly stats = computed<StatCardItem[]>(() => [
+    { icon: 'lucidePackageCheck', label: 'Total', value: this.pickups().length },
+    { icon: 'lucideMapPin', label: 'Available', value: this.availablePickups().length },
+    { icon: 'lucideTruck', label: 'Assigned', value: this.assignedPickups().length },
+    { icon: 'lucideCoins', label: 'Potential Points', value: this.totalPotentialPoints(), unit: 'pts' },
+  ]);
   protected readonly tableTitle = computed(() => this.pickupScope === 'my' ? 'My Pickups' : 'Available Pickup Requests');
   protected readonly tableDescription = computed(() => this.pickupScope === 'my'
     ? 'Review pickup requests assigned to you.'
@@ -178,14 +189,16 @@ export class CollectorPickupsPage {
 
   constructor() {
     void this.loadPickups();
+    interval(30_000).pipe(takeUntilDestroyed()).subscribe(() => {
+      void this.loadPickups(false);
+    });
+    effect(() => {
+      if (this.notificationService.pickupUpdate()) void this.loadPickups(false);
+    });
   }
 
   protected setFilter(filter: PickupFilter): void {
     this.activeFilter.set(filter);
-  }
-
-  protected refresh(): void {
-    void this.loadPickups();
   }
 
   protected async requestLocationAndRefresh(): Promise<void> {
@@ -517,19 +530,19 @@ export class CollectorPickupsPage {
   private statusMeta(status: PickupStatus): { label: string; className: string; icon: string } {
     switch (status) {
       case PickupStatus.PENDING:
-        return { label: 'Pending', className: 'bg-amber-100 text-amber-700', icon: 'lucideClock3' };
+        return { label: 'Pending', className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300', icon: 'lucideClock3' };
       case PickupStatus.ACCEPTED:
-        return { label: 'Accepted', className: 'bg-blue-100 text-blue-700', icon: 'lucideTruck' };
+        return { label: 'Accepted', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300', icon: 'lucideTruck' };
       case PickupStatus.ARRIVED:
-        return { label: 'Arrived', className: 'bg-violet-100 text-violet-700', icon: 'lucideMapPin' };
+        return { label: 'Arrived', className: 'bg-violet-500/10 text-violet-700 dark:text-violet-300', icon: 'lucideMapPin' };
       case PickupStatus.VERIFIED:
-        return { label: 'Verified', className: 'bg-cyan-100 text-cyan-700', icon: 'lucideCheckCircle2' };
+        return { label: 'Verified', className: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300', icon: 'lucideCheckCircle2' };
       case PickupStatus.COMPLETED:
-        return { label: 'Completed', className: 'bg-emerald-100 text-emerald-700', icon: 'lucidePackageCheck' };
+        return { label: 'Completed', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300', icon: 'lucidePackageCheck' };
       case PickupStatus.CANCELLED:
-        return { label: 'Cancelled', className: 'bg-rose-100 text-rose-700', icon: 'lucideXCircle' };
+        return { label: 'Cancelled', className: 'bg-rose-500/10 text-rose-700 dark:text-rose-300', icon: 'lucideXCircle' };
       default:
-        return { label: status, className: 'bg-slate-100 text-slate-700', icon: 'lucideLoaderCircle' };
+        return { label: status, className: 'bg-muted text-muted-foreground', icon: 'lucideLoaderCircle' };
     }
   }
 

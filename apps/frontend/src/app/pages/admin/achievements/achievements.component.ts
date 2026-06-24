@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePencil, lucidePlus, lucideScale, lucideTrash2, lucideTrophy, lucideTruck } from '@ng-icons/lucide';
+import { lucideLoaderCircle, lucidePencil, lucidePlus, lucideScale, lucideTrash2, lucideTrophy, lucideTruck, lucideWifi } from '@ng-icons/lucide';
 import { AchievementMetric, type Achievement } from '@wastegrab/shared';
 import { AchievementService } from '@/services/achievement.service';
 import { AppHeaderComponent } from '@/ui/header/header.component';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
 import { TableHeaderComponent } from '@/ui/table-header/table-header.component';
 import { ZardButtonComponent } from '@/ui/zard/button/button.component';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
 import { ZardFormControlComponent, ZardFormFieldComponent, ZardFormLabelComponent } from '@/ui/zard/form/form.component';
 import { ZardInputDirective } from '@/ui/zard/input';
 import { ZardModalComponent } from '@/ui/zard/modal/modal.component';
@@ -23,10 +23,9 @@ type Filter = 'all' | 'active' | 'inactive';
   selector: 'app-admin-achievements-page',
   templateUrl: './achievements.html',
   imports: [
-    CommonModule,
+
     ReactiveFormsModule,
     AppHeaderComponent,
-    FetchStateComponent,
     TableHeaderComponent,
     ZardButtonComponent,
     ZardModalComponent,
@@ -34,18 +33,19 @@ type Filter = 'all' | 'active' | 'inactive';
     ZardFormLabelComponent,
     ZardFormControlComponent,
     ZardInputDirective,
+    EmptyStateComponent,
     NgIcon,
     ...ZardSelectImports,
     ...ZardTableImports,
   ],
   viewProviders: [
-    provideIcons({ lucidePencil, lucidePlus, lucideScale, lucideTrash2, lucideTrophy, lucideTruck }),
+    provideIcons({ lucideLoaderCircle, lucidePencil, lucidePlus, lucideScale, lucideTrash2, lucideTrophy, lucideTruck, lucideWifi }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminAchievementsPage implements OnInit {
   private readonly achievementService = inject(AchievementService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
 
   protected readonly AchievementMetric = AchievementMetric;
   protected readonly achievements = signal<Achievement[]>([]);
@@ -87,10 +87,6 @@ export class AdminAchievementsPage implements OnInit {
 
   protected setFilter(filter: Filter): void {
     this.activeFilter.set(filter);
-  }
-
-  protected refresh(): void {
-    this.loadAchievements();
   }
 
   protected openAdd(): void {

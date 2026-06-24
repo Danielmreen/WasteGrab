@@ -1,6 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, inject, signal } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -9,49 +25,45 @@ import {
   lucideArrowRight,
   lucideCheckCircle2,
   lucideCircleAlert,
-  lucideCoins,
-  lucideImage,
-  lucideListChecks,
+  lucideInfo,
   lucideLoaderCircle,
-  lucideMapPin,
-  lucidePackage,
-  lucidePlus,
-  lucideRotateCcw,
-  lucideScale,
-  lucideSparkles,
-  lucideUpload,
-  lucideX,
+  lucideTriangleAlert,
 } from '@ng-icons/lucide';
-import { PickupStatus, type Address, type AnalyzeImageResult, type DetectedWasteCategory, type WasteCategory } from '@wastegrab/shared';
+import {
+  PickupStatus,
+  type Address,
+  type AnalyzeImageResult,
+  type DetectedWasteCategory,
+  type WasteCategory,
+} from '@wastegrab/shared';
 import { driver, type Driver } from 'driver.js';
+import { ROUTE_PATHS } from '@/app.routes';
 import { AppHeaderComponent } from '@/ui/header/header.component';
 import { PickupRequestService } from '@/services/pickup-request.service';
 import { AuthService } from '@/services/auth.service';
-import { ZardDialogService } from '@/ui/zard/dialog/dialog.service';
-import { ZardInputDirective } from '@/ui/zard/input';
-import { ZardSelectImports } from '@/ui/zard/select/select.imports';
+import { ResponsiveDialogService } from '@/services/responsive-dialog.service';
+import { ZardSheetService } from '@/ui/zard/sheet/sheet.service';
+import type { ZardSheetRef } from '@/ui/zard/sheet/sheet-ref';
 import { AiAnalysisService } from '@/services/ai-analysis.service';
 import { AddressService } from '@/services/address.service';
 import { WasteCategoryService } from '@/services/waste-category.service';
+import { ConfirmStepComponent } from './_components/confirm-step.component';
+import { ImagesStepComponent } from './_components/images-step.component';
+import { ItemsStepComponent } from './_components/items-step.component';
+import { NewPickupStepperComponent } from './_components/new-pickup-stepper.component';
+import { PickupStepComponent } from './_components/pickup-step.component';
+import { PickupSummaryComponent } from './_components/pickup-summary.component';
+import type {
+  AiSnapshotItem,
+  NewPickupForm,
+  PickupItemForm,
+  PreviewImage,
+  StepMeta,
+  WizardStep,
+} from './_components/new-pickup.models';
+import { findCategory, formatAddress } from './_components/new-pickup.models';
 
 const NEW_PICKUP_TOUR_KEY = 'wastegrab-new-pickup-tour-complete';
-
-type NewPickupForm = FormGroup<{
-  items: FormArray<PickupItemForm>;
-  description: FormControl<string>;
-  addressId: FormControl<string>;
-  addressText: FormControl<string>;
-}>;
-
-type PickupItemForm = FormGroup<{
-  categoryId: FormControl<string>;
-  estimatedWeight: FormControl<number | null>;
-}>;
-
-type PreviewImage = {
-  file: File;
-  url: string;
-};
 
 type AiSuggestion = {
   categoryName: string;
@@ -71,21 +83,7 @@ type AiAutoSnapshot = {
   source: 'roboflow';
   detectedAt: string;
   summary: AnalysisSummary;
-  items: Array<{
-    categoryId: string;
-    categoryName: string;
-    detectedCount: number;
-    estimatedWeight: number;
-    points: number;
-  }>;
-};
-
-type WizardStep = 'images' | 'items' | 'pickup' | 'confirm';
-
-type StepMeta = {
-  id: WizardStep;
-  label: string;
-  icon: string;
+  items: AiSnapshotItem[];
 };
 
 @Component({
@@ -97,8 +95,12 @@ type StepMeta = {
     ReactiveFormsModule,
     AppHeaderComponent,
     NgIcon,
-    ZardInputDirective,
-    ...ZardSelectImports,
+    ConfirmStepComponent,
+    ImagesStepComponent,
+    ItemsStepComponent,
+    NewPickupStepperComponent,
+    PickupStepComponent,
+    PickupSummaryComponent,
   ],
   viewProviders: [
     provideIcons({
@@ -106,25 +108,17 @@ type StepMeta = {
       lucideArrowRight,
       lucideCheckCircle2,
       lucideCircleAlert,
-      lucideCoins,
-      lucideImage,
-      lucideListChecks,
+      lucideInfo,
       lucideLoaderCircle,
-      lucideMapPin,
-      lucidePackage,
-      lucidePlus,
-      lucideRotateCcw,
-      lucideScale,
-      lucideSparkles,
-      lucideUpload,
-      lucideX,
+      lucideTriangleAlert,
     }),
   ],
 })
 export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   private readonly pickupRequests = inject(PickupRequestService);
   private readonly authService = inject(AuthService);
-  private readonly dialogService = inject(ZardDialogService);
+  private readonly dialogService = inject(ResponsiveDialogService);
+  private readonly sheetService = inject(ZardSheetService);
   private readonly router = inject(Router);
   private readonly aiAnalysis = inject(AiAnalysisService);
   private readonly addressService = inject(AddressService);
@@ -132,6 +126,17 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
 
   protected readonly wasteCategories = signal<WasteCategory[]>([]);
   protected readonly addresses = signal<Address[]>([]);
+  protected readonly addressQuery = signal('');
+  protected readonly filteredAddresses = computed(() => {
+    const query = this.addressQuery().trim().toLowerCase();
+    const list = this.addresses();
+    if (!query) return list;
+    return list.filter((address) =>
+      `${address.label} ${formatAddress(address)}`
+        .toLowerCase()
+        .includes(query),
+    );
+  });
   protected readonly images = signal<PreviewImage[]>([]);
   protected readonly isAnalyzing = signal(false);
   protected readonly isSubmitting = signal(false);
@@ -141,21 +146,29 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   protected readonly submitSuccess = signal('');
   protected readonly hasActivePickupRequest = signal(false);
   protected readonly currentStep = signal<WizardStep>('images');
+  private readonly summaryTpl = viewChild<TemplateRef<unknown>>('summaryContent');
+  private summarySheet?: ZardSheetRef;
   private productTour: Driver | null = null;
 
   protected readonly maxImages = 5;
   protected readonly steps: StepMeta[] = [
-    { id: 'images', label: 'Images', icon: 'lucideImage' },
-    { id: 'items', label: 'Waste', icon: 'lucideListChecks' },
-    { id: 'pickup', label: 'Pickup', icon: 'lucideMapPin' },
-    { id: 'confirm', label: 'Confirm', icon: 'lucideCheckCircle2' },
+    { id: 'images', label: 'Images', hint: 'Upload waste photos' },
+    { id: 'items', label: 'Items', hint: 'Review detected items' },
+    { id: 'pickup', label: 'Pickup', hint: 'Select time & address' },
+    { id: 'confirm', label: 'Confirm', hint: 'Review & submit' },
   ];
 
   protected readonly form: NewPickupForm = new FormGroup({
     items: new FormArray<PickupItemForm>([this.createPickupItemGroup()]),
     description: new FormControl('', { nonNullable: true }),
-    addressId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    addressText: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    addressId: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    addressText: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
   });
 
   constructor() {
@@ -183,12 +196,26 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     return !this.hasActivePickupRequest();
   }
 
-  protected isStepActive(step: WizardStep): boolean {
-    return this.currentStep() === step;
+  protected openSummary(): void {
+    const content = this.summaryTpl();
+    if (!content) return;
+
+    this.summarySheet = this.sheetService.create({
+      zContent: content,
+      zSide: 'bottom',
+      zTitle: 'Request summary',
+      zHideFooter: true,
+      zCustomClasses: 'max-h-[85svh] overflow-y-auto rounded-t-2xl',
+    });
   }
 
-  protected isStepComplete(step: WizardStep): boolean {
-    return this.stepIndex(step) < this.currentStepIndex();
+  protected closeSummary(): void {
+    this.summarySheet?.close();
+    this.summarySheet = undefined;
+  }
+
+  protected isStepActive(step: WizardStep): boolean {
+    return this.currentStep() === step;
   }
 
   protected currentStepIndex(): number {
@@ -196,7 +223,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   }
 
   protected canGoBack(): boolean {
-    return this.currentStepIndex() > 0 && !this.isAnalyzing() && !this.isSubmitting();
+    return (
+      this.currentStepIndex() > 0 && !this.isAnalyzing() && !this.isSubmitting()
+    );
   }
 
   protected canGoNext(): boolean {
@@ -236,15 +265,17 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   }
 
   protected selectedCategory(item: PickupItemForm): WasteCategory | undefined {
-    const categoryId = item.controls.categoryId.value;
-    return this.wasteCategories().find((category) => category.id === categoryId);
+    return findCategory(this.wasteCategories(), item.controls.categoryId.value);
   }
 
   protected estimatedPoints(): number {
     return this.pickupItems().reduce((total, item) => {
       const category = this.selectedCategory(item);
       const estimatedWeight = Number(item.controls.estimatedWeight.value ?? 0);
-      return total + (category ? Math.round(category.pointsPerKg * estimatedWeight) : 0);
+      return (
+        total +
+        (category ? Math.round(category.pointsPerKg * estimatedWeight) : 0)
+      );
     }, 0);
   }
 
@@ -256,7 +287,8 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   }
 
   protected selectedItemCount(): number {
-    return this.pickupItems().filter((item) => item.controls.categoryId.value).length;
+    return this.pickupItems().filter((item) => item.controls.categoryId.value)
+      .length;
   }
 
   protected aiAutoPayload(): string {
@@ -266,18 +298,6 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
 
   protected hasAiSuggestions(): boolean {
     return Boolean(this.aiAutoSnapshot()?.items.length);
-  }
-
-  protected isUnmodifiedAiSuggestion(index: number, item: PickupItemForm): boolean {
-    const suggestion = this.aiAutoSnapshot()?.items[index];
-    if (!suggestion) {
-      return false;
-    }
-
-    return (
-      item.controls.categoryId.value === suggestion.categoryId &&
-      this.roundWeight(item.controls.estimatedWeight.value) === this.roundWeight(suggestion.estimatedWeight)
-    );
   }
 
   protected addPickupItem(): void {
@@ -314,8 +334,17 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     this.form.controls.items.removeAt(index);
   }
 
-  protected addressLabel(address: Address): string {
-    return `${address.label} - ${this.formatAddress(address)}`;
+  protected selectAddress(address: Address): void {
+    this.form.controls.addressId.setValue(address.id);
+    this.onAddressChanged();
+  }
+
+  protected selectedAddressLabel(): string {
+    return (
+      this.addresses().find(
+        (item) => item.id === this.form.controls.addressId.value,
+      )?.label ?? ''
+    );
   }
 
   protected onAddressChanged(): void {
@@ -324,7 +353,7 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     );
 
     if (address) {
-      this.form.controls.addressText.setValue(this.formatAddress(address));
+      this.form.controls.addressText.setValue(formatAddress(address));
       return;
     }
 
@@ -377,7 +406,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   protected async analyzeImages(): Promise<void> {
     const images = this.images().map((image) => image.file);
     if (!images.length) {
-      this.submitError.set('Add at least one image before running AI analysis.');
+      this.submitError.set(
+        'Add at least one image before running AI analysis.',
+      );
       return;
     }
 
@@ -386,7 +417,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     this.analysisSummary.set(null);
 
     try {
-      const response = await firstValueFrom(this.aiAnalysis.analyzeImages(images));
+      const response = await firstValueFrom(
+        this.aiAnalysis.analyzeImages(images),
+      );
       const result = response.result;
 
       if (!result) {
@@ -408,7 +441,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       );
       const suggestions = result.detectedCategories
         .map((detected): AiSuggestion | null => {
-          const category = categoriesByName.get(this.normalizeCategoryName(detected.name));
+          const category = categoriesByName.get(
+            this.normalizeCategoryName(detected.name),
+          );
           if (!category) {
             return null;
           }
@@ -416,12 +451,17 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           return {
             categoryName: category.name,
             categoryId: category.id,
-            estimatedWeight: Math.max(detected.estimatedWeight, Number(category.averageWeightKg)),
+            estimatedWeight: Math.max(
+              detected.estimatedWeight,
+              Number(category.averageWeightKg),
+            ),
             count: detected.count,
             points: detected.points,
           };
         })
-        .filter((suggestion): suggestion is AiSuggestion => suggestion !== null);
+        .filter(
+          (suggestion): suggestion is AiSuggestion => suggestion !== null,
+        );
 
       this.aiAutoSnapshot.set({
         source: 'roboflow',
@@ -449,7 +489,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       }
     } catch (err) {
       console.error('AI analysis failed:', err);
-      this.submitError.set('AI analysis failed. You can still submit the request manually.');
+      this.submitError.set(
+        'AI analysis failed. You can still submit the request manually.',
+      );
     } finally {
       this.isAnalyzing.set(false);
     }
@@ -551,7 +593,8 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-steps"]',
           popover: {
             title: 'Pickup request steps',
-            description: 'This flow keeps the request simple: upload photos, review waste, choose pickup details, then confirm.',
+            description:
+              'This flow keeps the request simple: upload photos, review waste, choose pickup details, then confirm.',
             side: 'bottom',
             align: 'start',
           },
@@ -560,7 +603,8 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-upload"]',
           popover: {
             title: 'Start with photos',
-            description: 'Add clear photos of the waste. AI scans every uploaded image, and each photo helps the collector verify the pickup.',
+            description:
+              'Add clear photos of the waste. AI scans every uploaded image, and each photo helps the collector verify the pickup.',
             side: 'top',
             align: 'center',
           },
@@ -569,17 +613,20 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-ai"]',
           popover: {
             title: 'AI scan',
-            description: 'After uploading photos, this button can suggest categories, estimated weight, and points across all images. You can still edit everything.',
+            description:
+              'After uploading photos, this button can suggest categories, estimated weight, and points across all images. You can still edit everything.',
             side: 'right',
             align: 'start',
-            onNextClick: (_element, _step, opts) => this.moveTourToStep(opts.driver, 'items'),
+            onNextClick: (_element, _step, opts) =>
+              this.moveTourToStep(opts.driver, 'items'),
           },
         },
         {
           element: '[data-tour="pickup-items"]',
           popover: {
             title: 'Review waste items',
-            description: 'Each row is one waste category. AI can fill this in, or you can add rows manually.',
+            description:
+              'Each row is one waste category. AI can fill this in, or you can add rows manually.',
             side: 'top',
             align: 'start',
           },
@@ -588,7 +635,8 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-category"]',
           popover: {
             title: 'Category controls points',
-            description: 'Pick the correct waste type here. The category determines how many points each kg is worth.',
+            description:
+              'Pick the correct waste type here. The category determines how many points each kg is worth.',
             side: 'bottom',
             align: 'start',
           },
@@ -597,17 +645,20 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-weight"]',
           popover: {
             title: 'Estimated kg',
-            description: 'This is your best estimate. The collector can verify the final weight before points are awarded.',
+            description:
+              'This is your best estimate. The collector can verify the final weight before points are awarded.',
             side: 'bottom',
             align: 'start',
-            onNextClick: (_element, _step, opts) => this.moveTourToStep(opts.driver, 'pickup'),
+            onNextClick: (_element, _step, opts) =>
+              this.moveTourToStep(opts.driver, 'pickup'),
           },
         },
         {
           element: '[data-tour="pickup-address"]',
           popover: {
             title: 'Pickup address',
-            description: 'Choose a saved address so the collector knows where to collect the waste.',
+            description:
+              'Choose a saved address so the collector knows where to collect the waste.',
             side: 'top',
             align: 'start',
           },
@@ -616,17 +667,22 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-notes"]',
           popover: {
             title: 'Collector notes',
-            description: 'Use this for optional details like guardhouse instructions, floor number, or where the items are placed.',
+            description:
+              'Use this for optional details like guardhouse instructions, floor number, or where the items are placed.',
             side: 'top',
             align: 'start',
-            onNextClick: (_element, _step, opts) => this.moveTourToStep(opts.driver, 'confirm'),
+            onNextClick: (_element, _step, opts) =>
+              this.moveTourToStep(opts.driver, 'confirm'),
           },
         },
         {
-          element: '[data-tour="pickup-estimate"]',
+          element: window.matchMedia('(min-width: 1280px)').matches
+            ? '[data-tour="pickup-estimate-desktop"]'
+            : '[data-tour="pickup-estimate"]',
           popover: {
             title: 'Points preview',
-            description: 'This estimate updates from your selected categories and kg. Final points can change after verification.',
+            description:
+              'This estimate updates from your selected categories and kg. Final points can change after verification.',
             side: 'left',
             align: 'start',
           },
@@ -635,7 +691,8 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
           element: '[data-tour="pickup-submit"]',
           popover: {
             title: 'Submit request',
-            description: 'Once everything looks right, submit the pickup request and track it from My Requests.',
+            description:
+              'Once everything looks right, submit the pickup request and track it from My Requests.',
             side: 'left',
             align: 'end',
             onNextClick: (_element, _step, opts) => {
@@ -679,7 +736,10 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     suggestions: AiSuggestion[],
     analyzedImages: AnalyzeImageResult['images'],
   ): void {
-    const totalDetected = suggestions.reduce((total, suggestion) => total + suggestion.count, 0);
+    const totalDetected = suggestions.reduce(
+      (total, suggestion) => total + suggestion.count,
+      0,
+    );
     const imagesByIndex = new Map(
       analyzedImages.map((image) => [image.index, image]),
     );
@@ -795,7 +855,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
         payload.append('images', image.file);
       }
 
-      const response = await firstValueFrom(this.pickupRequests.createPickupRequest(payload));
+      const response = await firstValueFrom(
+        this.pickupRequests.createPickupRequest(payload),
+      );
       this.showPickupRequestSuccessDialog(response.pickupRequest.id);
     } catch (err) {
       console.error('Pickup request failed:', err);
@@ -816,20 +878,28 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       zWidth: 'max-w-md',
       zOnOk: () => {
         this.resetForm();
-        void this.router.navigate(['/customer', 'my-requests']);
+        void this.router.navigate(['/', ROUTE_PATHS.customer.base, ROUTE_PATHS.customer.myRequests]);
       },
     });
   }
 
   private async loadInitialData(): Promise<void> {
-    await Promise.all([this.loadWasteCategories(), this.loadAddresses(), this.loadActivePickupState()]);
+    await Promise.all([
+      this.loadWasteCategories(),
+      this.loadAddresses(),
+      this.loadActivePickupState(),
+    ]);
   }
 
   private async loadActivePickupState(): Promise<void> {
     try {
-      const response = await firstValueFrom(this.pickupRequests.listPickupRequests());
+      const response = await firstValueFrom(
+        this.pickupRequests.listPickupRequests(),
+      );
       const hasActive = response.pickupRequests.some(
-        (request) => request.status !== PickupStatus.COMPLETED && request.status !== PickupStatus.CANCELLED,
+        (request) =>
+          request.status !== PickupStatus.COMPLETED &&
+          request.status !== PickupStatus.CANCELLED,
       );
       this.hasActivePickupRequest.set(hasActive);
 
@@ -852,7 +922,7 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       zCancelText: null,
       zWidth: 'max-w-md',
       zOnOk: () => {
-        void this.router.navigate(['/customer', 'my-requests']);
+        void this.router.navigate(['/', ROUTE_PATHS.customer.base, ROUTE_PATHS.customer.myRequests]);
       },
     });
   }
@@ -872,17 +942,16 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
 
   private async loadAddresses(): Promise<void> {
     try {
-      const addresses = await firstValueFrom(
-        this.addressService.listAddress(),
-      );
+      const addresses = await firstValueFrom(this.addressService.listAddress());
 
       this.addresses.set(addresses);
-      const preferred = addresses.find((address) => address.isDefault) ?? addresses[0];
+      const preferred =
+        addresses.find((address) => address.isDefault) ?? addresses[0];
 
       if (preferred) {
         this.form.patchValue({
           addressId: preferred.id,
-          addressText: this.formatAddress(preferred),
+          addressText: formatAddress(preferred),
         });
       }
     } catch (err) {
@@ -901,30 +970,19 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     this.form.controls.items.push(this.createPickupItemGroup());
     this.currentStep.set('images');
 
-    const preferred = this.addresses().find((address) => address.isDefault) ?? this.addresses()[0];
+    const preferred =
+      this.addresses().find((address) => address.isDefault) ??
+      this.addresses()[0];
     if (preferred) {
       this.form.patchValue({
         addressId: preferred.id,
-        addressText: this.formatAddress(preferred),
+        addressText: formatAddress(preferred),
       });
     }
   }
 
-  private formatAddress(address: Address): string {
-    return (
-      address.formattedAddress ||
-      [address.street, address.city, address.state, address.postalCode]
-        .filter(Boolean)
-        .join(', ')
-    );
-  }
-
   private normalizeCategoryName(value: string): string {
     return value.trim().toLowerCase();
-  }
-
-  private roundWeight(value: number | null): number {
-    return Number(Number(value ?? 0).toFixed(2));
   }
 
   private escapeHtml(value: string): string {
@@ -945,9 +1003,12 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
         nonNullable: true,
         validators: [Validators.required],
       }),
-      estimatedWeight: new FormControl<number | null>(input?.estimatedWeight ?? null, {
-        validators: [Validators.required, Validators.min(0.01)],
-      }),
+      estimatedWeight: new FormControl<number | null>(
+        input?.estimatedWeight ?? null,
+        {
+          validators: [Validators.required, Validators.min(0.01)],
+        },
+      ),
     });
   }
 
@@ -956,7 +1017,9 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
   }
 
   private canReachStep(step: WizardStep): boolean {
-    return this.steps.slice(0, this.stepIndex(step)).every((item) => this.canLeaveStep(item.id));
+    return this.steps
+      .slice(0, this.stepIndex(step))
+      .every((item) => this.canLeaveStep(item.id));
   }
 
   private canLeaveStep(step: WizardStep): boolean {
@@ -964,9 +1027,15 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       case 'images':
         return this.images().length > 0;
       case 'items':
-        return this.validPickupItems().length > 0;
+        return (
+          this.form.controls.items.length > 0 &&
+          this.form.controls.items.valid
+        );
       case 'pickup':
-        return this.form.controls.addressId.valid && this.form.controls.addressText.valid;
+        return (
+          this.form.controls.addressId.valid &&
+          this.form.controls.addressText.valid
+        );
       case 'confirm':
         return this.images().length > 0 && this.form.valid;
     }
@@ -977,11 +1046,14 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       return 'images';
     }
 
-    if (!this.validPickupItems().length) {
+    if (this.form.controls.items.length === 0 || this.form.controls.items.invalid) {
       return 'items';
     }
 
-    if (this.form.controls.addressId.invalid || this.form.controls.addressText.invalid) {
+    if (
+      this.form.controls.addressId.invalid ||
+      this.form.controls.addressText.invalid
+    ) {
       return 'pickup';
     }
 
@@ -997,15 +1069,5 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
       this.form.controls.addressId.markAsTouched();
       this.form.controls.addressText.markAsTouched();
     }
-  }
-
-  private validPickupItems(): Array<{ categoryId: string; estimatedWeight: number }> {
-    return this.form
-      .getRawValue()
-      .items.filter((item) => item.categoryId && Number(item.estimatedWeight) > 0)
-      .map((item) => ({
-        categoryId: item.categoryId,
-        estimatedWeight: Number(item.estimatedWeight),
-      }));
   }
 }

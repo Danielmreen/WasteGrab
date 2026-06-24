@@ -117,6 +117,7 @@ model WasteCategory {
   isHazardous     Boolean      @default(false) @map("is_hazardous")
   isAiDetectable  Boolean      @default(true) @map("is_ai_detectable")
   description     String?      @db.Text
+  imageUrl        String?      @map("image_url") @db.Text
   pickupItems     PickupItem[]
 
   @@map("waste_categories")
@@ -296,6 +297,22 @@ model VoucherRedemption {
   @@index([userId, redeemedAt])
   @@index([voucherId])
   @@map("voucher_redemptions")
+}
+
+model AuthSlide {
+  id        String   @id @default(uuid())
+  title     String   @db.VarChar(255)
+  quote     String   @db.Text
+  author    String?  @db.VarChar(255)
+  imageUrl  String   @map("image_url") @db.Text
+  imageAlt  String   @map("image_alt") @db.VarChar(255)
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("auth_slides")
 }
 
 model Notification {

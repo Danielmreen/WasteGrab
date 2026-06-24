@@ -11,7 +11,6 @@ export const ROUTE_PATHS = {
     vouchers: 'vouchers',
     leaderboard: 'leaderboard',
     myRequests: 'my-requests',
-    rewards: 'rewards',
     achievements: 'achievements',
   },
   admin: {
@@ -24,6 +23,7 @@ export const ROUTE_PATHS = {
     vouchers: 'vouchers',
     notifications: 'notifications',
     achievements: 'achievements',
+    authSlides: 'auth-slides',
   },
   collector: {
     base: 'collector',
@@ -40,7 +40,10 @@ type RoutePathSegment = string | number | null | undefined;
 
 export function routePath(...segments: RoutePathSegment[]): string {
   const path = segments
-    .filter((segment): segment is string | number => segment !== null && segment !== undefined && segment !== '')
+    .filter(
+      (segment): segment is string | number =>
+        segment !== null && segment !== undefined && segment !== '',
+    )
     .map((segment) => String(segment).replace(/^\/+|\/+$/g, ''))
     .filter(Boolean)
     .join('/');

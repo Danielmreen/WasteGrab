@@ -1,18 +1,19 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCalendarCheck, lucideCoins, lucideScale, lucideTrophy, lucideTruck } from '@ng-icons/lucide';
+import { lucideCalendarCheck, lucideCoins, lucideLoaderCircle, lucideScale, lucideTrophy, lucideTruck, lucideWifi } from '@ng-icons/lucide';
 import { AchievementMetric, type UserAchievement } from '@wastegrab/shared';
 import { AchievementService } from '@/services/achievement.service';
 import { AppHeaderComponent } from '@/ui/header/header.component';
-import { FetchStateComponent } from '@/ui/fetch-state/fetch-state.component';
+import { EmptyStateComponent } from '@/ui/empty-state/empty-state.component';
+import { StatGridComponent } from '@/ui/stat-card/stat-grid.component';
+import type { StatCardItem } from '@/ui/stat-card/stat-card.models';
 
 @Component({
   selector: 'app-customer-achievements-page',
   templateUrl: './achievements.html',
-  imports: [CommonModule, AppHeaderComponent, FetchStateComponent, NgIcon],
+  imports: [AppHeaderComponent, EmptyStateComponent, StatGridComponent, NgIcon],
   viewProviders: [
-    provideIcons({ lucideCalendarCheck, lucideCoins, lucideScale, lucideTrophy, lucideTruck }),
+    provideIcons({ lucideCalendarCheck, lucideCoins, lucideLoaderCircle, lucideScale, lucideTrophy, lucideTruck, lucideWifi }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,6 +26,11 @@ export class CustomerAchievementsPage implements OnInit {
   protected readonly totalPoints = computed(() => this.achievements().reduce((total, entry) => total + entry.pointsAwarded, 0));
   protected readonly totalWeightAwards = computed(() => this.achievements().filter((entry) => entry.achievement.metric === AchievementMetric.TOTAL_WEIGHT_KG).length);
   protected readonly pickupAwards = computed(() => this.achievements().filter((entry) => entry.achievement.metric === AchievementMetric.COMPLETED_PICKUPS).length);
+  protected readonly stats = computed<StatCardItem[]>(() => [
+    { icon: 'lucideTrophy', label: 'Unlocked', value: this.achievements().length },
+    { icon: 'lucideCoins', label: 'Earned from achievements', value: this.totalPoints(), unit: 'pts' },
+    { icon: 'lucideScale', label: 'Milestone types', value: `${this.totalWeightAwards()} weight · ${this.pickupAwards()} pickup`, spanClass: 'col-span-2 sm:col-span-1' },
+  ]);
 
   ngOnInit(): void {
     this.loadAchievements();

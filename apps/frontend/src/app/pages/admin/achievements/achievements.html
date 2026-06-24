@@ -1,52 +1,60 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button z-button zType="default" type="button" rightSide class="gap-2" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       Add Achievement
     </button>
   </app-header>
 
-  <app-fetch-state [isLoading]="isLoading()" [loadError]="loadError()" loadingText="Loading achievements...">
-    <div class="grid gap-5">
+  <div class="grid gap-5">
       <section class="grid gap-4 md:grid-cols-3">
-        <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div class="rounded-3xl border border-border bg-card p-4 shadow-sm">
           <p class="text-sm text-muted-foreground">Achievement rules</p>
-          <p class="mt-1 text-2xl font-bold">{{ achievements().length }}</p>
+          <p class="mt-1 text-2xl font-semibold tracking-tight">{{ achievements().length }}</p>
         </div>
-        <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div class="rounded-3xl border border-border bg-card p-4 shadow-sm">
           <p class="text-sm text-muted-foreground">Active rules</p>
-          <p class="mt-1 text-2xl font-bold">{{ activeCount() }}</p>
+          <p class="mt-1 text-2xl font-semibold tracking-tight">{{ activeCount() }}</p>
         </div>
-        <div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div class="rounded-3xl border border-border bg-card p-4 shadow-sm">
           <p class="text-sm text-muted-foreground">Configured reward points</p>
-          <p class="mt-1 text-2xl font-bold">{{ rewardTotal() }}</p>
+          <p class="mt-1 text-2xl font-semibold tracking-tight">{{ rewardTotal() }}</p>
         </div>
       </section>
 
-      <section class="rounded-lg border border-border bg-card p-5 shadow-sm">
+      @if (isLoading()) {
+      <div class="flex items-center justify-center py-16">
+        <ng-icon name="lucideLoaderCircle" class="size-6! animate-spin text-muted-foreground" />
+      </div>
+      } @else if (loadError()) {
+      <app-empty-state
+        icon="lucideWifi"
+        [title]="loadError()"
+        description="Pull down to retry or check your connection."
+      />
+      } @else {
+      <section class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div class="border-b border-border px-5 py-4">
         <app-table-header
           title="Achievement Rules"
           description="Create milestone rewards for pickup weight and completed pickup counts."
         >
-          <div class="flex flex-wrap gap-2">
+          <div class="flex items-center gap-1.5 rounded-2xl bg-muted p-1">
             @for (filter of filters; track filter.value) {
               <button
                 type="button"
-                class="rounded-md border px-3 py-1.5 text-sm font-semibold transition-colors"
-                [class.border-primary]="activeFilter() === filter.value"
-                [class.bg-primary]="activeFilter() === filter.value"
-                [class.text-primary-foreground]="activeFilter() === filter.value"
-                [class.border-border]="activeFilter() !== filter.value"
-                [class.bg-background]="activeFilter() !== filter.value"
                 (click)="setFilter(filter.value)"
+                class="rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
+                [class]="activeFilter() === filter.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
               >
                 {{ filter.label }}
               </button>
             }
           </div>
         </app-table-header>
+        </div>
 
-        <div class="mt-4 overflow-hidden rounded-lg border border-border">
+        <div class="overflow-hidden">
           <table z-table>
             <thead z-thead>
               <tr z-tr>
@@ -72,7 +80,7 @@
                   <td z-td>{{ achievement.rewardPoints }} pts</td>
                   <td z-td>
                     <span
-                      class="rounded-md px-2.5 py-1 text-xs font-bold"
+                      class="rounded-full px-2.5 py-1 text-xs font-bold"
                       [class.bg-emerald-500/10]="achievement.isActive"
                       [class.text-emerald-700]="achievement.isActive"
                       [class.bg-muted]="!achievement.isActive"
@@ -105,8 +113,8 @@
           </table>
         </div>
       </section>
+      }
     </div>
-  </app-fetch-state>
 
   @if (modalMode() === 'add' || modalMode() === 'edit') {
   <z-modal
