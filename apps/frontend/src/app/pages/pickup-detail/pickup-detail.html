@@ -128,7 +128,7 @@
           @if (canAcceptPickup()) {
           <button
             type="button"
-            class="inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary text-background px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             (click)="acceptPickup()"
             [disabled]="isCollectorActionRunning() || isPreparingAcceptRoute()"
           >
@@ -141,7 +141,7 @@
           } @if (canMarkArrived()) {
           <button
             type="button"
-            class="inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary text-background px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             (click)="markArrived()"
             [disabled]="isCollectorActionRunning()"
           >
@@ -151,7 +151,7 @@
           } @if (canCompletePickup()) {
           <button
             type="button"
-            class="inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary text-background px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             (click)="completePickup()"
             [disabled]="isCollectorActionRunning()"
           >
@@ -204,7 +204,7 @@
 
           <button
             type="button"
-            class="mt-3 inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            class="mt-3 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary text-background   px-5 text-sm font-semibold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             (click)="verifyPickup()"
             [disabled]="isCollectorActionRunning()"
           >
@@ -261,16 +261,8 @@
 
       <div class="p-5">
         <div class="relative">
-          <div
-            class="absolute inset-x-5 top-5 hidden h-0.5 bg-border sm:block"
-          ></div>
-          <div
-            class="absolute left-5 top-5 hidden h-0.5 bg-primary sm:block"
-            [style.width]="timelineProgressWidth()"
-          ></div>
-
           <div class="grid gap-4" [class]="timelineGridClass()">
-            @for (step of timelineSteps(); track step.status) {
+            @for (step of timelineSteps(); let i = $index; track step.status) {
             <div class="relative flex gap-3 sm:block">
               <div
                 class="relative z-10 grid size-10 shrink-0 place-items-center rounded-full border-2 shadow-sm sm:mx-auto"
@@ -280,10 +272,7 @@
               </div>
 
               <div class="min-w-0 sm:mt-3 sm:text-center">
-                <p
-                  class="text-sm font-semibold"
-                  [class]="timelineTextClass(step)"
-                >
+                <p class="text-sm font-semibold" [class]="timelineTextClass(step)">
                   {{ step.label }}
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">
@@ -293,6 +282,12 @@
                   {{ step.time }}
                 </p>
               </div>
+
+              @if (i < timelineSteps().length - 1) {
+              <div class="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 sm:flex">
+                <ng-icon name="lucideChevronRight" class="size-4! text-muted-foreground" />
+              </div>
+              }
             </div>
             }
           </div>
@@ -514,7 +509,7 @@
       </p>
       <a
         [routerLink]="backRoute()"
-        class="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-all"
+        class="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary text-background px-5 text-sm font-semibold shadow-sm transition-all"
       >
         <ng-icon name="lucideArrowLeft" class="size-4!" />
         {{ backLabel() }}

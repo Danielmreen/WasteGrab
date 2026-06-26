@@ -490,7 +490,7 @@ export class CustomerNewPickupPage implements AfterViewInit, OnDestroy {
     } catch (err) {
       console.error('AI analysis failed:', err);
       this.submitError.set(
-        'AI analysis failed. You can still submit the request manually.',
+        'AI analysis failed. You can still submit the request manually by pressing Next button below.',
       );
     } finally {
       this.isAnalyzing.set(false);

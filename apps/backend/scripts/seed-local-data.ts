@@ -1417,7 +1417,8 @@ function hashPassword(password: string): string {
   return `${salt}:${derivedKey.toString("hex")}`;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const scriptPath = fileURLToPath(import.meta.url);
+if (scriptPath === process.argv[1]) {
   void main();
 }
 

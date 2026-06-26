@@ -1,16 +1,5 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <a
-      [routerLink]="['/customer/new-pickup']"
-      [class.pointer-events-none]="activeRequests().length > 0"
-      [class.opacity-50]="activeRequests().length > 0"
-      [title]="activeRequests().length > 0 ? 'Complete or cancel your active request first' : ''"
-      rightSide
-      class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all"
-    >
-      <ng-icon name="lucidePlus" class="size-4!" />
-      New Request
-    </a>
   </app-header>
 
   <div class="grid w-full gap-5">
@@ -109,6 +98,17 @@
       description="Pull down to retry or check your connection."
     />
     } @else {
+    <a
+      [routerLink]="['/customer/new-pickup']"
+      [class.pointer-events-none]="activeRequests().length > 0"
+      [class.opacity-50]="activeRequests().length > 0"
+      [title]="activeRequests().length > 0 ? 'Complete or cancel your active request first' : ''"
+      rightSide
+      class="inline-flex h-14 items-center justify-center gap-1.5 rounded-lg bg-primary text-background px-4 text-lg font-semibold shadow-sm transition-all hover:bg-primary/80"
+    >
+      <ng-icon name="lucidePlus" class="size-5!" />
+      New Request
+    </a>
     <section
       class="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
     >

@@ -77,7 +77,7 @@ import type { CollectorFeaturedPickup } from './collector.models';
 
           <a
             [routerLink]="item.detailRoute"
-            class="inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors"
+            class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm text-background font-semibold shadow-sm transition-colors"
           >
             Open Pickup
             <ng-icon name="lucideArrowRight" class="size-4!" />

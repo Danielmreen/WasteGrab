@@ -1,29 +1,32 @@
 <div class="min-h-screen bg-background text-foreground">
+
+  <!-- Navbar -->
   <header class="sticky top-0 z-50 border-b border-border/70 bg-card/80 backdrop-blur-md">
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
       <a routerLink="/" class="inline-flex no-underline">
         <app-brand-logo size="md" />
       </a>
-
       <nav class="hidden items-center gap-8 md:flex">
         @for (link of navLinks; track link.href) {
-          <a
-            [href]="link.href"
-            class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
+          <a [href]="link.href" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             {{ link.label }}
           </a>
         }
       </nav>
-
       <div class="hidden items-center gap-3 md:flex">
-        <a z-button zType="ghost" zSize="sm" routerLink="/auth">Log in</a>
-        <a z-button zSize="sm" routerLink="/auth" class="gap-2">
-          <ng-icon name="lucideLeaf" class="size-4!" />
-          Get Started
-        </a>
+        @if (authService.isAuthenticated()) {
+          <a z-button zSize="sm" [routerLink]="ctaRoute()" class="gap-2">
+            <ng-icon name="lucideLayoutDashboard" class="size-4!" />
+            Go to Dashboard
+          </a>
+        } @else {
+          <a z-button zType="ghost" zSize="sm" [routerLink]="ctaRoute()">Log in</a>
+          <a z-button zSize="sm" [routerLink]="ctaRoute()" class="gap-2">
+            <ng-icon name="lucideLeaf" class="size-4!" />
+            Get Started
+          </a>
+        }
       </div>
-
       <button
         type="button"
         class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground md:hidden"
@@ -37,23 +40,24 @@
         }
       </button>
     </div>
-
     @if (mobileMenuOpen()) {
       <div class="border-t border-border bg-card md:hidden">
-        <nav class="flex flex-col gap-1 p-4 ">
+        <nav class="flex flex-col gap-1 p-4">
           @for (link of navLinks; track link.href) {
-            <a
-              [href]="link.href"
-              class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              (click)="closeMobileMenu()"
-            >
+            <a [href]="link.href" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" (click)="closeMobileMenu()">
               {{ link.label }}
             </a>
           }
-
           <div class="mt-4 flex flex-col gap-2 border-t border-border pt-4">
-            <a z-button zType="outline" routerLink="/auth" class="w-full">Log in</a>
-            <a z-button routerLink="/auth" class="w-full">Get Started</a>
+            @if (authService.isAuthenticated()) {
+              <a z-button [routerLink]="ctaRoute()" class="gap-2" (click)="closeMobileMenu()">
+                <ng-icon name="lucideLayoutDashboard" class="size-4!" />
+                Go to Dashboard
+              </a>
+            } @else {
+              <a z-button zType="outline" [routerLink]="ctaRoute()" (click)="closeMobileMenu()">Log in</a>
+              <a z-button [routerLink]="ctaRoute()" (click)="closeMobileMenu()">Get Started</a>
+            }
           </div>
         </nav>
       </div>
@@ -61,829 +65,636 @@
   </header>
 
   <main>
-    <section class="relative overflow-hidden bg-background">
-      <div class="absolute inset-0 -z-10 overflow-hidden">
-        <div
-          class="absolute -top-1/2 left-1/2 size-200  -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-        ></div>
-        <div
-          class="absolute -bottom-1/4 right-0 size-150  rounded-full bg-teal-400/10 blur-3xl"
-        ></div>
-      </div>
 
-      <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
-        <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div class="text-center lg:text-left">
-            <div
-              class="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
-            >
-              <ng-icon name="lucideSparkles" class="size-4!" />
-              AI-Powered Waste Recognition
-            </div>
+    <!-- Hero -->
+    <section class="py-12 sm:py-16 lg:py-20" [class]="sectionClass()">
+      <div class="brand-hero card-lift relative min-w-0 overflow-hidden rounded-3xl p-6 sm:p-8 lg:p-12">
+        <div class="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/10" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -bottom-20 right-32 size-56 rounded-full bg-white/5" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute left-1/2 top-4 size-32 rounded-full bg-white/5" aria-hidden="true"></div>
 
-            <h1 class="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Turn Your Recyclables Into
-              <span class="bg-linear-to-r from-primary to-teal-500 bg-clip-text text-transparent"
-                >Rewards</span
-              >
-            </h1>
-
-            <p class="mt-6 text-pretty text-lg/relaxed  text-muted-foreground sm:text-xl">
-              WasteGrab makes recycling effortless. Upload a photo of your waste, let our AI
-              identify recyclables, and schedule a free pickup. Earn reward points with every
-              collection.
-            </p>
-
-            <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
-              <a z-button routerLink="/auth" class="gap-2">
-                Start Recycling Now
-                <ng-icon name="lucideArrowRight" class="size-4!" />
-              </a>
-              <a z-button zType="outline" href="#how-it-works">See How It Works</a>
-            </div>
-
-            <div class="mt-12 grid grid-cols-3 gap-4 border-t border-border pt-8 text-left">
-              @for (stat of heroStats; track stat.label) {
-                <div>
-                  <p class="text-2xl font-bold sm:text-3xl">{{ stat.value }}</p>
-                  <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div class="relative mx-auto max-w-md lg:max-w-none">
-            <div class="relative rounded-2xl border border-border bg-card p-6 shadow-2xl sm:p-8">
-              <div class="space-y-6">
-                @for (step of heroSteps; track step.step) {
-                  <div class="flex items-start gap-4">
-                    <div
-                      class="flex size-12  shrink-0 items-center justify-center rounded-full"
-                      [class]="
-                        step.step === '02' || step.step === '04'
-                          ? 'bg-accent/20 text-accent-foreground'
-                          : 'bg-primary/10 text-primary'
-                      "
-                    >
-                      <ng-icon [name]="step.icon" class="size-6!" />
-                    </div>
-                    <div>
-                      <h3 class="font-semibold">{{ step.title }}</h3>
-                      <p class="text-sm text-muted-foreground">{{ step.description }}</p>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <div class="absolute -bottom-3 -right-3 size-24  rounded-2xl bg-primary/10"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="how-it-works" class="border-t border-border bg-background py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            How WasteGrab Works
-          </h2>
-          <p class="mt-4 text-pretty text-lg text-muted-foreground">
-            From photo to pickup in minutes. Our AI-powered platform makes recycling as easy as
-            ordering food delivery.
+        <div class="relative z-10 max-w-2xl">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+            <ng-icon name="lucideSparkles" class="size-3.5!" />
+            AI-powered waste collection
+          </span>
+          <h1 class="mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
+            Recycle smarter.<br />Earn real rewards.
+          </h1>
+          <p class="mt-4 max-w-lg text-base text-white/75 sm:text-lg">
+            Snap a photo of your waste, let AI detect and categorise it, schedule a free pickup, and earn points redeemable for vouchers — all in one app.
           </p>
-        </div>
-
-        <div class="relative mt-16">
-          <div
-            class="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-border lg:block"
-          ></div>
-
-          <div class="space-y-8 lg:space-y-0">
-            @for (step of howItWorksSteps; track step.step; let index = $index) {
-              <div class="relative">
-                <div
-                  class="hidden items-center gap-8 lg:flex"
-                  [class.flex-row-reverse]="index % 2 === 1"
-                >
-                  <div
-                    class="flex-1"
-                    [class.text-right]="index % 2 === 0"
-                    [class.text-left]="index % 2 === 1"
-                  >
-                    <span class="text-sm font-semibold text-primary">Step {{ step.step }}</span>
-                    <h3 class="mt-1 text-xl font-bold">{{ step.title }}</h3>
-                    <p class="mt-2 text-muted-foreground">{{ step.description }}</p>
-                  </div>
-
-                  <div
-                    class="relative z-10 flex size-16  shrink-0 items-center justify-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-lg"
-                  >
-                    <ng-icon [name]="step.icon" class="size-7!" />
-                  </div>
-
-                  <div class="flex-1"></div>
-                </div>
-
-                <div class="flex items-start gap-4 lg:hidden">
-                  <div
-                    class="relative z-10 flex size-12  shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
-                  >
-                    <ng-icon [name]="step.icon" class="size-5!" />
-                  </div>
-                  <div class="flex-1 pb-8">
-                    <span class="text-sm font-semibold text-primary">Step {{ step.step }}</span>
-                    <h3 class="mt-1 text-lg font-bold">{{ step.title }}</h3>
-                    <p class="mt-2 text-sm text-muted-foreground">{{ step.description }}</p>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="border-t border-border bg-muted/30 py-20 sm:py-28" id="ai-detection">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <span
-            class="mb-4 inline-flex rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
-            >AI-Powered</span
-          >
-          <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            Smart Waste Detection in Action
-          </h2>
-          <p class="mt-4 text-pretty text-lg text-muted-foreground">
-            See how our AI instantly identifies recyclables and estimates their value.
-          </p>
-        </div>
-
-        <div class="mt-12 grid gap-8 lg:grid-cols-2">
-          <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
-            <div class="border-b border-border px-6 py-4">
-              <h3 class="flex items-center gap-2 text-lg font-semibold">
-                <ng-icon name="lucideUpload" class="size-5! text-primary" />
-                Upload Waste Images
-              </h3>
-            </div>
-
-            <div class="p-6">
-              <div
-                class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 p-10 text-center"
-              >
-                <div
-                  class="flex size-16  items-center justify-center rounded-full bg-primary/10 text-primary"
-                >
-                  <ng-icon name="lucideUpload" class="size-8!" />
-                </div>
-                <p class="mt-4 font-medium">Drop images here or click to upload</p>
-                <p class="mt-1 text-sm text-muted-foreground">PNG, JPG up to 10MB each</p>
-                <button
-                  class="mt-4 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold shadow-sm transition-colors hover:bg-muted"
-                >
-                  Select Files
-                </button>
-              </div>
-
-              <div class="mt-6 grid grid-cols-3 gap-3">
-                @for (index of [1, 2, 3]; track index) {
-                  <div
-                    class="relative aspect-square overflow-hidden rounded-xl bg-linear-to-br from-primary/10 to-accent/10"
-                  >
-                    <div class="flex h-full items-center justify-center text-2xl">📷</div>
-                    <div
-                      class="absolute bottom-1 right-1 rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground"
-                    >
-                      ✓
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
-            <div class="border-b border-border px-6 py-4">
-              <h3 class="flex items-center gap-2 text-lg font-semibold">
-                <ng-icon name="lucideSparkles" class="size-5! text-primary" />
-                AI Detection Results
-              </h3>
-            </div>
-
-            <div class="p-6">
-              <div class="space-y-3">
-                @for (item of detectedItems; track item.id) {
-                  <div
-                    class="flex items-center gap-4 rounded-2xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-                  >
-                    <div
-                      class="flex size-10  items-center justify-center rounded-full bg-primary/10 text-primary"
-                    >
-                      <ng-icon name="lucideCheckCircle2" class="size-5!" />
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-2">
-                        <p class="truncate font-medium">{{ item.category }}</p>
-                        <span
-                          class="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                          >{{ item.confidence }}% match</span
-                        >
-                      </div>
-                      <div
-                        class="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground"
-                      >
-                        <span class="flex items-center gap-1">
-                          <ng-icon name="lucideScale" class="size-3.5!" />
-                          {{ item.estimatedWeight }} kg
-                        </span>
-                        <span>•</span>
-                        <span class="flex items-center gap-1">
-                          <ng-icon name="lucideSparkles" class="size-3.5!" />
-                          {{ item.estimatedWeight * item.pointsPerKg | number:'1.0-0' }} pts
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <div class="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                <div class="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <p class="text-2xl font-bold">{{ totalWeight.toFixed(1) }} kg</p>
-                    <p class="text-xs text-muted-foreground">Total Weight</p>
-                  </div>
-                  <div>
-                    <p class="text-2xl font-bold text-accent-foreground">{{ totalPoints }}</p>
-                    <p class="text-xs text-muted-foreground">Points</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-6 rounded-2xl border border-border bg-muted/20 p-4">
-                <h4 class="flex items-center gap-2 font-semibold">
-                  <ng-icon name="lucideMapPin" class="size-4! text-primary" />
-                  Confirm Pickup Details
-                </h4>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div class="space-y-2">
-                    <div class="text-sm font-medium">Pickup Address</div>
-                    <div
-                      class="rounded-2xl border border-border bg-card px-3 py-2 text-sm text-muted-foreground"
-                    >
-                      123 Jalan Sultan, Shah Alam
-                    </div>
-                  </div>
-                  <div class="space-y-2">
-                    <div class="text-sm font-medium">Contact Number</div>
-                    <div
-                      class="rounded-2xl border border-border bg-card px-3 py-2 text-sm text-muted-foreground"
-                    >
-                      +60 12-345 6789
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
-                  <div class="flex items-start gap-3 text-sm">
-                    <ng-icon
-                      name="lucideAlertTriangle"
-                      class="mt-0.5 size-5! text-amber-600 dark:text-amber-300"
-                    />
-                    <div>
-                      <p class="font-medium text-amber-800 dark:text-amber-200">Before submitting</p>
-                      <p class="mt-1 text-amber-700 dark:text-amber-300">
-                        Please ensure all items are clean and dry. Hazardous materials will be
-                        rejected.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <button z-button class="mt-4 w-full" zSize="lg">Schedule Pickup</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="features" class="border-t border-border bg-background py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything You Need for Smart Recycling
-          </h2>
-          <p class="mt-4 text-pretty text-lg text-muted-foreground">
-            WasteGrab combines cutting-edge AI technology with a seamless user experience to make
-            recycling rewarding and effortless.
-          </p>
-        </div>
-
-        <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          @for (feature of featureCards; track feature.title) {
-            <div
-              class="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-lg"
-            >
-              <div
-                class="mb-4 inline-flex size-12  items-center justify-center rounded-full"
-                [class]="feature.accentClass"
-              >
-                <ng-icon [name]="feature.icon" class="size-6!" />
-              </div>
-              <h3 class="text-lg font-semibold">{{ feature.title }}</h3>
-              <p class="mt-2 text-sm/relaxed  text-muted-foreground">
-                {{ feature.description }}
-              </p>
-            </div>
-          }
-        </div>
-      </div>
-    </section>
-
-    <section id="dashboard" class="border-t border-border bg-muted/30 py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <span
-            class="mb-4 inline-flex rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
-            >User Dashboard</span
-          >
-          <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            Your Recycling Command Center
-          </h2>
-          <p class="mt-4 text-pretty text-lg text-muted-foreground">
-            Track pickups, monitor rewards, and manage your recycling activity all in one place.
-          </p>
-        </div>
-
-        <div class="mt-12 overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
-          <div class="flex">
-            <aside class="hidden w-64 shrink-0 border-r border-border bg-sidebar lg:block">
-              <div class="flex h-16 items-center border-b border-sidebar-border px-6">
-                <app-brand-logo size="sm" tone="sidebar" />
-              </div>
-
-              <nav class="p-4">
-                <ul class="space-y-1">
-                  @for (
-                    item of [
-                      { icon: 'lucideLayoutDashboard', label: 'Dashboard', active: true },
-                      { icon: 'lucidePlus', label: 'New Request', active: false },
-                      { icon: 'lucideHistory', label: 'My Pickups', active: false },
-                      { icon: 'lucideGift', label: 'Rewards', active: false },
-                      { icon: 'lucideUser', label: 'Profile', active: false },
-                      { icon: 'lucideSettings', label: 'Settings', active: false },
-                    ];
-                    track item.label
-                  ) {
-                    <li>
-                      <button
-                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-                        [class.bg-sidebar-primary]="item.active"
-                        [class.text-sidebar-primary-foreground]="item.active"
-                        [class.text-sidebar-foreground]="!item.active"
-                        [class.hover:bg-sidebar-accent]="!item.active"
-                      >
-                        <ng-icon [name]="item.icon" class="size-4!" />
-                        {{ item.label }}
-                      </button>
-                    </li>
-                  }
-                </ul>
-
-                <div class="mt-8 border-t border-sidebar-border pt-4">
-                  <button
-                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-                  >
-                    <ng-icon name="lucideLogOut" class="size-4!" />
-                    Log out
-                  </button>
-                </div>
-              </nav>
-            </aside>
-
-            <main class="flex-1">
-              <header
-                class="flex h-16 items-center justify-between border-b border-border px-4 lg:px-6"
-              >
-                <div class="flex items-center gap-4">
-                  <button class="rounded-md p-2 hover:bg-muted lg:hidden" type="button">
-                    <ng-icon name="lucideMenu" class="size-5!" />
-                  </button>
-                  <h3 class="text-lg font-semibold">Dashboard</h3>
-                </div>
-                <div class="flex items-center gap-4">
-                  <button class="relative rounded-md p-2 hover:bg-muted" type="button">
-                    <ng-icon name="lucideBell" class="size-5! text-muted-foreground" />
-                    <span class="absolute right-1 top-1 size-2  rounded-full bg-destructive"></span>
-                  </button>
-                  <div
-                    class="flex size-8  items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
-                  >
-                    JD
-                  </div>
-                </div>
-              </header>
-
-              <div class="p-4 lg:p-6">
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  @for (stat of dashboardStats; track stat.label) {
-                    <div class="rounded-2xl border border-border bg-card p-4 shadow-sm">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
-                          <p class="text-2xl font-bold">{{ stat.value }}</p>
-                        </div>
-                        <div
-                          class="flex size-10  items-center justify-center rounded-full"
-                          [class]="stat.accentClass"
-                        >
-                          <ng-icon [name]="stat.icon" class="size-5!" />
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-
-                <div class="mt-6">
-                  <button z-button class="gap-2">
-                    <ng-icon name="lucidePlus" class="size-4!" />
-                    New Pickup Request
-                  </button>
-                </div>
-
-                <div class="mt-6 rounded-2xl border border-border bg-card shadow-sm">
-                  <div
-                    class="flex items-center justify-between border-b border-border p-4  lg:px-6"
-                  >
-                    <h3 class="text-lg font-semibold">Recent Pickups</h3>
-                    <button z-button zType="ghost" zSize="sm" class="gap-1">
-                      View All <ng-icon name="lucideChevronRight" class="size-4!" />
-                    </button>
-                  </div>
-
-                  <div class="space-y-4 p-4 lg:p-6">
-                    @for (pickup of recentPickups; track pickup.id) {
-                      <div
-                        class="flex items-center justify-between rounded-2xl border border-border p-4 transition-colors hover:bg-muted/50"
-                      >
-                        <div class="flex items-center gap-4">
-                          <div
-                            class="flex size-10  items-center justify-center rounded-full bg-muted"
-                          >
-                            @if (pickup.status === 'completed') {
-                              <ng-icon
-                                name="lucideCheckCircle2"
-                                class="size-5! text-muted-foreground"
-                              />
-                            } @else if (pickup.status === 'on_the_way') {
-                              <ng-icon name="lucideTruck" class="size-5! text-muted-foreground" />
-                            } @else {
-                              <ng-icon name="lucideClock3" class="size-5! text-muted-foreground" />
-                            }
-                          </div>
-                          <div>
-                            <div class="flex items-center gap-2">
-                              <p class="font-medium">{{ pickup.id }}</p>
-                              @if (pickup.status === 'completed') {
-                                <span
-                                  class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"
-                                  >Completed</span
-                                >
-                              } @else if (pickup.status === 'on_the_way') {
-                                <span
-                                  class="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300"
-                                  >On the Way</span
-                                >
-                              } @else if (pickup.status === 'accepted') {
-                                <span
-                                  class="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-700 dark:text-sky-300"
-                                  >Accepted</span
-                                >
-                              } @else {
-                                <span
-                                  class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
-                                  >Pending</span
-                                >
-                              }
-                            </div>
-                            <p class="text-sm text-muted-foreground">
-                              {{ pickup.items }} • {{ pickup.weight }}
-                            </p>
-                          </div>
-                        </div>
-                        <div class="text-right">
-                          <p class="font-medium text-primary">+{{ pickup.points }} pts</p>
-                          <p class="text-sm text-muted-foreground">{{ pickup.date }}</p>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </main>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="tracker" class="border-t border-border bg-muted/30 py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <span
-            class="mb-4 inline-flex rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
-            >Real-Time Tracking</span
-          >
-          <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-            Track Every Step of Your Pickup
-          </h2>
-          <p class="mt-4 text-pretty text-lg text-muted-foreground">
-            Know exactly where your pickup request stands at any moment.
-          </p>
-        </div>
-
-        <div class="mx-auto mt-12 max-w-xl rounded-2xl border border-border bg-card shadow-xl">
-          <div class="border-b border-border p-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-muted-foreground">Pickup ID</p>
-                <h3 class="text-xl font-semibold">PKP-2026-0513</h3>
-              </div>
-              <span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
-                >In Progress</span
-              >
-            </div>
-          </div>
-
-          <div class="p-6">
-            <div class="relative">
-              @for (status of trackerStatuses; track status.id; let index = $index) {
-                <div class="flex gap-4">
-                  <div class="flex flex-col items-center">
-                    <div
-                      class="flex size-10  shrink-0 items-center justify-center rounded-full border-2"
-                      [class.border-primary]="status.completed || status.active"
-                      [class.bg-primary]="status.completed"
-                      [class.bg-primary/10]="status.active"
-                      [class.bg-muted]="!status.completed && !status.active"
-                      [class.text-primary-foreground]="status.completed"
-                      [class.text-primary]="status.active"
-                      [class.text-muted-foreground]="!status.completed && !status.active"
-                    >
-                      @if (status.completed) {
-                        <ng-icon name="lucideCheckCircle2" class="size-5!" />
-                      } @else {
-                        <ng-icon [name]="status.icon" class="size-5!" />
-                      }
-                    </div>
-                    @if (index < trackerStatuses.length - 1) {
-                      <div
-                        class="w-0.5 flex-1"
-                        [class.bg-primary]="status.completed"
-                        [class.bg-border]="!status.completed"
-                        style="min-height: 40px"
-                      ></div>
-                    }
-                  </div>
-
-                  <div class="pb-8" [class.pb-0]="index === trackerStatuses.length - 1">
-                    <div class="flex items-center gap-2">
-                      <p
-                        [class.text-foreground]="status.completed || status.active"
-                        [class.text-muted-foreground]="!status.completed && !status.active"
-                        class="font-medium"
-                      >
-                        {{ status.label }}
-                      </p>
-                      @if (status.active) {
-                        <span class="relative flex size-2 ">
-                          <span
-                            class="absolute inline-flex size-full  animate-ping rounded-full bg-primary opacity-75"
-                          ></span>
-                          <span class="relative inline-flex size-2  rounded-full bg-primary"></span>
-                        </span>
-                      }
-                    </div>
-                    @if (status.time) {
-                      <p class="text-sm text-muted-foreground">{{ status.time }}</p>
-                    }
-                    @if (status.active) {
-                      <p class="mt-1 text-sm text-primary">Ahmad is arriving in ~5 minutes</p>
-                    }
-                  </div>
-                </div>
-              }
-
-              <div class="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
-                <p class="text-sm font-medium text-muted-foreground">Your Collector</p>
-                <div class="mt-2 flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="flex size-10  items-center justify-center rounded-full bg-primary/10 text-primary"
-                    >
-                      A
-                    </div>
-                    <div>
-                      <p class="font-medium">Ahmad Bin Ali</p>
-                      <div class="flex items-center gap-1 text-sm text-muted-foreground">
-                        <ng-icon name="lucideStar" class="size-3.5! text-accent" />
-                        4.9 • 234 pickups
-                      </div>
-                    </div>
-                  </div>
-                  <button z-button zType="outline" zSize="sm">Contact</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="rewards" class="border-t border-border bg-background py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <span
-              class="mb-4 inline-flex rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
-              >Rewards Program</span
-            >
-            <h2 class="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-              Earn Points, Redeem Rewards
-            </h2>
-            <p class="mt-4 text-pretty text-lg text-muted-foreground">
-              Every kilogram of recyclables you contribute earns you reward points. Redeem them for
-              vouchers from popular brands and services.
-            </p>
-
-            <div class="mt-8 rounded-2xl border border-border bg-muted/50 p-6">
-              <h3 class="font-semibold">How Points Work</h3>
-              <ul class="mt-4 space-y-3 text-sm text-muted-foreground">
-                @for (
-                  item of [
-                    'Complete a pickup request',
-                    'Collector verifies and weighs your recyclables',
-                    'Points are credited to your account after verification',
-                    'Redeem points for vouchers anytime',
-                  ];
-                  track item
-                ) {
-                  <li class="flex items-center gap-3">
-                    <span
-                      class="flex size-6  items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary"
-                      >{{ $index + 1 }}</span
-                    >
-                    {{ item }}
-                  </li>
-                }
-              </ul>
-            </div>
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            @for (voucher of vouchers; track voucher.name) {
-              <div
-                class="relative rounded-2xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md"
-              >
-                @if (voucher.popular) {
-                  <span
-                    class="absolute -top-2 right-3 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground"
-                    >Popular</span
-                  >
-                }
-                <div class="flex items-start justify-between">
-                  <div class="flex size-10  items-center justify-center rounded-full bg-muted">
-                    <ng-icon [name]="voucher.icon" class="size-5! text-muted-foreground" />
-                  </div>
-                  <span class="text-lg font-bold text-primary">{{ voucher.reward }}</span>
-                </div>
-                <h4 class="mt-3 font-semibold">{{ voucher.name }}</h4>
-                <p class="text-sm text-muted-foreground">{{ voucher.partner }}</p>
-                <div class="mt-3 flex items-center justify-between">
-                  <span class="text-xs text-muted-foreground">{{ voucher.points }} points</span>
-                  <button z-button zType="outline" zSize="sm">Redeem</button>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="about" class="brand-hero border-t border-border py-20 sm:py-28">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-3xl text-center">
-          <div
-            class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white"
-          >
-            <ng-icon name="lucideLeaf" class="size-4!" />
-            Join the Green Revolution
-          </div>
-
-          <h2
-            class="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
-          >
-            Ready to Turn Trash Into Treasure?
-          </h2>
-
-          <p class="mt-6 text-pretty text-lg/relaxed  text-white/80">
-            Join thousands of eco-conscious users who are already earning rewards while helping save
-            the planet. Sign up today and get 500 bonus points!
-          </p>
-
-          <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <a
-              z-button
-              zType="secondary"
-              routerLink="/auth"
-              class="gap-2 bg-white text-emerald-700 hover:bg-white/90"
-            >
-              Get Started Free
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a [routerLink]="ctaRoute()" class="inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-primary shadow-sm transition-all hover:bg-white/90">
+              <ng-icon name="lucidePlus" class="size-4!" />
+              Start for free
+            </a>
+            <a href="#preview" class="inline-flex h-11 items-center gap-2 rounded-full bg-white/15 px-6 text-sm font-semibold text-white transition-all hover:bg-white/25">
+              See how it works
               <ng-icon name="lucideArrowRight" class="size-4!" />
             </a>
-            <a
-              z-button
-              zType="outline"
-              href="#contact"
-              class="border-white/30 bg-transparent text-white hover:bg-white/10"
-              >Contact Sales</a
-            >
           </div>
+        </div>
 
-          <p class="mt-6 text-sm text-white/60">
-            No credit card required • Free forever plan available
-          </p>
+        <!-- Hero stats row -->
+        <div class="relative z-10 mt-8 flex flex-wrap gap-3 lg:mt-10">
+          <div class="flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5">
+            <ng-icon name="lucideUsers" class="size-4! text-white/80" />
+            <span class="text-sm font-bold text-white">50K+ users</span>
+          </div>
+          <div class="flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5">
+            <ng-icon name="lucideRecycle" class="size-4! text-white/80" />
+            <span class="text-sm font-bold text-white">120 tonnes collected</span>
+          </div>
+          <div class="flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5">
+            <ng-icon name="lucideCoins" class="size-4! text-white/80" />
+            <span class="text-sm font-bold text-white">2M+ points given</span>
+          </div>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer id="contact" class="border-t border-border bg-card">
-    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
-        <div class="lg:col-span-2">
-          <a routerLink="/" class="inline-flex no-underline">
-            <app-brand-logo size="md" />
-          </a>
-          <p class="mt-4 max-w-sm text-sm/relaxed  text-muted-foreground">
-            Transforming recyclable waste collection with AI-powered technology. Earn rewards while
-            contributing to a sustainable future.
-          </p>
-          <div class="mt-6 flex gap-4">
-            <a
-              href="#"
-              class="text-muted-foreground transition-colors hover:text-primary"
-              aria-label="Facebook"
-              ><ng-icon name="lucideFacebook" class="size-5!"
-            /></a>
-            <a
-              href="#"
-              class="text-muted-foreground transition-colors hover:text-primary"
-              aria-label="Twitter"
-              ><ng-icon name="lucideTwitter" class="size-5!"
-            /></a>
-            <a
-              href="#"
-              class="text-muted-foreground transition-colors hover:text-primary"
-              aria-label="Instagram"
-              ><ng-icon name="lucideInstagram" class="size-5!"
-            /></a>
-            <a
-              href="#"
-              class="text-muted-foreground transition-colors hover:text-primary"
-              aria-label="LinkedIn"
-              ><ng-icon name="lucideLinkedin" class="size-5!"
-            /></a>
+    <!-- Platform stats -->
+    <section [class]="sectionClass()">
+      <app-stat-grid [stats]="platformStats" gridClass="grid grid-cols-2 gap-3 lg:grid-cols-4" />
+    </section>
+
+    <!-- App Preview -->
+    <section id="preview" class="scroll-mt-20 py-16" [class]="sectionClass()">
+      <div class="mb-8 text-center">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          <ng-icon name="lucideZap" class="size-3.5!" />
+          Live app preview
+        </span>
+        <h2 class="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Your dashboard, ready to go</h2>
+        <p class="mt-2 text-muted-foreground">This is the actual app UI — same components, same design. Real data when you sign up.</p>
+      </div>
+
+      <!-- Browser cage -->
+      <div class="overflow-hidden rounded-3xl border border-border/60 shadow-2xl ring-1 ring-black/5">
+
+        <!-- Browser chrome bar -->
+        <div class="flex items-center gap-3 border-b border-border/60 bg-muted/60 px-4 py-2.5 backdrop-blur">
+          <div class="flex gap-1.5">
+            <div class="size-3 rounded-full bg-red-400/80"></div>
+            <div class="size-3 rounded-full bg-amber-400/80"></div>
+            <div class="size-3 rounded-full bg-emerald-400/80"></div>
           </div>
+          <div class="flex-1 rounded-md bg-background/70 px-3 py-1 text-center text-xs text-muted-foreground/70">
+            wastegrab.app/customer
+          </div>
+          <div class="hidden w-16 sm:block"></div>
         </div>
 
+        <!-- App layout -->
+        <div class="flex bg-background">
+
+          <!-- Sidebar — mirrors real navbar.component.ts -->
+          <aside class="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-card lg:flex" style="min-height: 640px;">
+            <div class="flex flex-col h-full">
+              <!-- Logo -->
+              <div class="flex flex-col items-center justify-center p-6">
+                <app-brand-logo size="lg" />
+                <div class="mt-4 w-36 border-b-2 border-[#008235]"></div>
+              </div>
+              <!-- Nav items -->
+              <nav class="flex-1 p-4">
+                @for (item of sidebarNavItems; track item.label) {
+                  <div
+                    class="group mb-1 flex items-center gap-3 rounded-l-2xl -mr-px py-2 text-sm font-medium"
+                    [class]="item.active ? 'bg-background font-bold' : ''"
+                  >
+                    <span
+                      class="flex w-full items-center gap-4 rounded-l-2xl px-4 py-2 transition-colors text-primary-foreground!"
+                      [class]="item.active ? '' : 'opacity-70'"
+                    >
+                      <ng-icon [name]="item.icon" class="size-4! shrink-0" />
+                      <span>{{ item.label }}</span>
+                    </span>
+                  </div>
+                }
+              </nav>
+              <!-- Profile section -->
+              <div class="space-y-2 border-t border-primary/20 p-4">
+                <div class="block rounded-2xl bg-primary border border-background p-2">
+                  <div class="flex items-center gap-3 pl-1">
+                    <div class="grid size-10 shrink-0 place-items-center rounded-full bg-primary/20 text-sm font-bold text-background">AF</div>
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-bold text-background">Ahmad Faris</p>
+                      <p class="truncate text-xs text-background/70">Customer</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <div class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-background py-2 text-xs text-foreground border border-background">
+                    <ng-icon name="lucideSettings" class="size-3.5!" />
+                    <span>Settings</span>
+                  </div>
+                  <div class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/70 py-2 text-xs text-white">
+                    <ng-icon name="lucideLogOut" class="size-3.5!" />
+                    <span>Logout</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main content area -->
+          <div class="min-w-0 flex-1 overflow-x-hidden">
+
+            <!-- App header bar -->
+            <div class="flex items-center justify-between border-b border-border/40 px-4 py-3 lg:px-6">
+              <div>
+                <h1 class="text-xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                <p class="text-xs text-muted-foreground">Good morning, Ahmad!</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="grid size-8 place-items-center rounded-full border border-border bg-background">
+                  <ng-icon name="lucideBell" class="size-4! text-muted-foreground" />
+                </div>
+                <div class="grid size-9 place-items-center rounded-full bg-primary text-xs font-bold text-background">AF</div>
+              </div>
+            </div>
+
+            <!-- Dashboard content — mirrors customer.html exactly -->
+            <div class="grid gap-5 p-4 lg:p-6">
+
+              <!-- Customer hero — mirrors customer-hero.component.ts exactly -->
+              <header class="brand-hero card-lift relative min-w-0 overflow-hidden rounded-3xl p-5 lg:p-7">
+                <div class="pointer-events-none absolute -right-10 -top-12 size-44 rounded-full bg-white/10" aria-hidden="true"></div>
+                <div class="pointer-events-none absolute -bottom-16 right-16 size-36 rounded-full bg-white/5" aria-hidden="true"></div>
+                <p class="text-sm font-medium text-white/80">Good morning,</p>
+                <h1 class="mt-1 truncate text-2xl font-bold tracking-tight lg:text-3xl">Ahmad Faris</h1>
+              </header>
+
+              <!-- Stat grid — mirrors customer.component.ts dashboardStats (all brand tone) -->
+              <app-stat-grid
+                [stats]="[
+                  { label: 'Total Requests', value: 24,      icon: 'lucideFileText',    tone: 'brand' },
+                  { label: 'Completed',      value: 18,      icon: 'lucideCheckCircle2', tone: 'brand' },
+                  { label: 'Contributed',    value: '128.5', unit: 'kg', icon: 'lucideScale', tone: 'brand' },
+                  { label: 'Points',         value: '12,850', icon: 'lucideStar',        tone: 'brand' }
+                ]"
+                gridClass="grid grid-cols-2 gap-3 lg:grid-cols-4"
+              />
+
+              <!-- Mid: main col + sidebar -->
+              <div class="lg:grid lg:grid-cols-3 lg:gap-6">
+
+                <!-- Main 2/3 -->
+                <div class="grid gap-5 lg:col-span-2">
+
+                  <!-- Active pickup — mirrors customer-active-pickup-card.component.ts exactly -->
+                  <app-panel title="Active Pickup" icon="lucideTruck">
+                    <a class="block rounded-2xl border border-primary/30 bg-background/40 p-3 transition-colors hover:border-primary/60 hover:bg-muted/40 sm:p-4 lg:p-5">
+                      <!-- Header row -->
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex min-w-0 items-center gap-2">
+                          <span class="font-mono text-sm font-semibold">#PKP-00456</span>
+                          <span class="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold capitalize text-primary">Accepted</span>
+                        </div>
+                        <ng-icon name="lucideChevronRight" class="size-4! shrink-0 text-muted-foreground" />
+                      </div>
+                      <!-- Status message bar -->
+                      <div class="mt-3 flex items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-2 text-xs text-primary sm:px-3 sm:text-sm">
+                        <ng-icon name="lucideTruck" class="size-3.5! sm:size-4!" />
+                        <span class="min-w-0 flex-1 truncate font-medium">A collector has accepted your request</span>
+                        <span class="shrink-0 text-xs text-primary/80">Jun 26</span>
+                      </div>
+                      <!-- Image + details grid -->
+                      <div class="mt-3 hidden gap-3 sm:mt-4 sm:flex md:grid md:grid-cols-[7rem_1fr] md:items-stretch md:gap-5">
+                        <div class="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:size-20 md:aspect-square md:size-auto">
+                          <div class="grid size-full place-items-center text-muted-foreground">
+                            <ng-icon name="lucideImage" class="size-7!" />
+                          </div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <h2 class="truncate text-base font-semibold sm:text-xl">Plastic, Cardboard</h2>
+                          <p class="mt-1 line-clamp-1 text-xs/5 text-muted-foreground sm:line-clamp-2 sm:text-sm/6">Jalan Ampang, Kuala Lumpur 50450</p>
+                          <div class="mt-2 grid grid-cols-3 gap-1.5 text-center sm:mt-3 sm:gap-2">
+                            <div class="rounded-lg bg-muted/60 p-1.5 sm:p-2">
+                              <p class="text-[10px] text-muted-foreground sm:text-xs">Weight</p>
+                              <p class="truncate text-sm font-semibold">3.2 kg</p>
+                            </div>
+                            <div class="rounded-lg bg-muted/60 p-1.5 sm:p-2">
+                              <p class="text-[10px] text-muted-foreground sm:text-xs">Points</p>
+                              <p class="truncate text-sm font-semibold">320</p>
+                            </div>
+                            <div class="rounded-lg bg-muted/60 p-1.5 sm:p-2">
+                              <p class="text-[10px] text-muted-foreground sm:text-xs">Items</p>
+                              <p class="truncate text-sm font-semibold">2</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Step progress dots — 5 steps matching pickupSteps -->
+                      <div class="mt-3 rounded-xl border border-border bg-card p-2.5 sm:mt-4 sm:p-3">
+                        <ol class="flex items-center">
+                          @for (step of [
+                            { label: 'Pending',   icon: 'lucideClock3',        done: true },
+                            { label: 'Accepted',  icon: 'lucideTruck',         done: true },
+                            { label: 'Arrived',   icon: 'lucideMapPin',        done: false },
+                            { label: 'Verified',  icon: 'lucideCheckCircle2',  done: false },
+                            { label: 'Completed', icon: 'lucidePackageCheck',  done: false }
+                          ]; track step.label; let last = $last; let i = $index) {
+                            <li class="flex flex-1 items-center last:flex-none">
+                              <div class="flex flex-col items-center gap-1 sm:gap-1.5">
+                                <span
+                                  class="flex size-6 items-center justify-center rounded-full border text-xs font-semibold sm:size-7"
+                                  [class]="step.done ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground'"
+                                >
+                                  <ng-icon [name]="step.icon" class="size-3! sm:size-3.5!" [class]="step.done ? 'text-background' : 'text-muted-foreground'" />
+                                </span>
+                                <span class="hidden text-[11px] font-medium sm:inline" [class]="step.done ? 'text-foreground' : 'text-muted-foreground'">
+                                  {{ step.label }}
+                                </span>
+                              </div>
+                              @if (!last) {
+                                <span class="mx-0.5 mb-0 h-0.5 flex-1 rounded-full sm:mx-1 sm:mb-5" [class]="i < 1 ? 'bg-primary' : 'bg-border'"></span>
+                              }
+                            </li>
+                          }
+                        </ol>
+                      </div>
+                    </a>
+                  </app-panel>
+
+                  <!-- Quick actions — mirrors customer-quick-actions.component.ts -->
+                  <app-panel title="Quick Actions" icon="lucidePlus">
+                    <div class="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+                      @for (action of quickActions; track action.label) {
+                        <div
+                          class="card-lift flex min-h-16 flex-col justify-between gap-2 rounded-xl p-3 lg:min-h-20 lg:gap-3 lg:rounded-2xl lg:p-4"
+                          [class]="action.primary ? 'bg-primary text-background shadow-sm' : 'border border-border/60 bg-card'"
+                        >
+                          <span class="flex items-center justify-between gap-2">
+                            <span
+                              class="grid size-7 place-items-center rounded-lg lg:size-9 lg:rounded-full"
+                              [class]="action.primary ? 'bg-background text-primary' : 'bg-primary/10 text-primary'"
+                            >
+                              <ng-icon [name]="action.icon" class="size-3.5! lg:size-4.5!" />
+                            </span>
+                            <ng-icon name="lucideChevronRight" class="size-3.5!" [class]="action.primary ? 'text-background' : 'text-muted-foreground'" />
+                          </span>
+                          <span class="block truncate text-xs font-semibold lg:text-sm">{{ action.label }}</span>
+                        </div>
+                      }
+                    </div>
+                  </app-panel>
+
+                </div>
+
+                <!-- Right sidebar col -->
+                <aside class="mt-5 grid content-start gap-5 lg:mt-0">
+
+                  <!-- Active vouchers — mirrors customer-voucher-panel.component.ts -->
+                  <app-panel title="Active Vouchers" icon="lucideTicket">
+                    <div class="grid gap-3">
+                      @for (v of demoVouchers; track v.title) {
+                        <app-customer-voucher-card [item]="v" [muted]="true" />
+                      }
+                    </div>
+                  </app-panel>
+
+                  <!-- Leaderboard — mirrors customer-rank-panel.component.ts -->
+                  <app-panel title="Top Leaderboard" icon="lucideTrophy">
+                    <ul class="overflow-hidden rounded-xl border border-border/70 bg-background/40">
+                      @for (row of leaderboard; track row.rank) {
+                        <li class="border-b border-border/70 last:border-b-0">
+                          <div
+                            class="flex items-center gap-2 px-2.5 py-1.5 text-sm"
+                            [class]="row.isYou ? 'bg-primary/10' : ''"
+                          >
+                            <span class="grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold" [class]="rankClass(row.rank)">{{ row.rank }}</span>
+                            <span class="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">{{ row.initials }}</span>
+                            <span class="min-w-0 flex-1 truncate font-semibold" [class]="row.isYou ? 'text-primary' : 'text-foreground'">
+                              {{ row.name }}@if (row.isYou) {<span class="text-xs font-normal"> (You)</span>}
+                            </span>
+                            <span class="shrink-0 text-xs font-bold" [class]="row.isYou ? 'text-primary' : 'text-foreground'">{{ row.value }}</span>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  </app-panel>
+
+                </aside>
+              </div>
+
+              <!-- Recent requests — mirrors customer-recent-requests.component.ts -->
+              <app-panel title="Recent Requests" icon="lucideFileText">
+                <div class="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
+                  <div class="hidden grid-cols-[1.7fr_1fr_1fr_0.7fr_0.7fr] items-center border-b border-border/70 px-3 py-2 text-xs font-semibold text-muted-foreground md:grid">
+                    <span>Request</span><span>Date</span><span>Status</span><span class="text-right">Weight</span><span class="text-right">Points</span>
+                  </div>
+                  @for (r of demoPickups; track r.shortId) {
+                    <!-- Mobile row -->
+                    <div class="grid gap-2 border-b border-border/70 p-3 last:border-b-0 md:hidden">
+                      <span class="flex min-w-0 items-center gap-3">
+                        <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary/10 text-primary">
+                          <ng-icon name="lucideImage" class="size-5!" />
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block truncate font-semibold">{{ r.title }}</span>
+                          <span class="mt-0.5 block truncate text-xs text-muted-foreground">#{{ r.shortId }} · {{ r.date }}</span>
+                        </span>
+                      </span>
+                      <span class="flex items-center justify-between gap-3">
+                        <span class="inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" [class]="r.statusClass">
+                          <ng-icon [name]="r.statusIcon" class="size-3.5!" />{{ r.statusLabel }}
+                        </span>
+                        <span class="flex items-center gap-3 text-xs font-semibold">
+                          <span class="flex items-center gap-1"><ng-icon name="lucideScale" class="size-3.5! text-primary" />{{ r.weight }}</span>
+                          <span class="flex items-center gap-1 text-primary"><ng-icon name="lucideCoins" class="size-3.5!" />{{ r.points }}</span>
+                        </span>
+                      </span>
+                    </div>
+                    <!-- Desktop row -->
+                    <div class="hidden border-b border-border/70 px-3 py-2.5 last:border-b-0 md:grid md:grid-cols-[1.7fr_1fr_1fr_0.7fr_0.7fr] md:items-center md:gap-3">
+                      <span class="flex min-w-0 items-center gap-3">
+                        <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary/10 text-primary">
+                          <ng-icon name="lucideImage" class="size-5!" />
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block truncate font-mono text-[11px] text-muted-foreground">#{{ r.shortId }}</span>
+                          <span class="block truncate font-semibold">{{ r.title }}</span>
+                        </span>
+                      </span>
+                      <span class="text-xs text-muted-foreground">{{ r.date }}</span>
+                      <span class="inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" [class]="r.statusClass">
+                        <ng-icon [name]="r.statusIcon" class="size-3.5!" />{{ r.statusLabel }}
+                      </span>
+                      <span class="flex items-center justify-end gap-1 text-sm font-semibold">
+                        <ng-icon name="lucideScale" class="size-3.5! text-primary" />{{ r.weight }}
+                      </span>
+                      <span class="flex items-center justify-end gap-1 text-sm font-semibold text-primary">
+                        <ng-icon name="lucideCoins" class="size-3.5!" />{{ r.points }} pts
+                      </span>
+                    </div>
+                  }
+                </div>
+              </app-panel>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-5 text-center text-sm text-muted-foreground">
+        Dummy data preview.
+        <a routerLink="/auth" class="font-semibold text-primary underline-offset-4 hover:underline">Sign up free</a>
+        to see your real dashboard.
+      </p>
+    </section>
+
+    <!-- AI Showcase -->
+    <section id="how-it-works" class="scroll-mt-20 py-16" [class]="sectionClass()">
+      <div class="grid items-center gap-12 lg:grid-cols-2">
+
+        <!-- Left: copy -->
+        <div>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <ng-icon name="lucideSparkles" class="size-3.5!" />
+            AI-powered analysis
+          </span>
+          <h2 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Snap. Scan. Submit.</h2>
+          <p class="mt-3 text-muted-foreground">Our AI identifies your waste types, estimates weight, and calculates your reward points before you even hit submit.</p>
+
+          <ol class="mt-8 space-y-5">
+            @for (step of howItWorksSteps; track step.step) {
+              <li class="flex items-start gap-4">
+                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                  <ng-icon [name]="step.icon" class="size-4!" />
+                </span>
+                <div>
+                  <p class="font-bold text-foreground">{{ step.title }}</p>
+                  <p class="mt-0.5 text-sm text-muted-foreground">{{ step.description }}</p>
+                </div>
+              </li>
+            }
+          </ol>
+        </div>
+
+        <!-- Right: mockup of the actual new-pickup AI flow -->
+        <div class="space-y-3">
+
+          <!-- Step 1 — Upload Images (mirrors images-step.component.ts) -->
+          <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <!-- step header -->
+            <div class="flex items-center justify-between border-b border-border px-4 py-3">
+              <div>
+                <p class="text-sm font-bold">Upload Images</p>
+                <p class="text-xs text-muted-foreground">3 / 10 selected</p>
+              </div>
+              <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground" disabled>
+                <ng-icon name="lucideX" class="size-4!" />
+              </button>
+            </div>
+            <div class="grid gap-4 p-4">
+              <!-- Upload zone -->
+              <div class="flex min-h-24 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center opacity-60">
+                <span class="flex size-10 items-center justify-center rounded-full bg-background text-primary shadow-sm">
+                  <ng-icon name="lucideUpload" class="size-5!" />
+                </span>
+                <span class="mt-2 text-xs font-medium">Choose waste photos</span>
+                <span class="mt-0.5 text-[10px] text-muted-foreground">JPG, PNG, WEBP, or AVIF</span>
+              </div>
+              <!-- Image grid — 3 thumbnails, middle one scanning -->
+              <div class="grid grid-cols-3 gap-2">
+                <!-- image 1 — done -->
+                <div class="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+                  <img src="https://picsum.photos/seed/plastic-bottles/200/200" alt="Plastic waste" class="size-full object-cover" />
+                  <div class="absolute inset-0 flex items-end justify-start p-1.5">
+                    <span class="rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-foreground">Plastic</span>
+                  </div>
+                </div>
+                <!-- image 2 — scanning overlay -->
+                <div class="relative aspect-square overflow-hidden rounded-lg border border-primary/40 bg-muted">
+                  <img src="https://picsum.photos/seed/cardboard-box/200/200" alt="Cardboard waste" class="size-full object-cover animate-pulse" />
+                  <div class="absolute inset-0 grid place-items-center bg-primary/15">
+                    <div class="flex items-center gap-1.5 rounded-lg bg-background/90 px-2 py-1.5 text-xs font-semibold text-primary shadow-sm">
+                      <ng-icon name="lucideLoaderCircle" class="size-3.5! animate-spin" />
+                      Scanning
+                    </div>
+                  </div>
+                </div>
+                <!-- image 3 — done -->
+                <div class="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+                  <img src="https://picsum.photos/seed/aluminium-cans/200/200" alt="Metal waste" class="size-full object-cover" />
+                  <div class="absolute inset-0 flex items-end justify-start p-1.5">
+                    <span class="rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-foreground">Aluminium</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Analyze button — active state with ping ring -->
+              <button type="button" class="relative inline-flex size-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-background shadow-lg shadow-primary/25 ring-4 ring-primary/15">
+                <span class="absolute inset-0 animate-ping rounded-full bg-primary/40"></span>
+                <ng-icon name="lucideSparkles" class="relative size-4! animate-pulse" />
+                <span class="relative">Analyze with AI</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2 — AI Results (mirrors items-step.component.ts) -->
+          <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <!-- step header -->
+            <div class="flex items-center justify-between border-b border-border px-4 py-3">
+              <div>
+                <p class="text-sm font-bold">Review Waste Items</p>
+                <p class="text-xs text-muted-foreground">AI detections become editable rows.</p>
+              </div>
+              <span class="inline-flex h-7 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 text-xs font-semibold text-primary">
+                <ng-icon name="lucideSparkles" class="size-3!" />
+                AI detected
+              </span>
+            </div>
+            <div class="grid gap-3 p-4">
+              <!-- AI suggestion chips -->
+              <div class="flex flex-wrap gap-1.5">
+                <span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <ng-icon name="lucideSparkles" class="size-3!" /> Plastic (PET)
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <ng-icon name="lucideSparkles" class="size-3!" /> Cardboard
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <ng-icon name="lucideSparkles" class="size-3!" /> Aluminium
+                </span>
+              </div>
+              <!-- Item rows -->
+              @for (item of [
+                { img: 'https://picsum.photos/seed/plastic-bottles/80/80', name: 'Plastic (PET)', weight: '1.20' },
+                { img: 'https://picsum.photos/seed/cardboard-box/80/80',   name: 'Cardboard',     weight: '2.50' },
+                { img: 'https://picsum.photos/seed/aluminium-cans/80/80',  name: 'Aluminium',     weight: '0.80' }
+              ]; track item.name) {
+                <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-2xl border border-border/60 bg-muted/20 p-3">
+                  <!-- thumb -->
+                  <div class="size-10 shrink-0 overflow-hidden rounded-xl border border-border">
+                    <img [src]="item.img" [alt]="item.name" class="size-full object-cover" />
+                  </div>
+                  <!-- name -->
+                  <span class="truncate text-sm font-medium text-foreground">{{ item.name }}</span>
+                  <!-- weight chip -->
+                  <span class="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2 py-1 text-xs font-bold tabular-nums text-foreground">
+                    {{ item.weight }} <span class="font-normal text-muted-foreground">kg</span>
+                  </span>
+                </div>
+              }
+              <!-- Points estimate -->
+              <div class="flex items-center justify-between rounded-xl bg-primary/5 px-3 py-2.5">
+                <span class="text-xs font-semibold text-muted-foreground">Estimated reward</span>
+                <span class="flex items-center gap-1.5 text-sm font-black text-primary">
+                  <ng-icon name="lucideStar" class="size-3.5!" />
+                  450 pts
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="scroll-mt-20 py-16" [class]="sectionClass()">
+      <div class="mb-10 text-center">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          <ng-icon name="lucideZap" class="size-3.5!" />
+          Everything you need
+        </span>
+        <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Built for the whole journey</h2>
+        <p class="mt-2 text-muted-foreground">From detection to drop-off to rewards.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @for (f of features; track f.title) {
+          <div class="card-lift rounded-2xl border border-border/60 bg-card p-5">
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <ng-icon [name]="f.icon" class="size-5!" />
+            </span>
+            <h3 class="mt-3 font-bold text-foreground">{{ f.title }}</h3>
+            <p class="mt-1 text-sm text-muted-foreground">{{ f.description }}</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Rewards CTA -->
+    <section id="rewards" class="scroll-mt-20 py-16" [class]="sectionClass()">
+      <div class="brand-hero card-lift relative min-w-0 overflow-hidden rounded-3xl p-8 lg:p-12">
+        <div class="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-white/10" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -bottom-24 right-40 size-56 rounded-full bg-white/5" aria-hidden="true"></div>
+
+        <div class="relative z-10 max-w-xl">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+            <ng-icon name="lucideGift" class="size-3.5!" />
+            Real rewards, real value
+          </span>
+          <h2 class="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">Turn trash into treats</h2>
+          <p class="mt-3 text-base text-white/75">Redeem your points for vouchers at Starbucks, GrabFood, Shopee, Touch 'n Go, Petronas, and more.</p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            @for (v of [
+              { icon: 'lucideCoffee', label: 'Starbucks' },
+              { icon: 'lucideUtensils', label: 'GrabFood' },
+              { icon: 'lucideShoppingBag', label: 'Shopee' },
+              { icon: 'lucideCreditCard', label: "Touch 'n Go" },
+              { icon: 'lucideFuel', label: 'Petronas' },
+              { icon: 'lucideSmartphone', label: 'Hotlink' }
+            ]; track v.label) {
+              <span class="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                <ng-icon [name]="v.icon" class="size-3.5!" />
+                {{ v.label }}
+              </span>
+            }
+          </div>
+
+          <a [routerLink]="ctaRoute()" class="mt-8 inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-primary shadow-sm transition-all hover:bg-white/90">
+            Start earning now
+            <ng-icon name="lucideArrowRight" class="size-4!" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-border/70 bg-card">
+    <div class="py-12" [class]="sectionClass()">
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <app-brand-logo size="md" />
+          <p class="mt-3 text-sm text-muted-foreground">Turning recyclables into rewards, one pickup at a time.</p>
+          <div class="mt-4 flex gap-3">
+            @for (social of [
+              { icon: 'lucideTwitter', label: 'Twitter' },
+              { icon: 'lucideInstagram', label: 'Instagram' },
+              { icon: 'lucideFacebook', label: 'Facebook' },
+              { icon: 'lucideLinkedin', label: 'LinkedIn' }
+            ]; track social.label) {
+              <a href="#" class="grid size-8 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary" [attr.aria-label]="social.label">
+                <ng-icon [name]="social.icon" class="size-4!" />
+              </a>
+            }
+          </div>
+        </div>
         @for (group of footerLinks; track group.title) {
           <div>
-            <h3 class="text-sm font-semibold">{{ group.title }}</h3>
-            <ul class="mt-4 space-y-3">
-              @for (link of group.links; track link.href) {
+            <h3 class="text-sm font-bold text-foreground">{{ group.title }}</h3>
+            <ul class="mt-3 grid gap-2">
+              @for (link of group.links; track link.label) {
                 <li>
-                  <a
-                    [href]="link.href"
-                    class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >{{ link.label }}</a
-                  >
+                  <a [href]="link.href" class="text-sm text-muted-foreground transition-colors hover:text-foreground">{{ link.label }}</a>
                 </li>
               }
             </ul>
           </div>
         }
       </div>
-
-      <div
-        class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row"
-      >
-        <p class="text-sm text-muted-foreground">© 2026 WasteGrab. All rights reserved.</p>
-        <p class="text-sm text-muted-foreground">Made with 💚 for a greener planet</p>
+      <div class="mt-10 border-t border-border/70 pt-6 text-center text-xs text-muted-foreground">
+        © 2026 WasteGrab. All rights reserved.
       </div>
     </div>
   </footer>
+
 </div>

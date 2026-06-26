@@ -29,7 +29,7 @@
 
       <div class="grid gap-3 lg:hidden">
         @for (pickup of filteredPickups(); track pickup.id) {
-        <a [routerLink]="[pickup.id]" class="block rounded-2xl border border-border/60 p-3 transition-all hover:-translate-y-px hover:bg-muted/40">
+        <a [routerLink]="[pickup.id]" class="min-w-[20rem] shrink-0 snap-start rounded-2xl border border-border/60 p-3 transition-all hover:-translate-y-px hover:bg-muted/40">
           <div class="flex items-start gap-3">
             @if (primaryImage(pickup)) {
             <img
@@ -105,9 +105,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto lg:block"
       >
-        <table z-table class="min-w-344 bg-card">
+        <table z-table class="min-w-344 bg-card mx-2!">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Request</th>

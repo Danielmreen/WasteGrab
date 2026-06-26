@@ -114,13 +114,13 @@ export class CustomerLeaderboardPage {
   protected rankClass(rank: number): string {
     switch (rank) {
       case 1:
-        return 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
+        return 'bg-amber-500/70 text-background dark:text-background';
       case 2:
         return 'bg-muted text-muted-foreground';
       case 3:
-        return 'bg-orange-500/10 text-orange-700 dark:text-orange-300';
+        return 'bg-orange-500/70 text-background dark:text-background';
       default:
-        return 'bg-primary/10 text-primary';
+        return 'bg-primary/70 text-background';
     }
   }
 

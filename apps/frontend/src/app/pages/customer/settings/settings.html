@@ -15,12 +15,12 @@
         (click)="toggleNotifications()"
         [class.bg-primary]="notifications"
         [class.bg-input]="!notifications"
-        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        class="relative shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <span
           [class.translate-x-6]="notifications"
           [class.translate-x-1]="!notifications"
-          class="inline-block size-4  transform rounded-full bg-background shadow-sm transition-transform"
+          class="inline-block size-4 transform rounded-full bg-background shadow-sm transition-transform"
         ></span>
       </button>
     </div>
@@ -38,7 +38,7 @@
         (click)="toggleEmailUpdates()"
         [class.bg-primary]="emailUpdates"
         [class.bg-input]="!emailUpdates"
-        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        class="relative shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <span
           [class.translate-x-6]="emailUpdates"
@@ -66,7 +66,7 @@
         <span
           [class.translate-x-6]="darkMode"
           [class.translate-x-1]="!darkMode"
-          class="inline-block size-4  transform rounded-full bg-background shadow-sm transition-transform"
+          class="inline-block size-4 transform rounded-full bg-background shadow-sm transition-transform"
         ></span>
       </button>
     </div>

@@ -70,7 +70,7 @@ const pickupSteps: Array<{
           class="mt-3 flex items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-2 text-xs text-primary sm:px-3 sm:text-sm"
         >
           <ng-icon name="lucideTruck" class="size-3.5! sm:size-4!" />
-          <span class="min-w-0 flex-1 truncate font-medium">{{
+          <span class="min-w-0 flex-  1 truncate font-medium">{{
             current.statusMessage
           }}</span>
           <span class="shrink-0 text-xs text-primary/80">{{
@@ -135,7 +135,13 @@ const pickupSteps: Array<{
                     class="flex size-6 items-center justify-center rounded-full border text-xs font-semibold sm:size-7"
                     [ngClass]="stepDotClass(current.status, step.status)"
                   >
-                    <ng-icon [name]="step.icon" class="size-3! sm:size-3.5!" />
+                    <ng-icon
+                      [name]="step.icon"
+                      class="size-3! sm:size-3.5!"
+                      [ngClass]="isStepComplete(current.status, step.status) 
+                        ? 'text-background' 
+                        : 'text-muted-foreground'"
+                    />
                   </span>
                   <span
                     class="hidden text-[11px] font-medium sm:inline"
@@ -186,7 +192,7 @@ const pickupSteps: Array<{
           </div>
           <a
             [routerLink]="newPickupRoute()"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all sm:h-11 sm:px-5"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-primary/90"
           >
             <ng-icon name="lucidePlus" class="size-4!" />
             Request pickup

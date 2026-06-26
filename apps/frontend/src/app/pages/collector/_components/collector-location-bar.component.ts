@@ -21,7 +21,7 @@ import { lucideNavigation } from '@ng-icons/lucide';
       </span>
       <button
         type="button"
-        class="inline-flex h-9 items-center justify-center gap-2 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-colors"
+        class="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-background shadow-sm transition-colors"
         (click)="refresh.emit()"
       >
         <ng-icon name="lucideNavigation" class="size-4!" />

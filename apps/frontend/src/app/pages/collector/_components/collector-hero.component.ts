@@ -11,13 +11,13 @@ import type { CollectorStatItem } from './collector.models';
   imports: [RouterLink, NgIcon],
   viewProviders: [provideIcons({ lucidePackageCheck, lucideTruck })],
   template: `
-    <div class="brand-hero card-lift relative overflow-hidden rounded-3xl p-5 lg:p-6">
+    <div class="brand-hero card-lift h-full relative overflow-hidden rounded-3xl p-5 lg:p-6">
       <div
         class="pointer-events-none absolute -right-10 -top-14 size-48 rounded-full bg-white/10"
         aria-hidden="true"
       ></div>
       <div
-        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:pt-8"
       >
         <div class="min-w-0">
           <p class="text-sm font-medium text-white/80">Field overview</p>

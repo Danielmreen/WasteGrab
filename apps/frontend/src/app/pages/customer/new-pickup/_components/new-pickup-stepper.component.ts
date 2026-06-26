@@ -19,15 +19,15 @@ import type { StepMeta, WizardStep } from './new-pickup.models';
       {
       <button
         type="button"
-        class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-        [class.bg-primary/5]="isActive(step.id)"
+        class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 border-2 border-card hover:border-2 hover:border-primary/50"
+        [class.bg-primary/10]="isActive(step.id)"
         [disabled]="disabled()"
         (click)="stepSelect.emit(step.id)"
       >
         <span
           class="flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
           [class.bg-primary]="isActive(step.id) || isComplete(index)"
-          [class.text-primary-foreground]="isActive(step.id) || isComplete(index)"
+          [class.text-background]="isActive(step.id) || isComplete(index)"
           [class.border]="!isActive(step.id) && !isComplete(index)"
           [class.border-border]="!isActive(step.id) && !isComplete(index)"
           [class.text-muted-foreground]="!isActive(step.id) && !isComplete(index)"

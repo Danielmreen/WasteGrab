@@ -1,6 +1,6 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm text-background font-semibold shadow-sm transition-all hover:bg-primary/80" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       Add Achievement
     </button>
@@ -54,7 +54,7 @@
         </app-table-header>
         </div>
 
-        <div class="overflow-hidden">
+        <div class="overflow-hidden mx-2!">
           <table z-table>
             <thead z-thead>
               <tr z-tr>
@@ -63,7 +63,7 @@
                 <th z-th>Threshold</th>
                 <th z-th>Reward</th>
                 <th z-th>Status</th>
-                <th z-th class="text-right">Actions</th>
+                <th z-th class="text-right pl-20!">Actions</th>
               </tr>
             </thead>
             <tbody z-tbody>
@@ -80,9 +80,9 @@
                   <td z-td>{{ achievement.rewardPoints }} pts</td>
                   <td z-td>
                     <span
-                      class="rounded-full px-2.5 py-1 text-xs font-bold"
-                      [class.bg-emerald-500/10]="achievement.isActive"
-                      [class.text-emerald-700]="achievement.isActive"
+                      class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                      [class.bg-primary]="achievement.isActive"
+                      [class.text-background]="achievement.isActive"
                       [class.bg-muted]="!achievement.isActive"
                       [class.text-muted-foreground]="!achievement.isActive"
                     >

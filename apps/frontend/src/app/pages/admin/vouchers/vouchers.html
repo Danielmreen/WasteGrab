@@ -1,6 +1,6 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm text-background font-semibold shadow-sm transition-all hover:bg-primary/80" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       New Voucher
     </button>
@@ -18,13 +18,13 @@
       (click)="selectTab('catalog')"
     >
       <span
-        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-background text-primary"
       >
-        <ng-icon name="lucideGift" class="size-5!" />
+        <ng-icon name="lucideGift" class="size-5!"/>
       </span>
       <span class="min-w-0">
-        <span class="block font-semibold">Vouchers</span>
-        <span class="block text-sm opacity-80"
+        <span class="block font-semibold text-background">Vouchers</span>
+        <span class="block text-sm text-background"
           >{{ vouchers().length }} catalog items</span
         >
       </span>
@@ -189,9 +189,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto lg:block"
       >
-        <table z-table class="min-w-304 bg-card">
+        <table z-table class="min-w-304 bg-card mx-2!">
           <thead z-table-header>
             <tr z-table-row>
               <th z-table-head>Voucher</th>
@@ -199,7 +199,7 @@
               <th z-table-head>Stock</th>
               <th z-table-head>Status</th>
               <th z-table-head>Window</th>
-              <th z-table-head class="w-44 text-right!">Actions</th>
+              <th z-table-head class="w-44 text-left! pl-13!">Actions</th>
             </tr>
           </thead>
           <tbody z-table-body>

@@ -123,7 +123,7 @@ import type { PreviewImage } from './new-pickup.models';
         <div class="flex items-center gap-2">
           <button
             type="button"
-            class="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            class="relative inline-flex gap-3 w-full size-11 shrink-0 items-center justify-center rounded-full bg-primary text-background shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
             [ngClass]="
               images().length && !isAnalyzing()
                 ? 'ring-4 ring-primary/15 shadow-lg shadow-primary/25'
@@ -148,16 +148,7 @@ import type { PreviewImage } from './new-pickup.models';
               [class.animate-pulse]="images().length"
             />
             }
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-            (click)="next.emit()"
-            [disabled]="!canGoNext() || disabled()"
-          >
-            Continue
-            <ng-icon name="lucideArrowRight" class="size-4!" />
+            Analyze
           </button>
         </div>
       </div>

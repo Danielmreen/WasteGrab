@@ -29,7 +29,8 @@ export class CustomerAchievementsPage implements OnInit {
   protected readonly stats = computed<StatCardItem[]>(() => [
     { icon: 'lucideTrophy', label: 'Unlocked', value: this.achievements().length },
     { icon: 'lucideCoins', label: 'Earned from achievements', value: this.totalPoints(), unit: 'pts' },
-    { icon: 'lucideScale', label: 'Milestone types', value: `${this.totalWeightAwards()} weight · ${this.pickupAwards()} pickup`, spanClass: 'col-span-2 sm:col-span-1' },
+    { icon: 'lucideScale', label: 'Total pickup weight', value: `${this.totalWeightAwards()}`, unit: 'kg', spanClass: 'sm:col-span-1' },
+    { icon: 'lucideTruck', label: 'Total pickup', value: `${this.pickupAwards()}`, unit:'pickup', spanClass: 'sm:col-span-1' }
   ]);
 
   ngOnInit(): void {

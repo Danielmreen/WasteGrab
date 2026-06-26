@@ -92,6 +92,6 @@ test('collector completing final stop can choose a drop-off location', async ({ 
 
   await expect(page.getByText('Choose drop-off location')).toBeVisible();
   await expect(page.getByText(collectionLocations[0].name)).toBeVisible();
-  await page.getByRole('link', { name: 'Open drop-off location' }).click();
+  await page.getByRole('link', { name: 'Drop-off location' }).click();
   await expect(page).toHaveURL(/\/collector\/locations\/wastegrab-klang-valley-hub--dropoff-klang-valley$/);
 });

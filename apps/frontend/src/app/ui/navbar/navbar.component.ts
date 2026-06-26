@@ -83,7 +83,7 @@ const ROLE_NAV = {
         ROUTE_PATHS.customer.achievements,
       ),
       icon: 'lucideTrophy',
-      showOnMobile: false,
+      showOnMobile: true,
     },
     {
       label: 'Leaderboard',
@@ -92,7 +92,7 @@ const ROLE_NAV = {
         ROUTE_PATHS.customer.leaderboard,
       ),
       icon: 'lucideChartNoAxesColumn',
-      showOnMobile: true,
+      showOnMobile: false,
     },
   ],
   [UserRole.ADMIN]: [
@@ -234,30 +234,30 @@ function getInitials(name?: string | null): string {
   ],
   template: `
     <!-- Desktop Sidebar -->
-    <aside
-      class="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:h-dvh lg:w-64 lg:bg-background lg:border-r lg:border-border z-40 overflow-y-auto"
-    >
+    <aside class="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:h-dvh lg:w-64 lg:bg-card lg:border-primary/20 z-40 overflow-y-auto">
       <div class="flex flex-col h-full">
-        <!-- Brand -->
-        <div class="border-b border-border px-6 py-3">
-          <app-brand-logo size="lg" />
+
+        <!-- Brand Icon -->
+        <div class="w-full p-6 flex flex-col items-center justify-center">
+          <a routerLink="/" class="flex items-center gap-3 text-primary no-underline hover:opacity-80">
+            <div class="px-6 py-3">
+              <app-brand-logo size="lg" />
+            </div>
+          </a>
+          <div class="pt-3 w-48 border-b-2 border-[#008235] mt-4"></div>
         </div>
 
         <!-- Nav -->
-        <nav class="flex-1 px-4 py-6">
+        <nav class="flex-1 p-4">
           @for (item of navItems(); track item.route) {
             <a
               [routerLink]="item.route"
-              routerLinkActive
-              #rlaDesktop="routerLinkActive"
+              routerLinkActive="bg-background !font-bold"
               [routerLinkActiveOptions]="{ exact: true }"
               ariaCurrentWhenActive="page"
-              class="group mb-1 flex items-center gap-3 rounded-full text-sm font-semibold"
-              [class]="rlaDesktop.isActive ? 'btn-brand text-white shadow-sm' : 'text-muted-foreground'"
+              class="group py-2 mb-1 flex items-center gap-3 rounded-l-2xl -mr-8 text-md font-medium hover:font-bold dark:font-thin dark:hover:font-medium"
             >
-              <span
-                class="flex w-full items-center gap-3 rounded-full px-4 py-2.5 transition-colors group-hover:bg-primary/10"
-              >
+              <span class="flex w-full items-center gap-4 rounded-l-2xl px-4 py-2 transition-colors text-primary-foreground! group-hover:bg-background dark:text-foreground!">
                 <ng-icon [name]="item.icon" class="size-4!" />
                 <span>{{ item.label }}</span>
               </span>
@@ -266,40 +266,33 @@ function getInitials(name?: string | null): string {
         </nav>
 
         <!-- Bottom -->
-        <div class="space-y-3 border-t border-border p-4">
-          <a
-            [routerLink]="profileRoute"
-            class="card-lift block rounded-2xl border border-border/60 bg-card p-3 transition-colors hover:border-primary/40"
-          >
-            <div class="flex items-center gap-3">
+        <div class="space-y-3 border-t border-primary/20 p-4">
+
+          <a [routerLink]="profileRoute" 
+          class="block p-2 rounded-2xl bg-primary border border-background 
+          transition-colors text-background hover:text-foreground hover:bg-background"
+          routerLinkActive="!bg-background text-primary-foreground rounded-l-2xl -mr-8 dark:text-foreground">
+            <div class="flex items-center gap-4 pl-1">
               <z-avatar
                 [zSrc]="user()?.avatarUrl || ''"
                 [zFallback]="userInitials()"
                 [zAlt]="avatarAlt()"
                 zSize="md"
-                class="ring-2 ring-primary/20"
+                class="size-10 text-foreground"
               />
-
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-semibold text-foreground">
-                  {{ user()?.name }}
-                </p>
-                <p class="truncate text-xs text-muted-foreground">
-                  {{ user()?.role | titlecase }}
-                </p>
+              <div class="flex flex-col width-full">
+                <p class="truncate text-md font-bold">{{ user()?.name }}</p>
+                <p class="truncate text-xs">{{ user()?.role | titlecase }}</p>
               </div>
-
-              <ng-icon
-                name="lucideChevronRight"
-                class="size-4! text-muted-foreground"
-              />
             </div>
           </a>
 
           <div class="flex gap-2">
             <a
               [routerLink]="settingsRoute"
-              class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-secondary py-2 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-accent"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-background py-2 
+              text-xs text-foreground transition-colors border border-background 
+              hover:bg-primary hover:text-background"
             >
               <ng-icon
                 name="lucideSettings"
@@ -312,7 +305,7 @@ function getInitials(name?: string | null): string {
             <button
               type="button"
               (click)="confirmLogout()"
-              class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-destructive/10 py-2 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-destructive/70 py-2 text-xs text-[#F4F4F0] transition-colors hover:bg-destructive/50 hover:text-white hover:font-bold"
             >
               <ng-icon
                 name="lucideLogOut"
@@ -341,7 +334,7 @@ function getInitials(name?: string | null): string {
             ariaCurrentWhenActive="page"
             class="flex flex-1 items-center justify-center gap-2 transition-all active:scale-95"
             [class]="
-              rla.isActive ? 'rounded-full btn-brand px-3 py-2' : 'py-2'
+              rla.isActive ? 'rounded-full bg-primary px-3 py-2' : 'py-2'
             "
           >
             <ng-icon
@@ -349,13 +342,13 @@ function getInitials(name?: string | null): string {
               class="size-5! shrink-0"
               [class]="
                 rla.isActive
-                  ? 'text-white'
+                  ? 'text-background'
                   : 'text-muted-foreground'
               "
             />
             @if (rla.isActive) {
               <span
-                class="whitespace-nowrap text-xs font-bold text-white"
+                class="whitespace-nowrap text-xs font-bold text-background"
                 >{{ item.label }}</span
               >
             }
@@ -370,9 +363,9 @@ function getInitials(name?: string | null): string {
           routerLinkActive="ring-2 ring-primary/40 ring-offset-2"
           [routerLinkActiveOptions]="{ exact: true }"
           ariaCurrentWhenActive="page"
-          class="grid size-14 shrink-0 place-items-center rounded-full btn-brand shadow-xl transition-all active:scale-95"
+          class="grid size-13 shrink-0 place-items-center rounded-full bg-primary text-background shadow-xl transition-all active:scale-95"
         >
-          <ng-icon [name]="primary.icon" class="size-6!" />
+          <ng-icon [name]="primary.icon" class="size-5!" />
         </a>
       }
     </nav>

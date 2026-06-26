@@ -56,6 +56,7 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
                     z-button
                     [zType]="okDestructive() ? 'destructive' : 'default'"
                     [zDisabled]="isSubmitting()"
+                    [class]="okClass()"
                     (click)="onOk()"
                   >
                     {{ isSubmitting() ? okLoadingText() : okText() }}
@@ -80,6 +81,7 @@ export class ZardModalComponent {
   okText = input('OK');
   okLoadingText = input('Loading...');
   okDestructive = input(false);
+  okClass = input('');
   cancelText = input('Cancel');
   showOk = input(true);
   showCancel = input(true);

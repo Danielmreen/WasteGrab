@@ -25,7 +25,7 @@ import { AppPanelComponent } from '@/ui/panel/panel.component';
             class="card-lift flex min-h-16 flex-col justify-between gap-2 rounded-xl p-3 transition-all hover:-translate-y-0.5 lg:min-h-20 lg:gap-3 lg:rounded-2xl lg:p-4"
             [ngClass]="
               action.primary
-                ? 'brand-hero'
+                ? 'bg-primary text-background shadow-sm hover:bg-primary/90'
                 : 'border border-border/60 bg-card hover:bg-muted/40'
             "
           >
@@ -34,7 +34,7 @@ import { AppPanelComponent } from '@/ui/panel/panel.component';
                 class="grid size-7 place-items-center rounded-lg lg:size-9 lg:rounded-full"
                 [ngClass]="
                   action.primary
-                    ? 'bg-white/15 text-white'
+                    ? 'bg-background text-primary'
                     : 'bg-primary/10 text-primary'
                 "
               >
@@ -44,7 +44,7 @@ import { AppPanelComponent } from '@/ui/panel/panel.component';
                 name="lucideChevronRight"
                 class="size-3.5! lg:size-4!"
                 [ngClass]="
-                  action.primary ? 'text-white/80' : 'text-muted-foreground'
+                  action.primary ? 'text-background' : 'text-muted-foreground'
                 "
               />
             </span>

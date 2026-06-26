@@ -1,6 +1,6 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full btn-brand px-4 text-sm font-semibold shadow-sm transition-all" (click)="openAdd()">
+    <button type="button" rightSide class="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm text-background font-semibold shadow-sm transition-all hover:bg-primary/80" (click)="openAdd()">
       <ng-icon name="lucidePlus" class="size-4!" />
       New Category
     </button>
@@ -133,9 +133,9 @@
       </div>
 
       <div
-        class="hidden max-w-full overflow-x-auto rounded-2xl border border-border lg:block"
+        class="hidden max-w-full overflow-x-auto lg:block"
       >
-        <table z-table class="min-w-272 bg-card">
+        <table z-table class="min-w-272 bg-card mx-2!">
           <caption z-table-caption class="sr-only">
             Waste category management table
           </caption>
@@ -146,7 +146,7 @@
               <th z-table-head>Reward</th>
               <th z-table-head>AI</th>
               <th z-table-head>Status</th>
-              <th z-table-head class="w-44 text-right!">Actions</th>
+              <th z-table-head class="w-44 text-left!">Actions</th>
             </tr>
           </thead>
 

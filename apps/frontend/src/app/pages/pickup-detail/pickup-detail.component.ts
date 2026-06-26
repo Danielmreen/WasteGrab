@@ -21,6 +21,7 @@ import {
   lucideUser,
   lucideWifi,
   lucideXCircle,
+  lucideChevronRight,
 } from '@ng-icons/lucide';
 import { AdminPickupService } from '@/services/admin-pickup.service';
 import { NotificationService } from '@/services/notification.service';
@@ -155,12 +156,12 @@ const PICKUP_STATUS_FLOW = [
       </div>
 
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm text-muted-foreground">Confirm only after the full stop route looks right.</p>
+        <p class="text-sm text-muted-foreground pr-2">Confirm only after the full stop route looks right.</p>
         <a
           [href]="data.routeUrl"
           target="_blank"
           rel="noreferrer"
-          class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted"
+          class="inline-flex shrink-0 h-9 items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted"
         >
           <ng-icon name="lucideNavigation" class="size-4!" />
           Open route
@@ -249,10 +250,10 @@ export class AcceptPickupDialogComponent {
         <p class="text-sm text-muted-foreground">Open the location when you are ready to drop the collected waste.</p>
         <a
           [routerLink]="['/collector', 'locations', locationSlug(selected)]"
-          class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          class="inline-flex shrink-0 h-9 items-center justify-center gap-2 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <ng-icon name="lucideNavigation" class="size-4!" />
-          Open drop-off location
+          Drop-off location
         </a>
       </div>
       }
@@ -335,6 +336,7 @@ export class DropoffLocationDialogComponent {
       lucideUser,
       lucideWifi,
       lucideXCircle,
+      lucideChevronRight,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -892,7 +894,8 @@ export class PickupDetailPage {
         },
         zOkText: 'Accept Pickup',
         zCancelText: 'Review More',
-        zWidth: 'min(44rem, calc(100vw - 2rem))',
+        zWidth: 'min(56rem, calc(100vw - 2rem))',
+        zCustomClasses: 'max-h-[90svh] overflow-y-auto',
         zOnOk: () => {
           void this.runCollectorAction(() => this.collectorPickups.acceptPickup(this.pickupId()));
         },
@@ -1155,7 +1158,8 @@ export class PickupDetailPage {
       },
       zOkText: 'Back to My Pickups',
       zCancelText: 'Stay Here',
-      zWidth: 'min(44rem, calc(100vw - 2rem))',
+      zWidth: 'min(56rem, calc(100vw - 2rem))',
+      zCustomClasses: 'max-h-[90svh] overflow-y-auto',
       zOnOk: () => {
         void this.router.navigate(['/collector/my-pickups']);
       },
@@ -1215,9 +1219,9 @@ export class PickupDetailPage {
       case PickupStatus.PENDING:
         return 'Pickup request submitted.';
       case PickupStatus.ACCEPTED:
-        return 'Collector assigned to the pickup.';
+        return 'Assigned to the pickup.';
       case PickupStatus.ARRIVED:
-        return 'Collector arrived at pickup location.';
+        return 'Arrived at pickup location.';
       case PickupStatus.VERIFIED:
         return 'Waste items verified.';
       case PickupStatus.COMPLETED:

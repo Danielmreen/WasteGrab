@@ -70,12 +70,12 @@ import {
 
           <button
             type="button"
-            class="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            class="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
             (click)="addItem.emit()"
             [disabled]="disabled()"
           >
             <ng-icon name="lucidePlus" class="size-4!" />
-            Add
+            Add Item
           </button>
         </div>
       </app-step-header>

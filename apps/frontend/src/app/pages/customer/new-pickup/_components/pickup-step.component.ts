@@ -91,7 +91,7 @@ import { formatAddress, type NewPickupForm } from './new-pickup.models';
                 @if (isSelected(address)) {
                 <ng-icon
                   name="lucideCheck"
-                  class="size-3.5! text-primary-foreground"
+                  class="size-3.5! text-background"
                 />
                 }
               </span>

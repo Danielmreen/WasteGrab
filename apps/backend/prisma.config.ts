@@ -5,7 +5,7 @@ import { config as loadEnv } from "dotenv";
 import { defineConfig } from "prisma/config";
 
 const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const defaultDatabaseUrl = "mysql://root:password@localhost:3306/wastegrab";
+const defaultDatabaseUrl = "mysql://root:Victor_Root@localhost:3306/wastegrab_d";
 
 for (const envPath of [
   resolve(workspaceRoot, ".env.local"),

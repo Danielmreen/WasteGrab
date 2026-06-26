@@ -1,13 +1,5 @@
 <section class="grid gap-5 p-4 md:p-6 lg:p-8">
   <app-header mode="route">
-    <a
-      [routerLink]="pickupsPath"
-      class="inline-flex h-11 items-center justify-center gap-2 rounded-full btn-brand px-5 text-sm font-semibold shadow-sm transition-colors"
-      rightSide
-    >
-      <ng-icon name="lucideNavigation" class="size-4!" />
-      Find Pickups
-    </a>
   </app-header>
 
   @if (isLoading()) {
@@ -34,6 +26,15 @@
         [description]="collectionLocations().length + ' drop-off locations'"
       />
     </section>
+
+    <a
+      [routerLink]="pickupsPath"
+      class="inline-flex h-14 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-lg font-semibold text-background shadow-sm transition-colors"
+      rightSide
+    >
+      <ng-icon name="lucideNavigation" class="size-5!" />
+      Find Pickups
+    </a>
 
     <app-collector-next-pickup [pickup]="featuredPickup()" />
 

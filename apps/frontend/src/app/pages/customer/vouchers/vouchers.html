@@ -34,7 +34,7 @@
               (click)="redeemVoucher(voucher)"
               [disabled]="!voucher.canRedeem || redeemingVoucherId() === voucher.id"
               class="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-full text-xs font-bold transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-50"
-              [class]="voucher.canRedeem ? 'btn-brand' : 'bg-muted text-muted-foreground'"
+              [class]="voucher.canRedeem ? 'bg-primary text-background' : 'bg-muted text-muted-foreground'"
             >
               @if (redeemingVoucherId() === voucher.id) { Redeeming... } @else if (voucher.canRedeem) { Redeem } @else { {{
               voucher.unavailableReason || 'Unavailable' }} }
