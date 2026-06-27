@@ -10,10 +10,12 @@ export const dialogVariants = cva(
         'max-w-lg': 'max-w-lg',
         'max-w-xl': 'max-w-xl',
         'max-w-2xl': 'max-w-2xl',
+        'max-w-3xl': 'max-w-3xl',
+        'max-w-4xl': 'max-w-4xl',
       },
     },
     defaultVariants: {
-      width: 'max-w-2xl',
+      width: 'max-w-4xl',
     },
   },
 );
