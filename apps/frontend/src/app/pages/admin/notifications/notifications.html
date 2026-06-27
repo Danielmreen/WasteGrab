@@ -12,7 +12,7 @@
       class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'announcements'"
       [class.bg-primary]="activeTab() === 'announcements'"
-      [class.text-primary-foreground]="activeTab() === 'announcements'"
+      [class.text-background]="activeTab() === 'announcements'"
       [class.border-border]="activeTab() !== 'announcements'"
       [class.bg-card]="activeTab() !== 'announcements'"
       (click)="selectTab('announcements')"
@@ -23,8 +23,8 @@
         <ng-icon name="lucideBell" class="size-5!" />
       </span>
       <span class="min-w-0">
-        <span class="block font-semibold text-background">Announcements</span>
-        <span class="block text-sm text-background"
+        <span class="block font-semibold">Announcements</span>
+        <span class="block text-sm opacity-80"
           >{{ logs().length }} recent batches</span
         >
       </span>
@@ -35,13 +35,13 @@
       class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'deliveries'"
       [class.bg-primary]="activeTab() === 'deliveries'"
-      [class.text-primary-foreground]="activeTab() === 'deliveries'"
+      [class.text-background]="activeTab() === 'deliveries'"
       [class.border-border]="activeTab() !== 'deliveries'"
       [class.bg-card]="activeTab() !== 'deliveries'"
       (click)="selectTab('deliveries')"
     >
       <span
-        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-background text-primary"
       >
         <ng-icon name="lucideRadio" class="size-5!" />
       </span>
@@ -58,13 +58,13 @@
       class="flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
       [class.border-primary]="activeTab() === 'policy'"
       [class.bg-primary]="activeTab() === 'policy'"
-      [class.text-primary-foreground]="activeTab() === 'policy'"
+      [class.text-background]="activeTab() === 'policy'"
       [class.border-border]="activeTab() !== 'policy'"
       [class.bg-card]="activeTab() !== 'policy'"
       (click)="selectTab('policy')"
     >
       <span
-        class="grid size-10 place-items-center rounded-full bg-primary/10 text-primary"
+        class="grid size-10 place-items-center rounded-full bg-background text-primary"
       >
         <ng-icon name="lucidePin" class="size-5!" />
       </span>
