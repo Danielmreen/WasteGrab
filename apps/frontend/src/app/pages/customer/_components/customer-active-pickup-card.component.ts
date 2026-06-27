@@ -70,7 +70,7 @@ const pickupSteps: Array<{
           class="mt-3 flex items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-2 text-xs text-primary sm:px-3 sm:text-sm"
         >
           <ng-icon name="lucideTruck" class="size-3.5! sm:size-4!" />
-          <span class="min-w-0 flex-  1 truncate font-medium">{{
+          <span class="min-w-0 flex-1 truncate font-medium">{{
             current.statusMessage
           }}</span>
           <span class="shrink-0 text-xs text-primary/80">{{
@@ -97,7 +97,7 @@ const pickupSteps: Array<{
             }
           </div>
 
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1 pl-5">
             <h2 class="truncate text-base font-semibold sm:text-xl">{{ current.title }}</h2>
             <p class="mt-1 line-clamp-1 text-xs/5 text-muted-foreground sm:line-clamp-2 sm:text-sm/6">
               {{ current.address }}
