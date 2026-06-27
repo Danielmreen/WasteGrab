@@ -8,10 +8,12 @@ export const dialogVariants = cva(
         'max-w-sm': 'max-w-sm',
         'max-w-md': 'max-w-md',
         'max-w-lg': 'max-w-lg',
+        'max-w-xl': 'max-w-xl',
+        'max-w-2xl': 'max-w-2xl',
       },
     },
     defaultVariants: {
-      width: 'max-w-md',
+      width: 'max-w-2xl',
     },
   },
 );
