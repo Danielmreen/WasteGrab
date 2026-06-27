@@ -502,14 +502,14 @@
               <div class="grid grid-cols-3 gap-2">
                 <!-- image 1 — done -->
                 <div class="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-                  <img src="https://picsum.photos/seed/plastic-bottles/200/200" alt="Plastic waste" class="size-full object-cover" />
+                  <img src="https://cdn.shopify.com/s/files/1/0593/4235/6578/files/PET-bottles-and-PET-advantages.jpg" alt="Plastic waste" class="size-full object-cover" />
                   <div class="absolute inset-0 flex items-end justify-start p-1.5">
                     <span class="rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-foreground">Plastic</span>
                   </div>
                 </div>
                 <!-- image 2 — scanning overlay -->
                 <div class="relative aspect-square overflow-hidden rounded-lg border border-primary/40 bg-muted">
-                  <img src="https://picsum.photos/seed/cardboard-box/200/200" alt="Cardboard waste" class="size-full object-cover animate-pulse" />
+                  <img src="https://st3.depositphotos.com/13349494/36609/i/600/depositphotos_366093966-stock-photo-carton-boxes-chinese-food-white.jpg" alt="Cardboard waste" class="size-full object-cover animate-pulse" />
                   <div class="absolute inset-0 grid place-items-center bg-primary/15">
                     <div class="flex items-center gap-1.5 rounded-lg bg-background/90 px-2 py-1.5 text-xs font-semibold text-primary shadow-sm">
                       <ng-icon name="lucideLoaderCircle" class="size-3.5! animate-spin" />
@@ -519,7 +519,7 @@
                 </div>
                 <!-- image 3 — done -->
                 <div class="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-                  <img src="https://picsum.photos/seed/aluminium-cans/200/200" alt="Metal waste" class="size-full object-cover" />
+                  <img src="https://st.depositphotos.com/1177973/4123/i/950/depositphotos_41234189-stock-photo-crushed-metal-beer-cans-isolated.jpg" alt="Metal waste" class="size-full object-cover" />
                   <div class="absolute inset-0 flex items-end justify-start p-1.5">
                     <span class="rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-foreground">Aluminium</span>
                   </div>
@@ -562,9 +562,9 @@
               </div>
               <!-- Item rows -->
               @for (item of [
-                { img: 'https://picsum.photos/seed/plastic-bottles/80/80', name: 'Plastic (PET)', weight: '1.20' },
-                { img: 'https://picsum.photos/seed/cardboard-box/80/80',   name: 'Cardboard',     weight: '2.50' },
-                { img: 'https://picsum.photos/seed/aluminium-cans/80/80',  name: 'Aluminium',     weight: '0.80' }
+                { img: 'https://cdn.shopify.com/s/files/1/0593/4235/6578/files/PET-bottles-and-PET-advantages.jpg', name: 'Plastic (PET)', weight: '1.20' },
+                { img: 'https://st3.depositphotos.com/13349494/36609/i/600/depositphotos_366093966-stock-photo-carton-boxes-chinese-food-white.jpg',   name: 'Cardboard',     weight: '2.50' },
+                { img: 'https://st.depositphotos.com/1177973/4123/i/950/depositphotos_41234189-stock-photo-crushed-metal-beer-cans-isolated.jpg',  name: 'Aluminium',     weight: '0.80' }
               ]; track item.name) {
                 <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-2xl border border-border/60 bg-muted/20 p-3">
                   <!-- thumb -->
